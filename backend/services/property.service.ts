@@ -1,18 +1,24 @@
 // src/backend/services/property.service.ts
 import { prisma } from '../db'; 
-import { Propiedad, Zona } from '@prisma-client'
+import { Propiedad } from '@prisma-client'
 
 export async function getDestacadas(): Promise<Propiedad[]> {
   return await prisma.propiedad.findMany({
     where: {
       isPublished: true,
+      isDestacada: true
     },
-    take: 6 // Trae solo 6 para el Home
+    include: {
+      zona: true 
+    },
+    orderBy: {
+      createdAt: 'desc'
+    }
   });
 }
 
-export async function getZonas(): Promise<Zona[]>{
-  return await prisma.zona.findMany({
-    orderBy: { nombre: 'asc' }
-  });
-}
+// TO DO: Futuro CRUD del panel de administración:
+export async function createPropiedad(data: any) { /* ... */ }
+export async function updatePropiedad(id: number, data: any) { /* ... */ }
+export async function deletePropiedad(id: number) { /* ... */ }
+

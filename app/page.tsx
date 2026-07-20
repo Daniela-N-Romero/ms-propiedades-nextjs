@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { styles } from "./home.styles";
 import { HomeSearch }from '@/features/buscador';
-import { getZonas, getDestacadas } from "@/backend/services/property.service";
+import { getDestacadas } from "@/backend/services/property.service";
+import { getZonasActivas } from '@/backend/services/zone.service'
+import { PropertyCard } from "@/features/propiedades";
 
 export default async function HomePage() {
   
   // 🔌 Traemos todas las zonas y localidades de Postgres en crudo
-  const zonas = await getZonas();
+  const zonas = await getZonasActivas();
   const destacadas = await getDestacadas();
 
   return (
@@ -32,16 +34,12 @@ export default async function HomePage() {
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <h2 className={styles.sectionTitle}>Propiedades Destacadas</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
-          {/* Aquí irán mapeadas las <PropertyCard /> del backend */}
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm animate-pulse h-72 flex items-center justify-center text-slate-400">
-            Próximamente: Fichas de Naves Industriales
-          </div>
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm animate-pulse h-72 flex items-center justify-center text-slate-400">
-            Próximamente: Fichas de Naves Industriales
-          </div>
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm animate-pulse h-72 flex items-center justify-center text-slate-400">
-            Próximamente: Fichas de Naves Industriales
-          </div>
+          {destacadas.map((propiedad) => (
+            <PropertyCard key={propiedad.id} propiedad={propiedad as any} />
+          ))}
+          {destacadas.length === 0 && (
+            <p className="text-center text-slate-400 col-span-3 py-10">No hay propiedades destacadas en este momento.</p>
+          )}
         </div>
       </section>
 

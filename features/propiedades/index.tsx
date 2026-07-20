@@ -1,0 +1,1 @@
+export { default as PropertyCard } from './components/property-card'
