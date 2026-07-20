@@ -1,0 +1,185 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../../prisma/generated"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+// ==========================================
+// 1. ENUMS (Tipados estrictos)
+// ==========================================
+
+enum TipoPropiedadEnum {
+  industrial
+  comercial
+  residencial
+  campos
+}
+
+enum TipoOperacionEnum {
+  venta
+  alquiler
+}
+
+enum MonedaEnum {
+  USD
+  ARS
+}
+
+enum OrigenPropiedadEnum {
+  own
+  fromColleague
+}
+
+enum LeadStatusEnum {
+  nuevo
+  contactado
+  en_seguimiento
+  descartado
+}
+
+enum UserRoleEnum {
+  admin
+  agente
+}
+
+// ==========================================
+// 2. MODELOS (Tablas)
+// ==========================================
+
+model Zona {
+  id          Int         @id @default(autoincrement())
+  nombre      String      @db.VarChar(100)
+  padreId     Int?        @map("padre_id")
+  latitud     Decimal?    @db.Decimal(9, 6)
+  longitud    Decimal?    @db.Decimal(9, 6)
+
+  // Relación auto-referenciada (Padre/Hijos)
+  padre       Zona?       @relation("ZonaJerarquia", fields: [padreId], references: [id], onDelete: SetNull)
+  hijas       Zona[]      @relation("ZonaJerarquia")
+
+  // Relación inversa con propiedades
+  propiedades Propiedad[]
+
+  @@map("zonas")
+}
+
+model Propietario {
+  id            Int         @id @default(autoincrement())
+  nombre        String      @db.VarChar(100)
+  apellido      String      @db.VarChar(100)
+  telefono      String?     @db.VarChar(50)
+  email         String?     @db.VarChar(150)
+  notasPrivadas String?     @map("notas_privadas") @db.Text
+
+  propiedades   Propiedad[]
+
+  @@map("propietarios")
+}
+
+model Colega {
+  id            Int         @id @default(autoincrement())
+  nombre        String      @db.VarChar(100)
+  apellido      String      @db.VarChar(100)
+  inmobiliaria  String      @db.VarChar(150)
+  telefono      String?     @db.VarChar(50)
+  email         String?     @db.VarChar(150)
+  notasPrivadas String?     @map("notas_privadas") @db.Text
+
+  propiedades   Propiedad[]
+
+  @@map("colegas")
+}
+
+model Agente {
+  id           Int          @id @default(autoincrement())
+  nombre       String       @db.VarChar(100)
+  apellido     String       @db.VarChar(100)
+  telefono     String?      @db.VarChar(50)
+  email        String       @unique @db.VarChar(150)
+  passwordHash String       @map("password_hash") @db.VarChar(255)
+  rol          UserRoleEnum @default(agente)
+
+  propiedades  Propiedad[]
+
+  @@map("agentes")
+}
+
+model Propiedad {
+  id                    Int                 @id @default(autoincrement())
+  titulo                String              @db.VarChar(255)
+  slug                  String              @unique @db.VarChar(255)
+  direccionPersonalizada String?            @map("direccion_personalizada") @db.VarChar(255)
+  superficieTotal       Decimal?            @map("superficie_total") @db.Decimal(8, 2)
+  superficieCubierta    Decimal?            @map("superficie_cubierta") @db.Decimal(8, 2)
+  origen                OrigenPropiedadEnum @default(own)
+  tipo                  TipoPropiedadEnum
+  subtipo               String?             @db.VarChar(50)
+  categoria             TipoOperacionEnum
+  precio                Decimal             @db.Decimal(12, 2)
+  moneda                MonedaEnum          @default(USD)
+  descripcion           String?             @db.Text
+  videoUrl              String?             @map("video_url") @db.VarChar(255)
+  pdfUrl                String?             @map("pdf_url") @db.VarChar(255)
+  latitud               Decimal?            @db.Decimal(9, 6)
+  longitud              Decimal?            @db.Decimal(9, 6)
+  isPublished           Boolean             @default(false) @map("is_published")
+  isDestacada           Boolean             @default(false) @map("is_destacada") 
+  notasPrivadas         String?             @map("notas_privadas") @db.Text
+  caracteristicas       Json?               @map("caracteristicas_especificas")
+  createdAt             DateTime            @default(now()) @map("created_at") @db.Timestamp
+
+  // Claves Foráneas y Relaciones
+  zonaId                Int                 @map("zona_id")
+  zona                  Zona                @relation(fields: [zonaId], references: [id], onDelete: Restrict)
+  
+  propietarioId         Int?                @map("propietario_id")
+  propietario           Propietario?        @relation(fields: [propietarioId], references: [id], onDelete: SetNull)
+  
+  colegaId              Int?                @map("colega_id")
+  colega                Colega?             @relation(fields: [colegaId], references: [id], onDelete: SetNull)
+  
+  agenteId              Int                 @map("agente_id")
+  agente                Agente              @relation(fields: [agenteId], references: [id], onDelete: Restrict)
+
+  // Relaciones inversas hacia las hijas
+  imagenes              Imagen[]
+  leads                 Lead[]
+
+  @@map("propiedades")
+}
+
+model Imagen {
+  id          Int       @id @default(autoincrement())
+  url         String    @db.VarChar(255)
+  orden       Int       @default(0)
+  
+  propiedadId Int       @map("propiedad_id")
+  propiedad   Propiedad @relation(fields: [propiedadId], references: [id], onDelete: Cascade)
+
+  @@map("imagenes")
+}
+
+model Lead {
+  id          Int            @id @default(autoincrement())
+  nombre      String         @db.VarChar(100)
+  apellido    String?        @db.VarChar(100)
+  email       String         @db.VarChar(150)
+  telefono    String?        @db.VarChar(50)
+  mensaje     String?        @db.Text
+  estado      LeadStatusEnum @default(nuevo)
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamp
+
+  propiedadId Int?           @map("propiedad_id")
+  propiedad   Propiedad?     @relation(fields: [propiedadId], references: [id], onDelete: SetNull)
+
+  @@map("leads")
+}
