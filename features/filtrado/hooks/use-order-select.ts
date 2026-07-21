@@ -1,8 +1,9 @@
 'use client';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 export function orderValueSettings() {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const currentOrder = searchParams.get('ordenar') || '';
 
@@ -10,7 +11,7 @@ export function orderValueSettings() {
     const params = new URLSearchParams(searchParams.toString());
     if (val) params.set('ordenar', val);
     else params.delete('ordenar');
-    router.push(`/propiedades?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   return {currentOrder, handleChange};

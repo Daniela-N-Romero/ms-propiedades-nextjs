@@ -17,13 +17,6 @@ datasource db {
 // 1. ENUMS (Tipados estrictos)
 // ==========================================
 
-enum TipoPropiedadEnum {
-  industrial
-  comercial
-  residencial
-  campos
-}
-
 enum TipoOperacionEnum {
   venta
   alquiler
@@ -54,6 +47,22 @@ enum UserRoleEnum {
 // ==========================================
 // 2. MODELOS (Tablas)
 // ==========================================
+
+model TipoInmueble {
+  id          Int            @id @default(autoincrement())
+  nombre      String         @db.VarChar(100) // "Industrial", "Nave Industrial", "Galpón"
+  slug        String         @unique @db.VarChar(100) // "industrial", "nave-industrial", "galpon"
+  padreId     Int?           @map("padre_id")
+
+  // Relación auto-referenciada (Padre/Hijos)
+  padre       TipoInmueble?  @relation("JerarquiaTipoInmueble", fields: [padreId], references: [id], onDelete: SetNull)
+  hijas       TipoInmueble[] @relation("JerarquiaTipoInmueble")
+
+  // Relación con Propiedades
+  propiedades Propiedad[]
+
+  @@map("tipos_inmueble")
+}
 
 model Zona {
   id          Int         @id @default(autoincrement())
@@ -121,8 +130,6 @@ model Propiedad {
   superficieTotal       Decimal?            @map("superficie_total") @db.Decimal(8, 2)
   superficieCubierta    Decimal?            @map("superficie_cubierta") @db.Decimal(8, 2)
   origen                OrigenPropiedadEnum @default(own)
-  tipo                  TipoPropiedadEnum
-  subtipo               String?             @db.VarChar(50)
   categoria             TipoOperacionEnum
   precio                Decimal             @db.Decimal(12, 2)
   moneda                MonedaEnum          @default(USD)
@@ -138,6 +145,10 @@ model Propiedad {
   createdAt             DateTime            @default(now()) @map("created_at") @db.Timestamp
 
   // Claves Foráneas y Relaciones
+
+  tipoInmuebleId        Int                 @map("tipo_inmueble_id")
+  tipoInmueble          TipoInmueble        @relation(fields: [tipoInmuebleId], references: [id], onDelete: Restrict)
+
   zonaId                Int                 @map("zona_id")
   zona                  Zona                @relation(fields: [zonaId], references: [id], onDelete: Restrict)
   

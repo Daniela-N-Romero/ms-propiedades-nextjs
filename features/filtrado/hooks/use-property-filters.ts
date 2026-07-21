@@ -1,21 +1,24 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 export function usePropertyFilters() {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   // 1. Obtener estados actuales de la URL 
   const filters = {
     categoria: searchParams.get('categoria') || '',
     tipo: searchParams.get('tipo') || '',
-    subtipo: searchParams.get('subtipo') || '',
+    subtipos: searchParams.getAll('subtipo'),
     moneda: searchParams.get('moneda') || 'USD',
     precioMin: searchParams.get('precioMin') || '',
     precioMax: searchParams.get('precioMax') || '',
     supMin: searchParams.get('supMin') || '',
     supMax: searchParams.get('supMax') || '',
+    supCubMin: searchParams.get('supCubMin') || '', 
+    supCubMax: searchParams.get('supCubMax') || '',
     localidades: searchParams.getAll('localidad'),
     ordenar: searchParams.get('ordenar') || '',
     // Cuántos filtros hay activos en total
@@ -34,7 +37,7 @@ export function usePropertyFilters() {
     } else {
       params.delete(key);
     }
-    router.push(`/propiedades?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   // 3. Función específica para filtros múltiples (Checkboxes de Localidades)
@@ -48,12 +51,12 @@ export function usePropertyFilters() {
       params.delete(key);
       currentValues.filter(v => v !== id).forEach(v => params.append(key, v));
     }
-    router.push(`/propiedades?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   // 4. Limpiar todos los filtros en un click si el usuario quiere reiniciar
   const clearAllFilters = () => {
-    router.push('/propiedades');
+    router.push(pathname);
   };
 
   return {

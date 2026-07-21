@@ -1,7 +1,6 @@
 // src/backend/services/property.service.ts
 import { prisma } from '../db';
-import { Propiedad } from '@prisma-client'
-import { MonedaEnum, TipoPropiedadEnum } from '@/prisma/generated/enums';
+import { Propiedad, TipoOperacionEnum, MonedaEnum } from '@prisma-client'
 
 export async function getDestacadas(): Promise<Propiedad[]> {
   return await prisma.propiedad.findMany({
@@ -21,23 +20,36 @@ export async function deletePropiedad(id: number) { /* ... */ }
 
 interface SearchFilters {
   categoria?: string;
-  tipo?: string;
-  subtipo?: string;
+  mercadoSlug?: string;
+  subtiposSlugs?: string[];
   moneda?: string;
   precioMin?: number;
   precioMax?: number;
   supMin?: number;
   supMax?: number;
+  supCubMin?: number;
+  supCubMax?: number;
   localidades?: number[];
   ordenar?: string;
 }
 
 export async function searchPropiedades(filters: SearchFilters) {
-  const queryWhere: any = { isPublished: true, tipo: filters.tipo };
+  const queryWhere: any = { isPublished: true };
 
-  if (filters.subtipo) queryWhere.subtipo = filters.subtipo;
-  if (filters.categoria) queryWhere.categoria = filters.categoria;
-  if (filters.tipo) queryWhere.tipo = filters.tipo;
+  if (filters.categoria) {
+    queryWhere.categoria = filters.categoria as TipoOperacionEnum;
+  }
+
+  if (filters.subtiposSlugs && filters.subtiposSlugs.length > 0) {
+    // Si filtran un subtipo específico (ej: "nave-industrial")
+    queryWhere.tipoInmueble = { slug: { in: filters.subtiposSlugs } };
+  } else if (filters.mercadoSlug) {
+    // Si filtran el mercado completo (ej: "industrial"), buscamos donde el PADRE sea "industrial"
+    queryWhere.tipoInmueble = {
+      padre: { slug: filters.mercadoSlug }
+    };
+  }
+
 
   // Filtrado de Moneda Obligatorio (Evita cruzar USD con ARS)
   queryWhere.moneda = (filters.moneda as MonedaEnum) || MonedaEnum.USD;
@@ -58,6 +70,12 @@ export async function searchPropiedades(filters: SearchFilters) {
     if (filters.supMax) queryWhere.superficieTotal.lte = filters.supMax;
   }
 
+  if (filters.supCubMin || filters.supCubMax) {
+    queryWhere.superficieCubierta = {};
+    if (filters.supCubMin) queryWhere.superficieCubierta.gte = filters.supCubMin;
+    if (filters.supCubMax) queryWhere.superficieCubierta.lte = filters.supCubMax;
+  }
+
   let queryOrderBy: any = { createdAt: 'desc' };
   if (filters.ordenar === 'precio_asc') queryOrderBy = { precio: 'asc' };
   if (filters.ordenar === 'precio_desc') queryOrderBy = { precio: 'desc' };
@@ -66,7 +84,10 @@ export async function searchPropiedades(filters: SearchFilters) {
 
   const resultados = await prisma.propiedad.findMany({
     where: queryWhere,
-    include: { zona: true },
+    include: {
+      zona: true,
+      tipoInmueble: { include: { padre: true } }
+    },
     orderBy: queryOrderBy
   });
 
@@ -80,14 +101,15 @@ export async function searchPropiedades(filters: SearchFilters) {
   }));
 
 }
-//trae los sutipos de propidades existentes
-export async function getSubtiposPorTipo(tipo: TipoPropiedadEnum): Promise<string[]> {
-  const propiedades = await prisma.propiedad.findMany({
-    where: { isPublished: true, tipo },
-    select: { subtipo: true },
-    distinct: ['subtipo'], 
+//trae los sutipos de propidades existentes segun tipo de mercado (industrial, residencial, etc)
+export async function getSubtiposPorTipoMercado(mercadoSlug: string) {
+  return await prisma.tipoInmueble.findMany({
+    where: {
+      padre: { slug: mercadoSlug },
+      propiedades: {
+        some: { isPublished: true } // Solo donde haya stock real
+      }
+    },
+    orderBy: { nombre: 'asc' }
   });
-
-  // Filtramos nulos o vacíos
-  return propiedades.map(p => p.subtipo).filter(Boolean) as string[];
 }

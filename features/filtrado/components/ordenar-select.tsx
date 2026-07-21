@@ -1,4 +1,4 @@
-import { orderValueSettings } from '@/features/filtrado/hooks/order-properties';
+import { orderValueSettings } from '@/features/filtrado/index';
 
 export default function OrdenarSelect() {
 

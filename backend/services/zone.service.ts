@@ -1,7 +1,7 @@
 // src/backend/services/property.service.ts
 import { prisma } from '../db';
-import { Zona } from '@prisma-client'
-import { TipoPropiedadEnum } from '@/prisma/generated/enums';
+import type { Zona } from '@prisma-client'
+import { TipoInmueble, TipoOperacionEnum } from '@prisma-client';
 
 //GET ZONAS Y LOCALIDADES
 export async function getZonas(): Promise<Zona[]> {
@@ -31,17 +31,32 @@ export async function getZonasActivas(): Promise<Zona[]> {
   });
 }
 
-export async function getLocalidadesActivasPorTipo(tipo: TipoPropiedadEnum) {
+export async function getLocalidadesActivasPorTipo(mercadoSlug: string, categoria?: string) {
+  
+  const wherePropiedad: any = {
+    isPublished: true,
+    tipoInmueble: {
+      padre: { slug: mercadoSlug }
+    }
+  };
+
+  if (categoria) {
+    wherePropiedad.categoria = categoria as TipoOperacionEnum;
+  }
+  
   return await prisma.zona.findMany({
     where: {
       padreId: { not: null },
       propiedades: {
-        some: {
-          isPublished: true,
-          tipo: tipo 
-        }
+        some: wherePropiedad 
       }
     },
-    orderBy: { nombre: 'asc' }
+    include: {
+      padre: true 
+    },
+    orderBy: [
+      { padre: { nombre: 'asc' } },
+      { nombre: 'asc' }
+    ]
   });
 }

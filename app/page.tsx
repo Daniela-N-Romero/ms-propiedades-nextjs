@@ -1,7 +1,6 @@
-import Link from "next/link";
 import { styles } from "./home.styles";
 import { HomeSearch }from '@/features/buscador';
-import { getDestacadas } from "@/backend/services/property.service";
+import { getDestacadas, getSubtiposPorTipoMercado } from "@/backend/services/property.service";
 import { getZonasActivas } from '@/backend/services/zone.service'
 import { PropertyCard } from "@/features/propiedades";
 
@@ -10,6 +9,7 @@ export default async function HomePage() {
   // 🔌 Traemos todas las zonas y localidades de Postgres en crudo
   const zonas = await getZonasActivas();
   const destacadas = await getDestacadas();
+  const subtiposIndustrial = await getSubtiposPorTipoMercado("industrial");
 
   return (
     <div className="space-y-20 pb-20">
@@ -26,7 +26,7 @@ export default async function HomePage() {
             <span className="text-brand-orange">A la medida de tu empresa</span>
           </h1>
           
-        <HomeSearch zonasDB={zonas} />
+        <HomeSearch zonasDB={zonas} subtipos={subtiposIndustrial}/>
         </div>
       </section>
 

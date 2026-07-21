@@ -1,7 +1,5 @@
 import { renderPageByPropertyType } from '..';
-import ResultsView from '../components/results-view';
-import { TipoPropiedadEnum } from "@/prisma/generated/enums";
-
+import ResultsView from '@/features/filtrado/components/results-view';
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
@@ -11,7 +9,7 @@ export default async function IndustrialPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const [propiedades, localidades, subtipos ] = await renderPageByPropertyType({
       searchParams: params,
-      tipoPropiedad: TipoPropiedadEnum.industrial
+      mercadoSlug: 'industrial'
   }); 
 
   return <ResultsView 
