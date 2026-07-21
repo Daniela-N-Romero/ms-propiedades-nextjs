@@ -1,3 +1,5 @@
+import { GoogleAnalytics } from '@next/third-parties/google';
+import MetaPixel from '@/components/analytics/meta-pixel';
 import type { Metadata } from "next";
 import { Header, Footer } from "@/features/navigation";
 import { Montserrat, League_Spartan } from "next/font/google";
@@ -23,6 +25,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const gaId = process.env.NEXT_PUBLIC_GA_ID;
+
   return (
     <html
       lang="es"
@@ -32,6 +36,9 @@ export default function RootLayout({
             <Header />
             <main className="grow bg-slate-50">{children}</main>
             <Footer />
+            {/* Analytics sin impactar la velocidad de carga de la página */}
+            <MetaPixel />
+            {gaId && <GoogleAnalytics gaId={gaId} />}
       </body>
     </html>
   );

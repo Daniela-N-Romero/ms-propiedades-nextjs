@@ -18,5 +18,5 @@ export const styles = {
   featureItem: "flex items-center gap-1.5",
   
   // Botón Ficha
-  viewBtn: "w-full text-center bg-slate-100 hover:bg-brand-dark hover:text-white text-brand-dark font-spartan font-bold uppercase tracking-wider py-2.5 rounded-xl text-xs transition-colors"
+  viewBtn: "w-full text-center bg-slate-100 group-hover:bg-brand-orange group-hover:text-white text-brand-dark font-spartan font-bold uppercase tracking-wider py-2.5 rounded-xl text-xs transition-colors"
 };

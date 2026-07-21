@@ -2,12 +2,14 @@
 import { prisma } from '../db';
 import { Propiedad, TipoOperacionEnum, MonedaEnum } from '@prisma-client'
 
-export async function getDestacadas(): Promise<Propiedad[]> {
-  return await prisma.propiedad.findMany({
+export async function getDestacadas() {
+  const destacadas =  await prisma.propiedad.findMany({
     where: { isPublished: true, isDestacada: true },
-    include: { zona: true },
+    include: { zona: true, tipoInmueble: true },
     orderBy: { createdAt: 'desc' }
   });
+  
+  return destacadas.map(prop => sanearPropiedadParaServer(prop));  
 }
 
 // TO DO: Futuro CRUD PRINCIPAL del panel de administración:

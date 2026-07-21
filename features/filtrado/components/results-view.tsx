@@ -5,8 +5,7 @@ import { PanelFiltros,  OrdenarSelect, usePropertyFilters } from '../index';
 import { styles } from './resultados.styles';
 import type { Zona, Propiedad, TipoInmueble } from '@prisma-client';
 import { useState } from 'react';
-
-type PropertyWithZona = Propiedad & { zona: Zona };
+import { PropertyWithZona } from '@/types/propiedad';
 
 interface ResultsViewProps {
   propiedades: PropertyWithZona[];

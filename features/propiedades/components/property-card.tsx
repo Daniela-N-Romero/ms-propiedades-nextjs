@@ -1,27 +1,22 @@
 // features/propiedades/components/property-card.tsx
 import Link from 'next/link';
-import type { Propiedad, TipoInmueble, Zona } from '@prisma-client';
 import { styles } from './property-card.styles';
-import { formatPrecio } from '@/lib/utils'
+import { formatPrecio } from '@/lib/utils';
+import { PropertyWithZonaAndType } from '@/types/propiedad'
 
-// Extendemos el tipo Propiedad para asegurar que venga con la Zona incluida
-type PropertyWithZonaAndType = Propiedad & {
-  zona: Zona;
-  tipo: TipoInmueble
-};
 
 interface PropertyCardProps {
   propiedad: PropertyWithZonaAndType;
 }
 
 export default function PropertyCard({ propiedad }: PropertyCardProps) {
-
+  //to do: 
   // Simulación de banner destacado tipo tu PDF de Canva (Anticipo + Cuotas)
   // En el hito 3 esto vendrá del campo JSON 'caracteristicas'
   const tieneFinanciacion = propiedad.slug === 'lote-premium-parque-industrial-hudson-3088';
 
   return (
-    <article className={styles.card}>
+    <article className={`${styles.card} relative group cursor-pointer transition-shadow hover:shadow-xl`}>
       <div className={styles.imageWrapper}>
 
         <span className={`${styles.badgeOperation} ${
@@ -30,9 +25,10 @@ export default function PropertyCard({ propiedad }: PropertyCardProps) {
         </span>
         
         <span className={styles.badgeType}>
-          {propiedad.tipo.nombre}
+          {propiedad.tipoInmueble.nombre}
         </span>
 
+        {/* To do: CAMBIAR A FOTO REAL */}
         {/* Imagen de fondo (Placeholder corporativo por ahora) */}
         <div className="w-full h-full bg-[url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80')] bg-cover bg-center group-hover:scale-105 transition-transform duration-500" />
       </div>
@@ -46,7 +42,12 @@ export default function PropertyCard({ propiedad }: PropertyCardProps) {
           </span>
           
           <h3 className={styles.title}>
-            {propiedad.titulo}
+            <Link 
+              href={`/propiedades/${propiedad.slug}`}
+              className="after:absolute after:inset-0 after:z-10 focus:outline-none"
+            >
+              {propiedad.titulo}
+            </Link>
           </h3>
           
 
@@ -82,9 +83,9 @@ export default function PropertyCard({ propiedad }: PropertyCardProps) {
         </div>
 
         {/* ACCIÓN */}
-        <Link href={`/propiedades/${propiedad.slug}`} className={styles.viewBtn}>
+        <span className={styles.viewBtn}>
           Ver Ficha Técnica
-        </Link>
+        </span>
       </div>
     </article>
   );
