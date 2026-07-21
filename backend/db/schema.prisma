@@ -124,6 +124,7 @@ model Agente {
 
 model Propiedad {
   id                    Int                 @id @default(autoincrement())
+  codigo                String              @unique @db.VarChar(50) 
   titulo                String              @db.VarChar(255)
   slug                  String              @unique @db.VarChar(255)
   direccionPersonalizada String?            @map("direccion_personalizada") @db.VarChar(255)

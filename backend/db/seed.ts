@@ -14,7 +14,7 @@ async function main() {
     data: {
       nombre: 'Matías',
       apellido: 'Settecerze',
-      email: 'matias@mspropiedades.com',
+      email: 'info@msconstruccion.net',
       passwordHash: '$2b$10$abcdefghijklmnopqrstuvwxyz123456',
       rol: UserRoleEnum.admin
     }
@@ -62,6 +62,7 @@ async function main() {
   const propiedadesMock = [
     {
       titulo: 'Lote Premium en Parque Industrial Hudson - 3088 m2',
+      codigo: 'IND-HUD-001',
       descripcion: 'Excelente fracción industrial apta para logística pesada.',
       isPublished: true,
       isDestacada: true,
@@ -74,6 +75,7 @@ async function main() {
     },
     {
       titulo: 'Nave Logística Triple A en Polo Industrial Canning',
+      codigo: 'IND-CAN-002',
       descripcion: 'Nave de 5000m2 cubiertos con oficinas corporativas y docks de carga.',
       isPublished: true,
       isDestacada: true,
@@ -86,6 +88,7 @@ async function main() {
     },
     {
       titulo: 'Depósito Industrial de Estructura Metálica en Parque Patricios',
+      codigo: 'IND-PAT-003',
       descripcion: 'Depósito ideal para distribución de última milla.',
       isPublished: true,
       isDestacada: false,

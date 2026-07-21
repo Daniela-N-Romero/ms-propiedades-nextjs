@@ -1,16 +1,17 @@
 // features/propiedades/components/property-card.tsx
 import Link from 'next/link';
-import type { Propiedad, Zona } from '@prisma-client';
+import type { Propiedad, TipoInmueble, Zona } from '@prisma-client';
 import { styles } from './property-card.styles';
 import { formatPrecio } from '@/lib/utils'
 
 // Extendemos el tipo Propiedad para asegurar que venga con la Zona incluida
-type PropertyWithZona = Propiedad & {
+type PropertyWithZonaAndType = Propiedad & {
   zona: Zona;
+  tipo: TipoInmueble
 };
 
 interface PropertyCardProps {
-  propiedad: PropertyWithZona;
+  propiedad: PropertyWithZonaAndType;
 }
 
 export default function PropertyCard({ propiedad }: PropertyCardProps) {
@@ -29,7 +30,7 @@ export default function PropertyCard({ propiedad }: PropertyCardProps) {
         </span>
         
         <span className={styles.badgeType}>
-          {propiedad.tipo}
+          {propiedad.tipo.nombre}
         </span>
 
         {/* Imagen de fondo (Placeholder corporativo por ahora) */}
