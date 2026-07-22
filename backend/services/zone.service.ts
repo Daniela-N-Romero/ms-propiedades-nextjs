@@ -1,5 +1,4 @@
-// src/backend/services/property.service.ts
-import { prisma } from '../db';
+import { prisma } from '@/backend/db';
 import type { Zona } from '@prisma-client'
 import { TipoInmueble, TipoOperacionEnum } from '@prisma-client';
 

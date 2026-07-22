@@ -1,7 +1,8 @@
+'use client';
 import Link from 'next/link';
 import Image from 'next/image'
-import { links } from '@/features/navigation/components/navigation-links'
 import { styles } from './header.styles';
+import { useContactLinks } from '@/providers/config-provider';
 
 interface HeaderViewProps {
     isMenuOpen: boolean;
@@ -9,6 +10,8 @@ interface HeaderViewProps {
 }
 
 export default function HeaderView({ isMenuOpen, toggleMenu }: HeaderViewProps) {
+    const links = useContactLinks();
+
     return (
         <header className={styles.header}>
             <div className={styles.container}>

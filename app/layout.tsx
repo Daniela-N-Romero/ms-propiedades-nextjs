@@ -1,9 +1,12 @@
 import { GoogleAnalytics } from '@next/third-parties/google';
+import { getContactLinks } from '@/backend/services/config.service';
+import { ConfigProvider } from '@/providers/config-provider';
 import MetaPixel from '@/components/analytics/meta-pixel';
 import type { Metadata } from "next";
 import { Header, Footer } from "@/features/navigation";
 import { Montserrat, League_Spartan } from "next/font/google";
 import "./globals.css";
+
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -20,12 +23,13 @@ export const metadata: Metadata = {
   description: "Inmobliaria especializada en inmuebles industriales y comerciales",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
+  const links = await getContactLinks();
 
   return (
     <html
@@ -33,12 +37,14 @@ export default function RootLayout({
       className={`${montserrat.variable} ${leagueSpartan.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <ConfigProvider links={links}>
             <Header />
             <main className="grow bg-slate-50">{children}</main>
             <Footer />
             {/* Analytics sin impactar la velocidad de carga de la página */}
             <MetaPixel />
             {gaId && <GoogleAnalytics gaId={gaId} />}
+        </ConfigProvider>
       </body>
     </html>
   );

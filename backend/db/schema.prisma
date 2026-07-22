@@ -187,11 +187,29 @@ model Lead {
   email       String         @db.VarChar(150)
   telefono    String?        @db.VarChar(50)
   mensaje     String?        @db.Text
+  origen      String    @default("ficha_propiedad") @db.VarChar(50) // 'ficha_propiedad', 'contacto_general', 'tasacion'
   estado      LeadStatusEnum @default(nuevo)
-  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamp
 
   propiedadId Int?           @map("propiedad_id")
   propiedad   Propiedad?     @relation(fields: [propiedadId], references: [id], onDelete: SetNull)
 
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([email])
+  @@index([propiedadId])
+  
   @@map("leads")
+}
+
+model ConfiguracionEmpresa {
+  id          Int      @id @default(1) // Siempre habrá 1 solo registro (ID: 1)
+  email       String   @db.VarChar(150)
+  telefono    String   @db.VarChar(50)
+  whatsapp    String   @db.VarChar(50)
+  direccion   String   @db.VarChar(255)
+  instagram   String   @db.VarChar(255)
+  facebook    String   @db.VarChar(255)
+  linkedin    String   @db.VarChar(255)
+  updatedAt   DateTime @updatedAt
 }

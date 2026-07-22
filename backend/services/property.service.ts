@@ -1,5 +1,5 @@
 // src/backend/services/property.service.ts
-import { prisma } from '../db';
+import { prisma } from '@/backend/db';
 import { Propiedad, TipoOperacionEnum, MonedaEnum } from '@prisma-client'
 
 export async function getDestacadas() {

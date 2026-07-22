@@ -66,6 +66,8 @@ export default async function PropertyDetailPage({ params }: PageProps) {
               moneda={propiedad.moneda}
               pdfUrl={propiedad.pdfUrl}
               agente={propiedad.agente}
+              slug={propiedad.slug}
+              propiedadId={propiedad.id}
             />
           </div>
 

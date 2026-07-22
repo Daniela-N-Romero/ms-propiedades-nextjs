@@ -1,8 +1,10 @@
 import Link from 'next/link';
-import { links } from '../navigation-links'
+import { getContactLinks } from '@/backend/services/config.service';
 import { styles } from './footer.styles';
 
-export default function footer() {
+export default async function footer() {
+    const links = await getContactLinks();
+
     return (
         <footer className={styles.footer}>
             {/* SECCIÓN PRINCIPAL DE LINKS */}
@@ -26,7 +28,7 @@ export default function footer() {
                     <span className={styles.colTitle}>Contacto</span>
                     <ul className={styles.list}>
                         <li><a href={links.whatsapp} target="_blank" className="text-green-500 font-medium hover:underline">WhatsApp</a></li>
-                        <li><a href={links.telefono} className={styles.link}>Llamar</a></li>
+                        <li><a href={`tel:+${links.telefono}`} className={styles.link}>Llamar</a></li>
                     </ul>
                 </div>
 

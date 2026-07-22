@@ -4,11 +4,13 @@ import { useState } from 'react';
 import { styles } from './contacto-card.styles';
 import { formatPrecio } from '@/lib/utils';
 import type { Agente } from '@prisma-client';
-import { links } from '@/features/navigation/components/navigation-links';
+import { useContactLinks } from '@/providers/config-provider';
+import { ContactLinks } from '@/types/contact-links';
 
 //TO DO: separar logica de vista
 
 interface ContactoCardProps {
+    propiedadId?: number;
     codigo: string;
     slug: string;
     titulo: string;
@@ -19,6 +21,7 @@ interface ContactoCardProps {
 }
 
 export default function ContactoCard({
+    propiedadId,
     codigo,
     slug,
     titulo,
@@ -36,14 +39,13 @@ export default function ContactoCard({
 
     // Estado para guardar la URL absoluta de la propiedad
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '');
+    const links = useContactLinks() as ContactLinks;
     
-    const propertyUrl = `${baseUrl}/propiedades/${slug}`;
-
     // Armamos el enlace de WhatsApp con el mensaje codificado para la URL
-    const whatsappNumber = '5491136444421';
+    const whatsappNumber = agente.telefono || links.telefono;
     const textoMensaje = `Hola ${agente.nombre}! Quisiera consultar por la propiedad REF: ${codigo} (${titulo}).
 Valor: ${formatPrecio(precio, moneda)}.
-https://${window.location.host}/propiedades/${codigo}`;
+https://${window.location.host}/propiedades/${slug}`;
 
     const whatsappText = encodeURIComponent(textoMensaje);
 
@@ -64,15 +66,31 @@ https://${window.location.host}/propiedades/${codigo}`;
         setIsSubmitting(true);
 
         try {
-            // TO DO: AQUÍ SE CONECTARÁ CON LA API DE LEADS EN EL SIGUIENTE PASO
-            await new Promise((res) => setTimeout(res, 1000)); // Simulación de envío
-            setSubmitted(true);
+            const res = await fetch('/api/leads', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nombre,
+                    email,
+                    telefono,
+                    mensaje,
+                    propiedadId,
+                    propiedadCodigo: codigo,
+                    propiedadTitulo: titulo,
+                }),
+            });
 
-            if (typeof window !== 'undefined' && (window as any).fbq) {
-                (window as any).fbq('track', 'Lead', { property_code: codigo });
+            if (res.ok) {
+                setSubmitted(true);
+                if (typeof window !== 'undefined' && (window as any).fbq) {
+                    (window as any).fbq('track', 'Lead', { property_code: codigo });
+                }
+            } else {
+                alert('Ocurrió un error al enviar la consulta. Intente nuevamente.');
             }
         } catch (err) {
             console.error(err);
+            alert('Error de conexión.');
         } finally {
             setIsSubmitting(false);
         }
