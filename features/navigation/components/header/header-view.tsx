@@ -28,7 +28,7 @@ export default function HeaderView({ isMenuOpen, toggleMenu }: HeaderViewProps) 
                 {/* NAVEGACIÓN DESKTOP */}
                 <nav className={styles.navDesktop}>
                     <Link href="/" className={styles.link}>Inicio</Link>
-                    <Link href="/propiedades" className={styles.link}>Buscador</Link>
+                    <Link href="/propiedades/industrial" className={styles.link}>Buscador</Link>
                     <Link href="/tasaciones" className={styles.link}>Tasaciones</Link>
                     <Link href="/contacto" className={styles.link}>Contacto</Link>
 

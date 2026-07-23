@@ -2,7 +2,9 @@ import { notFound } from 'next/navigation';
 import { getPropiedadBySlug } from '@/backend/services/property.service';
 import { buildPropertyMetadata } from '@/backend/services/seo.service';
 import { PropertyFullData } from '@/types/propiedad';
-import { GaleriaHero, FichaTecnica, ContactoCard } from '@/features/propiedades/index';
+import { GaleriaHero, FichaTecnica } from '@/features/propiedades/index';
+import { ContactoCard } from '@/features/contacto';
+import ContactoSection from '@/features/propiedades/components/detalle/contacto-section';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -59,7 +61,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
 
           {/* COLUMNA DERECHA (Contacto Sticky & Agente) */}
           <div className="lg:col-span-1">
-            <ContactoCard 
+            <ContactoSection
               codigo={propiedad.codigo}
               titulo={propiedad.titulo}
               precio={propiedad.precio}

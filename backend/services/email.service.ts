@@ -12,12 +12,12 @@ interface NotificationLeadParams {
     mensaje: string;
     propiedadCodigo?: string;
     propiedadTitulo?: string;
-    agenteEmail?: string;
+    toEmail?: string;
 }
 
 export async function sendLeadNotificationEmail(data: NotificationLeadParams) {
     // Email de destino (el del agente o el mail corporativo principal)
-    const toEmail = data.agenteEmail || process.env.ADMIN_EMAIL;
+    const toEmail = data.toEmail || process.env.ADMIN_EMAIL;
 
     const htmlContent = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">

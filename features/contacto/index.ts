@@ -1,0 +1,2 @@
+export { default as ContactoFormGeneral } from './components/form-homepage/contacto-form'
+export { default as ContactoCard } from '../propiedades/components/detalle/propiedad-contacto-form/contacto-card'

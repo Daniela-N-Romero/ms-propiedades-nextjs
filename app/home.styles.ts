@@ -11,8 +11,4 @@ export const styles = {
   // Banner de captación
   ctaSection: "w-full bg-brand-dark py-16 px-4 border-y-4 border-brand-green",
   ctaBtn: "inline-block bg-brand-orange hover:bg-amber-500 text-brand-dark font-spartan font-bold uppercase tracking-wider px-8 py-3.5 rounded-xl shadow-lg transition-all transform hover:-translate-y-0.5",
-  
-  // Formulario de contacto
-  input: "w-full rounded-lg border border-slate-300 bg-slate-50 p-2.5 text-sm text-slate-900 focus:outline-none focus:border-brand-dark focus:bg-white transition-colors",
-  submitFormBtn: "w-full bg-brand-dark hover:bg-slate-800 text-white font-spartan font-bold uppercase tracking-wider py-3 rounded-lg text-sm transition-colors shadow-md"
 };

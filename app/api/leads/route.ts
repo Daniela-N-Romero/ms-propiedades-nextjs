@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/backend/db';
 import { sendLeadNotificationEmail } from '@/backend/services/email.service';
+import { getContactLinks } from '@/backend/services/config.service';
 
 export async function POST(request: Request) {
   try {
@@ -8,9 +9,9 @@ export async function POST(request: Request) {
     const { nombre, apellido, email, telefono, mensaje, propiedadId, propiedadCodigo, propiedadTitulo } = body;
 
     // 1. Validaciones básicas
-    if (!nombre || !email || !telefono) {
+    if (!nombre || !apellido || !email || !telefono) {
       return NextResponse.json(
-        { error: 'Los campos Nombre, Email y Teléfono son obligatorios.' },
+        { error: 'Los campos Nombre, Apellido, Email y Teléfono son obligatorios.' },
         { status: 400 }
       );
     }
@@ -29,15 +30,18 @@ export async function POST(request: Request) {
     });
 
     // 3. Buscar si la propiedad tiene un Agente asignado para enviarle el mail a él
-    let agenteEmail = process.env.ADMIN_EMAIL;
+    let toEmail;
     if (propiedadId) {
       const prop = await prisma.propiedad.findUnique({
         where: { id: Number(propiedadId) },
         select: { agente: { select: { email: true } } },
       });
       if (prop?.agente?.email) {
-        agenteEmail = prop.agente.email;
+        toEmail = prop.agente.email;
       }
+    }else{
+      const links = await getContactLinks();
+      toEmail = links.email;
     }
 
     // 4. Disparar correo de notificación (No frena la respuesta si falla el correo)
@@ -49,7 +53,7 @@ export async function POST(request: Request) {
       mensaje: mensaje || '',
       propiedadCodigo,
       propiedadTitulo,
-      agenteEmail,
+      toEmail,
     }).catch(err => console.error('Error background email:', err));
 
     return NextResponse.json(
