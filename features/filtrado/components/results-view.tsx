@@ -6,6 +6,7 @@ import { styles } from './resultados.styles';
 import type { Zona, Propiedad, TipoInmueble } from '@prisma-client';
 import { useState } from 'react';
 import { PropertyWithZona } from '@/types/propiedad';
+import Link from 'next/link';
 
 interface ResultsViewProps {
   propiedades: PropertyWithZona[];
@@ -45,9 +46,9 @@ export default function ResultsView({ propiedades, localidades, subtipos }: Resu
           )}
         </button>
         
-        <button type="button" className={styles.mobileBtn}>
-          <span>🗺️ Ver Mapa</span>
-        </button>
+        <Link href="/propiedades/mapa" className={styles.mobileBtn}>
+          🗺️ Ver Mapa
+        </Link>
       </div>
 
       {/* MODAL FLOTANTE DE FILTROS EN MOBILE */}

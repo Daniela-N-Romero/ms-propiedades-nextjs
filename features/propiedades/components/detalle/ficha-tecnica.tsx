@@ -107,7 +107,7 @@ export default function FichaTecnica({
 
       {/* MEMORIA DESCRIPTIVA */}
       {descripcion && (
-        <div>
+        <div className="mb-6">
           <h3 className={styles.sectionTitle}>Descripción General</h3>
           <div className={styles.descriptionText}>
             {descripcion}

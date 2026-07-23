@@ -1,5 +1,6 @@
 // src/backend/services/property.service.ts
 import { prisma } from '@/backend/db';
+import { PropertyFullData } from '@/types/propiedad';
 import { Propiedad, TipoOperacionEnum, MonedaEnum } from '@prisma-client'
 
 export async function getDestacadas() {
@@ -10,6 +11,27 @@ export async function getDestacadas() {
   });
   
   return destacadas.map(prop => sanearPropiedadParaServer(prop));  
+}
+
+export async function getPropiedades(filtros?: {
+  operacion?: string;
+  tipoInmueble?: string;
+  zonaId?: number;
+}) {
+  const propiedades = await prisma.propiedad.findMany({
+    where: { 
+      isPublished: true,
+      ...(filtros?.operacion && { operacion: filtros.operacion }),
+      ...(filtros?.zonaId && { zonaId: filtros.zonaId }),
+    },
+    include: { 
+      zona: true, 
+      tipoInmueble: true, 
+      imagenes: true 
+    },
+  });
+
+  return propiedades.map((prop) => sanearPropiedadParaServer(prop) as PropertyFullData);
 }
 
 // TO DO: Futuro CRUD PRINCIPAL del panel de administración:

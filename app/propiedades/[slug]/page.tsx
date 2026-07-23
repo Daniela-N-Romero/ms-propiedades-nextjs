@@ -5,6 +5,7 @@ import { PropertyFullData } from '@/types/propiedad';
 import { GaleriaHero, FichaTecnica } from '@/features/propiedades/index';
 import { ContactoCard } from '@/features/contacto';
 import ContactoSection from '@/features/propiedades/components/detalle/contacto-section';
+import MapaDetallePropiedad from '@/features/mapa/components/mapa-detalle-propiedad';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -57,6 +58,26 @@ export default async function PropertyDetailPage({ params }: PageProps) {
               caracteristicas={propiedad.caracteristicas as any}
               subtipoNombre={propiedad.tipoInmueble?.nombre}
             />
+
+            {propiedad.latitud && propiedad.longitud && (
+              <MapaDetallePropiedad
+                propiedad={{
+                  id: propiedad.id,
+                  codigo: propiedad.codigo,
+                  slug: propiedad.slug,
+                  titulo: propiedad.titulo,
+                  precio: propiedad.precio,
+                  superficieCubierta: propiedad.superficieCubierta,
+                  superficieTotal: propiedad.superficieTotal,
+                  moneda: propiedad.moneda,
+                  latitud: Number(propiedad.latitud),
+                  longitud: Number(propiedad.longitud),
+                  zonaNombre: propiedad.zona.nombre,
+                  direccionTexto: propiedad.direccionPersonalizada,
+                  imagenPortada: propiedad.imagenes?.[0]?.url,
+                }}
+              />
+            )}
           </div>
 
           {/* COLUMNA DERECHA (Contacto Sticky & Agente) */}

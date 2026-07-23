@@ -68,10 +68,14 @@ async function main() {
       isDestacada: true,
       zonaId: hudson.id,
       slug: 'lote-premium-parque-industrial-hudson-3088',
-      tipoInmuebleId: loteIndustrial.id, 
+      tipoInmuebleId: loteIndustrial.id,
       categoria: TipoOperacionEnum.alquiler,
       precio: 5000,
-      agenteId: agenteAdmin.id
+      agenteId: agenteAdmin.id,
+      latitud: -34.80115654799057,
+      longitud: -58.17610372238949,
+      superficieCubierta: 270,
+      superficieTotal: 2000
     },
     {
       titulo: 'Nave Logística Triple A en Polo Industrial Canning',
@@ -84,7 +88,11 @@ async function main() {
       tipoInmuebleId: naveIndustrial.id,
       categoria: TipoOperacionEnum.alquiler,
       precio: 12000,
-      agenteId: agenteAdmin.id
+      agenteId: agenteAdmin.id,
+      latitud: -34.789551185829175,
+      longitud: -58.1580772850284,
+      superficieCubierta: 250,
+      superficieTotal: 300
     },
     {
       titulo: 'Depósito Industrial de Estructura Metálica en Parque Patricios',
@@ -97,7 +105,11 @@ async function main() {
       tipoInmuebleId: galpon.id,
       categoria: TipoOperacionEnum.venta,
       precio: 450000,
-      agenteId: agenteAdmin.id
+      agenteId: agenteAdmin.id,
+      latitud: -34.82094002593321,
+      longitud: -58.188587518526106,
+      superficieCubierta: 100,
+      superficieTotal: 250
     }
   ];
 

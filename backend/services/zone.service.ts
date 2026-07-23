@@ -3,9 +3,10 @@ import type { Zona } from '@prisma-client'
 import { TipoInmueble, TipoOperacionEnum } from '@prisma-client';
 
 //GET ZONAS Y LOCALIDADES
-export async function getZonas(): Promise<Zona[]> {
+export async function getZonas() {
   return await prisma.zona.findMany({
-    orderBy: { nombre: 'asc' }
+    include: { padre: true },
+    orderBy: { nombre: 'asc' },
   });
 }
 
@@ -57,5 +58,12 @@ export async function getLocalidadesActivasPorTipo(mercadoSlug: string, categori
       { padre: { nombre: 'asc' } },
       { nombre: 'asc' }
     ]
+  });
+}
+
+
+export async function getTiposInmueble() {
+  return await prisma.tipoInmueble.findMany({
+    orderBy: { nombre: 'asc' },
   });
 }
