@@ -1,12 +1,12 @@
 // backend/services/email.service.ts
 import { Resend } from 'resend';
-import { links } from '@/config/contact-info'
 
 // Inicializamos Resend con la API Key guardada en .env
 const resend = new Resend(process.env.RESEND_API_KEY || 're_mock_key');
 
 interface NotificationLeadParams {
     leadNombre: string;
+    leadApellido: string;
     leadEmail: string;
     leadTelefono: string;
     mensaje: string;
@@ -59,7 +59,7 @@ export async function sendLeadNotificationEmail(data: NotificationLeadParams) {
     try {
         // Si no hay API KEY configurada en dev, solo logueamos en consola
         if (!process.env.RESEND_API_KEY) {
-            console.log('📧 [DEV MOCK EMAIL SENT]:', { to: toEmail, subject: `Nuevo Lead: ${data.leadNombre}` });
+            console.log('📧 [DEV MOCK EMAIL SENT]:', { to: toEmail, subject: `Lead: ${data.leadNombre} ${data.leadApellido}`, propiedad: data.propiedadCodigo  });
             return { success: true, mock: true };
         }
 

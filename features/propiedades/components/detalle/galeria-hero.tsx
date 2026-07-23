@@ -28,7 +28,21 @@ export default function GaleriaHero({
   // Si no hay fotos cargadas en el array, usamos un placeholder elegante
   const fotosDisplay = imagenes.length > 0 
     ? imagenes 
-    : [{ id: 0, url: '/images/placeholder-property.jpg', altText: titulo, orden: 0 }];
+    : [
+      { id: 0, url: '/images/fotos_pitec/1.webp', altText: titulo, orden: 0 },
+      { id: 0, url: '/images/fotos_pitec/2.webp', altText: titulo, orden: 0 },
+      { id: 0, url: '/images/fotos_pitec/3.webp', altText: titulo, orden: 0 },
+      { id: 0, url: '/images/fotos_pitec/4.webp', altText: titulo, orden: 0 },
+      { id: 0, url: '/images/fotos_pitec/5.webp', altText: titulo, orden: 0 },
+      { id: 0, url: '/images/fotos_pitec/6.webp', altText: titulo, orden: 0 },
+      { id: 0, url: '/images/fotos_pitec/7.webp', altText: titulo, orden: 0 },
+      { id: 0, url: '/images/fotos_pitec/8.webp', altText: titulo, orden: 0 },
+      { id: 0, url: '/images/fotos_pitec/9.webp', altText: titulo, orden: 0 },
+      { id: 0, url: '/images/fotos_pitec/10.webp', altText: titulo, orden: 0 },
+      { id: 0, url: '/images/fotos_pitec/11.webp', altText: titulo, orden: 0 },
+      { id: 0, url: '/images/fotos_pitec/12.webp', altText: titulo, orden: 0 },
+      { id: 0, url: '/images/fotos_pitec/13.webp', altText: titulo, orden: 0 }
+    ];
 
   const openLightboxAt = (index: number) => {
     setCurrentIndex(index);
@@ -93,7 +107,7 @@ export default function GaleriaHero({
             fill
             priority
             sizes="(max-width: 768px) 100vw, 50vw"
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            className="object-cover hover:scale-105 transition-transform duration-500"
           />
         </div>
 

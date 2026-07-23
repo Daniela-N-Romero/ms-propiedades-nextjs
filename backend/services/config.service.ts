@@ -8,7 +8,7 @@ export async function getContactLinks() {
     });
 
     if (!config) return defaultLinks;
-
+    console.log(`>>>>>>>>>>>config existe?: ${config}<<<<<<<<<<<<<<<<<`)
     return {
       instagram: config.instagram || defaultLinks.instagram,
       facebook: config.facebook || defaultLinks.facebook,
@@ -18,6 +18,7 @@ export async function getContactLinks() {
       direccion: config.direccion || defaultLinks.direccion,
       email: config.email || defaultLinks.email,
     };
+    
   } catch (error) {
     // Si la DB aún no tiene la tabla creada, usamos los defaults sin romper el sitio
     return defaultLinks;

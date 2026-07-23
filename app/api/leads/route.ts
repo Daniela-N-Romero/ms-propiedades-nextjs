@@ -5,7 +5,7 @@ import { sendLeadNotificationEmail } from '@/backend/services/email.service';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { nombre, email, telefono, mensaje, propiedadId, propiedadCodigo, propiedadTitulo } = body;
+    const { nombre, apellido, email, telefono, mensaje, propiedadId, propiedadCodigo, propiedadTitulo } = body;
 
     // 1. Validaciones básicas
     if (!nombre || !email || !telefono) {
@@ -19,6 +19,7 @@ export async function POST(request: Request) {
     const newLead = await prisma.lead.create({
       data: {
         nombre,
+        apellido,
         email,
         telefono,
         mensaje: mensaje || '',
@@ -42,6 +43,7 @@ export async function POST(request: Request) {
     // 4. Disparar correo de notificación (No frena la respuesta si falla el correo)
     sendLeadNotificationEmail({
       leadNombre: nombre,
+      leadApellido: apellido,
       leadEmail: email,
       leadTelefono: telefono,
       mensaje: mensaje || '',

@@ -31,6 +31,7 @@ export default function ContactoCard({
     agente
 }: ContactoCardProps) {
     const [nombre, setNombre] = useState('');
+    const [apellido, setApellido] = useState('');
     const [email, setEmail] = useState('');
     const [telefono, setTelefono] = useState('');
     const [mensaje, setMensaje] = useState(`Hola! Quisiera recibir información sobre la propiedad Ref: ${codigo}.`);
@@ -71,6 +72,7 @@ https://${window.location.host}/propiedades/${slug}`;
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     nombre,
+                    apellido,
                     email,
                     telefono,
                     mensaje,
@@ -148,15 +150,23 @@ https://${window.location.host}/propiedades/${slug}`;
                         <form onSubmit={handleSubmitForm} className="space-y-3">
                             <input
                                 type="text"
-                                placeholder="Nombre y Apellido *"
+                                placeholder="Nombre *"
                                 required
                                 className={styles.input}
                                 value={nombre}
                                 onChange={(e) => setNombre(e.target.value)}
                             />
                             <input
+                                type="text"
+                                placeholder="Apellido *"
+                                required
+                                className={styles.input}
+                                value={apellido}
+                                onChange={(e) => setApellido(e.target.value)}
+                            />
+                            <input
                                 type="email"
-                                placeholder="Email corporativo *"
+                                placeholder="Email *"
                                 required
                                 className={styles.input}
                                 value={email}

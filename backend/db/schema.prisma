@@ -202,7 +202,7 @@ model Lead {
   @@map("leads")
 }
 
-model ConfiguracionEmpresa {
+model configuracionEmpresa {
   id          Int      @id @default(1) // Siempre habrá 1 solo registro (ID: 1)
   email       String   @db.VarChar(150)
   telefono    String   @db.VarChar(50)

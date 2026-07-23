@@ -6,8 +6,8 @@ export const styles = {
   ubicacion: "text-sm text-slate-500 flex items-center gap-1 font-medium",
   
   // Grid de Galería
-  galleryGrid: "grid grid-cols-1 md:grid-cols-4 gap-2 rounded-2xl overflow-hidden relative cursor-pointer group max-h-[480px]",
-  mainImageContainer: "md:col-span-2 relative aspect-[4/3] md:aspect-auto h-full min-h-[300px]",
+  galleryGrid: "grid grid-cols-1 md:grid-cols-4 gap-2 rounded-2xl overflow-hidden relative cursor-pointer  max-h-[480px]",
+  mainImageContainer: "md:col-span-2 relative aspect-[4/3] md:aspect-auto h-full min-h-[300px] overflow-hidden",
   secondaryGrid: "hidden md:grid grid-cols-2 col-span-2 gap-2 h-full",
   smallImageContainer: "relative aspect-[4/3] h-full overflow-hidden bg-slate-100",
   
