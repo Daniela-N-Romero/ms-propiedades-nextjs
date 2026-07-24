@@ -4,13 +4,13 @@ import { PropertyFullData } from '@/types/propiedad';
 import { Propiedad, TipoOperacionEnum, MonedaEnum } from '@prisma-client'
 
 export async function getDestacadas() {
-  const destacadas =  await prisma.propiedad.findMany({
+  const destacadas = await prisma.propiedad.findMany({
     where: { isPublished: true, isDestacada: true },
     include: { zona: true, tipoInmueble: true },
     orderBy: { createdAt: 'desc' }
   });
-  
-  return destacadas.map(prop => sanearPropiedadParaServer(prop));  
+
+  return destacadas.map(prop => sanearPropiedadParaServer(prop));
 }
 
 export async function getPropiedades(filtros?: {
@@ -19,15 +19,15 @@ export async function getPropiedades(filtros?: {
   zonaId?: number;
 }) {
   const propiedades = await prisma.propiedad.findMany({
-    where: { 
+    where: {
       isPublished: true,
       ...(filtros?.operacion && { operacion: filtros.operacion }),
       ...(filtros?.zonaId && { zonaId: filtros.zonaId }),
     },
-    include: { 
-      zona: true, 
-      tipoInmueble: true, 
-      imagenes: true 
+    include: {
+      zona: true,
+      tipoInmueble: true,
+      imagenes: true
     },
   });
 
@@ -57,7 +57,7 @@ export async function getSubtiposPorTipoMercado(mercadoSlug: string) {
 //trae la propiedad indicada segun el slug
 export async function getPropiedadBySlug(slug: string) {
   const propiedad = await prisma.propiedad.findUnique({
-    where: {  slug, isPublished: true },
+    where: { slug, isPublished: true },
     include: {
       zona: { include: { padre: true } },
       tipoInmueble: { include: { padre: true } },
@@ -67,7 +67,7 @@ export async function getPropiedadBySlug(slug: string) {
   });
   if (!propiedad) return null;
 
-  return sanearPropiedadParaServer(propiedad);  
+  return sanearPropiedadParaServer(propiedad);
 }
 
 //BUSQUEDA POR FILTROS
@@ -85,14 +85,14 @@ interface SearchFilters {
   supCubMax?: number;
   localidades?: number[];
   ordenar?: string;
-}  
+}
 
 export async function searchPropiedades(filters: SearchFilters) {
   const queryWhere: any = { isPublished: true };
 
   if (filters.categoria) {
     queryWhere.categoria = filters.categoria as TipoOperacionEnum;
-  }  
+  }
 
   if (filters.subtiposSlugs && filters.subtiposSlugs.length > 0) {
     // Si filtran un subtipo específico (ej: "nave-industrial")
@@ -100,35 +100,40 @@ export async function searchPropiedades(filters: SearchFilters) {
   } else if (filters.mercadoSlug) {
     // Si filtran el mercado completo (ej: "industrial"), buscamos donde el PADRE sea "industrial"
     queryWhere.tipoInmueble = {
-      padre: { slug: filters.mercadoSlug }
-    };  
-  }  
+      OR: [
+      { padre: { slug: { equals: filters.mercadoSlug, mode: 'insensitive' } } },
+      { slug: { equals: filters.mercadoSlug, mode: 'insensitive' } },
+    ],
+    };
+  }
 
 
   // Filtrado de Moneda Obligatorio (Evita cruzar USD con ARS)
-  queryWhere.moneda = (filters.moneda as MonedaEnum) || MonedaEnum.USD;
+  if (filters.moneda) {
+    queryWhere.moneda = filters.moneda as MonedaEnum;
+  }
 
   if (filters.localidades && filters.localidades.length > 0) {
     queryWhere.zonaId = { in: filters.localidades };
-  }  
+  }
 
   if (filters.precioMin || filters.precioMax) {
     queryWhere.precio = {};
     if (filters.precioMin) queryWhere.precio.gte = filters.precioMin;
     if (filters.precioMax) queryWhere.precio.lte = filters.precioMax;
-  }  
+  }
 
   if (filters.supMin || filters.supMax) {
     queryWhere.superficieTotal = {};
     if (filters.supMin) queryWhere.superficieTotal.gte = filters.supMin;
     if (filters.supMax) queryWhere.superficieTotal.lte = filters.supMax;
-  }  
+  }
 
   if (filters.supCubMin || filters.supCubMax) {
     queryWhere.superficieCubierta = {};
     if (filters.supCubMin) queryWhere.superficieCubierta.gte = filters.supCubMin;
     if (filters.supCubMax) queryWhere.superficieCubierta.lte = filters.supCubMax;
-  }  
+  }
 
   let queryOrderBy: any = { createdAt: 'desc' };
   if (filters.ordenar === 'precio_asc') queryOrderBy = { precio: 'asc' };
@@ -141,20 +146,20 @@ export async function searchPropiedades(filters: SearchFilters) {
     include: {
       zona: true,
       tipoInmueble: { include: { padre: true } }
-    },  
+    },
     orderBy: queryOrderBy
-  });  
+  });
 
-  return resultados.map(prop => sanearPropiedadParaServer(prop));  
-}  
+  return resultados.map(prop => sanearPropiedadParaServer(prop));
+}
 
 const sanearPropiedadParaServer = (propiedad: Propiedad) => {
- return  { ...propiedad,
+  return {
+    ...propiedad,
     precio: Number(propiedad.precio),
     superficieTotal: propiedad.superficieTotal ? Number(propiedad.superficieTotal) : null,
     superficieCubierta: propiedad.superficieCubierta ? Number(propiedad.superficieCubierta) : null,
     latitud: propiedad.latitud ? Number(propiedad.latitud) : null,
     longitud: propiedad.longitud ? Number(propiedad.longitud) : null
- }
+  }
 }
-  

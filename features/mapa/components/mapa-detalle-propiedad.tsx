@@ -19,6 +19,7 @@ interface MapaDetallePropiedadProps {
         direccionTexto?: string;
         zonaNombre: string;
         imagenPortada?: string;
+        tipoInmueble: string;
     };
 }
 
@@ -45,41 +46,47 @@ export default function MapaDetallePropiedad({ propiedad }: MapaDetallePropiedad
                 </div>
 
                 {/* BOTONES DE ACCIÓN */}
-                    {/* Botón para explorar el mapa completo con todas las propiedades */}
-                    <Link
-                        href="/propiedades/mapa"
-                        className="px-3.5 py-2 bg-brand-dark hover:bg-slate-800 text-white text-xs font-spartan font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center gap-1.5"
-                    >
-                        <span>🗺️ Ver Mapa General</span>
-                    </Link>
+                {/* Botón para explorar el mapa completo con todas las propiedades */}
+                <Link
+                    href={`/propiedades/mapa?lat=${propiedad.latitud}&lng=${propiedad.longitud}&zoom=15&mercado=${propiedad.tipoInmueble}`}
+                    className="px-3.5 py-2 bg-brand-dark hover:bg-slate-800 text-white text-xs font-spartan font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center gap-1.5"
+                >
+                    <span>🗺️ Ver Mapa General</span>
+                </Link>
 
             </div>
 
             {/* MAPA INTERACTIVO CON CENTRO EN ESTA PROPIEDAD */}
-            <div className="h-80 w-full rounded-xl overflow-hidden border border-slate-100">
-                <MapaPropiedades
-                    propiedades={[propiedad]}
-                    centroInicial={[propiedad.latitud, propiedad.longitud]}
-                    zoomInicial={14}
-                />
-            </div>
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={handleCopiarUbicacion}
-                        className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors"
-                    >
-                        {copiado ? '✓ Dirección Copiada' : '📋 Copiar Dirección'}
-                    </button>
-
-                    <a
-                        href={googleMapsUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors"
-                    >
-                        ↗ Abrir en Google Maps
-                    </a>
+            {propiedad.latitud && propiedad.longitud ? (
+                <div className="h-80 w-full rounded-xl overflow-hidden border border-slate-100 relative">
+                    <MapaPropiedades
+                        propiedades={[propiedad]}
+                        centroInicial={[propiedad.latitud, propiedad.longitud]}
+                        zoomInicial={14}
+                    />
                 </div>
+            ) : (
+                <div className="h-80 w-full rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 text-xs">
+                    Ubicación en mapa no especificada
+                </div>
+            )}
+            <div className="flex items-center gap-2">
+                <button
+                    onClick={handleCopiarUbicacion}
+                    className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors"
+                >
+                    {copiado ? '✓ Dirección Copiada' : '📋 Copiar Dirección'}
+                </button>
+
+                <a
+                    href={googleMapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors"
+                >
+                    ↗ Abrir en Google Maps
+                </a>
+            </div>
         </div>
     );
 }

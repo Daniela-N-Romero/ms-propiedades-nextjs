@@ -3,7 +3,6 @@ import { getPropiedadBySlug } from '@/backend/services/property.service';
 import { buildPropertyMetadata } from '@/backend/services/seo.service';
 import { PropertyFullData } from '@/types/propiedad';
 import { GaleriaHero, FichaTecnica } from '@/features/propiedades/index';
-import { ContactoCard } from '@/features/contacto';
 import ContactoSection from '@/features/propiedades/components/detalle/contacto-section';
 import MapaDetallePropiedad from '@/features/mapa/components/mapa-detalle-propiedad';
 
@@ -75,6 +74,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
                   zonaNombre: propiedad.zona.nombre,
                   direccionTexto: propiedad.direccionPersonalizada,
                   imagenPortada: propiedad.imagenes?.[0]?.url,
+                  tipoInmueble: propiedad.tipoInmueble.padre.slug
                 }}
               />
             )}

@@ -6,20 +6,38 @@ import { PanelFiltros, usePropertyFilters } from '@/features/filtrado';
 import MapaPropiedades from './mapa-propiedades';
 import type { Zona, TipoInmueble } from '@prisma-client';
 import type { PropiedadMapaItem } from './mapa-propiedades-view';
+import { useSearchParams } from 'next/navigation';
 
 interface MapaResultsViewProps {
   propiedades: PropiedadMapaItem[];
   localidades: Zona[];
   subtipos: TipoInmueble[];
+  centroInicial?: [number, number];
+  zoomInicial?: number;
 }
 
 export default function MapaResultsView({
   propiedades,
   localidades,
   subtipos,
+  centroInicial,
+  zoomInicial,
 }: MapaResultsViewProps) {
   const { filters } = usePropertyFilters();
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+
+  const searchParams = useSearchParams();
+  const mercado = searchParams.get('mercado');
+
+  // Limpiamos los params de latitud/longitud/zoom para que la lista no se ensucie con coordenadas
+  const listParams = new URLSearchParams(searchParams.toString());
+  listParams.delete('lat');
+  listParams.delete('lng');
+  listParams.delete('zoom');
+
+  const queryStr = listParams.toString();
+  
+  const listaUrl = `/propiedades/${mercado}${queryStr ? `?${queryStr}` : ''}`;
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
@@ -36,7 +54,7 @@ export default function MapaResultsView({
 
         {/* Botón para cambiar a Vista de Lista / Grilla */}
         <Link
-          href="/propiedades/industrial"
+          href={listaUrl}
           className="hidden md:inline-flex text-xs font-spartan font-bold uppercase tracking-wider text-brand-dark px-4 py-2 bg-white border border-slate-300 rounded-xl shadow-sm hover:bg-slate-50 transition-all items-center gap-1.5"
         >
           ☰ Ver en Lista
@@ -59,7 +77,7 @@ export default function MapaResultsView({
         </button>
 
         <Link
-          href="/propiedades/industrial"
+          href={listaUrl}
           className="flex-1 py-2.5 bg-brand-dark text-white rounded-xl text-xs font-spartan font-bold uppercase flex items-center justify-center gap-1 shadow-sm"
         >
           ☰ Ver Lista
@@ -108,7 +126,7 @@ export default function MapaResultsView({
       {/* CUERPO PRINCIPAL DESKTOP (Grid 1/4 Filtros - 3/4 Mapa) */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
         {/* PANEL LATERAL DE FILTROS DESKTOP */}
-        <aside className="hidden md:block bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <aside className="hidden md:block bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4 max-h-[calc(100vh-140px)] overflow-y-auto scrollbar scrollbar-thin scrollbar-thumb-brand-dark/75 scrollbar-track-gray-100">
           <h3 className="font-spartan font-bold text-sm text-brand-dark uppercase tracking-wider border-b border-slate-100 pb-2">
             Filtrar Ubicaciones
           </h3>
@@ -117,7 +135,11 @@ export default function MapaResultsView({
 
         {/* SECCIÓN PRINCIPAL DEL MAPA */}
         <section className="md:col-span-3">
-          <MapaPropiedades propiedades={propiedades} />
+          <MapaPropiedades
+          propiedades={propiedades}
+          centroInicial={centroInicial} 
+          zoomInicial={zoomInicial}
+          alturaClass="h-[calc(100vh-140px)] min-h-[500px]"/>
         </section>
       </div>
     </main>

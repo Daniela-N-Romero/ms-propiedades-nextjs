@@ -46,8 +46,9 @@ export function useHomeSearch(zonasDB: Zona[]) {
       // Si eligió una Zona Padre pero no especificó localidad, mandamos las hijas
       localidadesFiltradas.forEach(loc => params.append('localidad', String(loc.id)));
     }
+    
 
-    router.push(`/propiedades/industrial?${params.toString()}`);
+    router.push(`/propiedades?mercado=industrial&${params.toString()}`);
   };
 
   return {

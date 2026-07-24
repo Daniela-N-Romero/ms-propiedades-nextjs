@@ -23,7 +23,7 @@ export const styles = {
   cardsGrid: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6",
   
   // Elementos de Filtro Individual (Filtros Aside)
-  filterSection: "space-y-3 pb-5 border-b border-slate-100 last:border-b-0 last:pb-0",
+  filterSection: "space-y-1 pb-1 border-b border-slate-100 last:border-b-0 last:pb-0",
   filterTitle: "font-spartan font-bold text-xs text-brand-dark uppercase tracking-wider",
   checkboxLabel: "flex items-center gap-2.5 text-sm text-slate-600 cursor-pointer hover:text-slate-900",
   inputRango: "w-full rounded-lg border border-slate-300 bg-slate-50 p-2 text-xs text-slate-900 focus:outline-none focus:border-brand-dark focus:bg-white"

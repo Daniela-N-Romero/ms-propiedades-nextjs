@@ -61,9 +61,3 @@ export async function getLocalidadesActivasPorTipo(mercadoSlug: string, categori
   });
 }
 
-
-export async function getTiposInmueble() {
-  return await prisma.tipoInmueble.findMany({
-    orderBy: { nombre: 'asc' },
-  });
-}

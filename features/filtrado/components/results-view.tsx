@@ -1,12 +1,13 @@
 'use client';
 
 import { PropertyCard } from '@/features/propiedades';
-import { PanelFiltros,  OrdenarSelect, usePropertyFilters } from '../index';
+import { PanelFiltros, OrdenarSelect, usePropertyFilters } from '../index';
 import { styles } from './resultados.styles';
 import type { Zona, Propiedad, TipoInmueble } from '@prisma-client';
 import { useState } from 'react';
 import { PropertyWithZona } from '@/types/propiedad';
 import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 interface ResultsViewProps {
   propiedades: PropertyWithZona[];
@@ -18,24 +19,38 @@ export default function ResultsView({ propiedades, localidades, subtipos }: Resu
   const { filters } = usePropertyFilters();
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
+  const pathname = usePathname()
+  const searchParams = useSearchParams();
+  
+  const mercadoActual = pathname.split('/')[2];
+  const params = new URLSearchParams(searchParams.toString());
+
+  if (mercadoActual in ['industrial', 'residencial', 'comercial']) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (!params.has('mercado')) {
+      params.set('mercado', mercadoActual);
+    }
+  }
+  const mapaUrl = `/propiedades/mapa?${params.toString()}`;
+  
   return (
     <main className={styles.container}>
       {/* LEYENDA SUPERIOR */}
       <div className={styles.headerBar}>
         <div className={styles.leyenda}>
-          Mostrando <span className={styles.strongEmphasis}>{propiedades.length}</span> propiedades 
-          {filters.categoria ? ` en ${filters.categoria}` : ''}
+          Mostrando <span className={styles.strongEmphasis}>{propiedades.length}</span> propiedades
+          {filters.categoria ? ` en ${filters.categoria}` : ''} {filters.mercado ? ` de tipo ${filters.mercado}` : ''}
         </div>
         <div className={styles.topControlsDesktop}>
-          <button className="text-xs font-spartan font-bold uppercase tracking-wider text-brand-dark px-4 py-1.5 bg-white border border-slate-300 rounded-lg shadow-sm">
+          <Link href={mapaUrl} className="text-xs font-spartan font-bold uppercase tracking-wider text-brand-dark px-4 py-1.5 bg-white border border-slate-300 rounded-lg shadow-sm">
             🗺️ Ver Mapa
-          </button>
+          </Link>
         </div>
       </div>
 
       {/* 📱 BARRA DE BOTONES MOBILE */}
       <div className={styles.mobileStatusBar}>
-        <button 
+        <button
           type="button"
           onClick={() => setIsMobileFiltersOpen(true)} // 👈 Abre el modal mobile
           className={styles.mobileBtn}
@@ -45,8 +60,8 @@ export default function ResultsView({ propiedades, localidades, subtipos }: Resu
             <span className={styles.filterBadge}>{filters.totalActivos}</span>
           )}
         </button>
-        
-        <Link href="/propiedades/mapa" className={styles.mobileBtn}>
+
+        <Link href={mapaUrl} className={styles.mobileBtn}>
           🗺️ Ver Mapa
         </Link>
       </div>
@@ -55,20 +70,20 @@ export default function ResultsView({ propiedades, localidades, subtipos }: Resu
       {isMobileFiltersOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
           {/* Fondo traslúcido oscuro */}
-          <div 
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
+          <div
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
             onClick={() => setIsMobileFiltersOpen(false)}
           />
 
           {/* Panel deslizante lateral */}
           <div className="relative mt-20 ml-auto w-full max-w-xs bg-white shadow-2xl flex flex-col z-10 overflow-hidden">
-            
+
             {/* Header del modal */}
             <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
               <h3 className="font-spartan font-bold text-sm text-brand-dark uppercase tracking-wider">
                 Filtrar Propiedades
               </h3>
-              <button 
+              <button
                 type="button"
                 onClick={() => setIsMobileFiltersOpen(false)}
                 className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 text-slate-600 font-bold hover:bg-slate-300"
@@ -103,7 +118,7 @@ export default function ResultsView({ propiedades, localidades, subtipos }: Resu
           <h3 className="font-spartan font-bold text-sm text-brand-dark uppercase tracking-wider border-b border-slate-100 pb-2">
             Filtrar Resultados
           </h3>
-          <PanelFiltros localidades={localidades} subtipos={subtipos}/>
+          <PanelFiltros localidades={localidades} subtipos={subtipos} />
         </aside>
 
         <section className={styles.mainContent}>

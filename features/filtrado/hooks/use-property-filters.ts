@@ -10,6 +10,7 @@ export function usePropertyFilters() {
   // 1. Obtener estados actuales de la URL 
   const filters = {
     categoria: searchParams.get('categoria') || '',
+    mercado: searchParams.get('mercado') || '',
     tipo: searchParams.get('tipo') || '',
     subtipos: searchParams.getAll('subtipo'),
     moneda: searchParams.get('moneda') || 'USD',

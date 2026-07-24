@@ -32,7 +32,7 @@ export default function PanelFiltros({ localidades, subtipos }: PanelFiltrosProp
                     <button
                         type="button"
                         onClick={clearAllFilters}
-                        className="text-xs font-spartan font-bold uppercase text-brand-orange hover:underline tracking-wider"
+                        className="text-xs font-spartan font-bold uppercase  text-amber-600 hover:underline tracking-wider"
                     >
                         Limpiar Todo ✕
                     </button>
@@ -42,14 +42,14 @@ export default function PanelFiltros({ localidades, subtipos }: PanelFiltrosProp
             {/* FILTRO DE OPERACIÓN (CATEGORÍA) */}
             <div className={styles.filterSection}>
                 <h4 className={styles.filterTitle}>Operación</h4>
-                <div className="flex gap-2">
+                <div className="flex gap-1 flex-wrap">
                     {[
                         { label: 'Todas', value: null },
                         { label: 'Alquiler', value: 'alquiler' },
                         { label: 'Venta', value: 'venta' }
                     ].map((op) => (
                         <button
-                            key={op.label}
+                            key={`cat-${op.label}`}
                             type="button"
                             onClick={() => setFilter('categoria', op.value)}
                             className={`px-3 py-1.5 text-xs font-spartan font-bold uppercase rounded-lg border transition-colors ${(filters.categoria === op.value || (!filters.categoria && op.value === null))
@@ -63,7 +63,32 @@ export default function PanelFiltros({ localidades, subtipos }: PanelFiltrosProp
                 </div>
             </div>
 
-            {/* TIPO DE INMUEBLE INDUSTRIAL */}
+            {/* FILTRO DE TIPO DE MERCADO (INDUSTRIAL, RESIDENCIAL, O COMERCIAL) */}
+            <div className={styles.filterSection}>
+                <h4 className={styles.filterTitle}>Tipo de inmueble</h4>
+                <div className="flex gap-1 flex-wrap">
+                    {[
+                        { label: 'Todas', value: null },
+                        { label: 'Industrial', value: 'industrial' },
+                        { label: 'Residencial', value: 'residencial' },
+                        { label: 'Comercial', value: 'comercial' }
+                    ].map((op) => (
+                        <button
+                            key={`tipo-${op.label}`}
+                            type="button"
+                            onClick={() => setFilter('mercado', op.value)}
+                            className={`px-3 py-1.5 text-xs font-spartan font-bold uppercase rounded-lg border transition-colors ${(filters.mercado === op.value || (!filters.mercado && op.value === null))
+                                ? 'bg-brand-dark text-white border-brand-dark'
+                                : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
+                                }`}
+                        >
+                            {op.label}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* TIPO DE INMUEBLE */}
             {subtipos.length > 0 && (
                 <div className={styles.filterSection}>
                     <h4 className={styles.filterTitle}>Categoría Específica</h4>
@@ -89,7 +114,7 @@ export default function PanelFiltros({ localidades, subtipos }: PanelFiltrosProp
                 <div className="space-y-4 max-h-60 overflow-y-auto pr-1">
                     {Object.entries(localidadesPorPadre).map(([padreNombre, locs]) => (
                         <div key={padreNombre} className="space-y-1.5">
-                            <span className="block text-[10px] font-spartan font-bold uppercase text-brand-orange tracking-wider border-b border-slate-100 pb-0.5">
+                            <span className="block text-[11px] font-spartan font-bold uppercase text-amber-700 tracking-wider border-b border-slate-100 pb-0.5">
                                 📍 {padreNombre}
                             </span>
                             {locs.map((loc) => (

@@ -52,7 +52,7 @@ async function main() {
   });
 
   // Subtipos de Residencial (Ejemplo para el futuro)
-  await prisma.tipoInmueble.create({
+  const casa = await prisma.tipoInmueble.create({
     data: { nombre: 'Casa', slug: 'casa', padreId: catResidencial.id }
   });
 
@@ -91,6 +91,23 @@ async function main() {
       agenteId: agenteAdmin.id,
       latitud: -34.789551185829175,
       longitud: -58.1580772850284,
+      superficieCubierta: 250,
+      superficieTotal: 300
+    },
+    {
+      titulo: 'Casa en Villa España',
+      codigo: 'RES-VIL-001',
+      descripcion: 'Casa de prueba.',
+      isPublished: true,
+      isDestacada: true,
+      zonaId: villaEspana.id,
+      slug: 'casa-en-ezeiza',
+      tipoInmuebleId: casa.id,
+      categoria: TipoOperacionEnum.venta,
+      precio: 12000,
+      agenteId: agenteAdmin.id,
+      latitud: -35.789551185829175,
+      longitud: -58.1582772850284,
       superficieCubierta: 250,
       superficieTotal: 300
     },

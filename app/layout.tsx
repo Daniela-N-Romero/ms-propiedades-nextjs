@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { Header, Footer } from "@/features/navigation";
 import { Montserrat, League_Spartan } from "next/font/google";
 import "./globals.css";
+import 'leaflet/dist/leaflet.css';
 
 
 const montserrat = Montserrat({
