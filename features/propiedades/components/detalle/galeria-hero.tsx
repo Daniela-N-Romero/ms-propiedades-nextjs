@@ -142,10 +142,10 @@ export default function GaleriaHero({
 
       {/* 🌌 LIGHTBOX / MODAL FULLSCREEN */}
       {isLightboxOpen && (
-        <div className={styles.lightboxOverlay}>
+        <div className={styles.lightboxOverlay} onClick={() => setIsLightboxOpen(false)}>
           
           {/* Header del Lightbox */}
-          <div className={styles.lightboxHeader}>
+          <div id="lightboxHeader" className={styles.lightboxHeader}>
             <span className={styles.lightboxCounter}>
               Foto {currentIndex + 1} de {fotosDisplay.length} — REF: {codigo}
             </span>
@@ -159,9 +159,9 @@ export default function GaleriaHero({
           </div>
 
           {/* Área Principal con Foto Activa y Botones de Navegación */}
-          <div className={styles.lightboxMainArea}>
+          <div id="lightboxMainArea" className={styles.lightboxMainArea} >
             {fotosDisplay.length > 1 && (
-              <button type="button" onClick={prevPhoto} className={styles.lightboxNavBtnLeft}>
+              <button type="button" onClick={(e) => { e.stopPropagation(); prevPhoto();}} className={styles.lightboxNavBtnLeft}>
                 ‹
               </button>
             )}
@@ -173,18 +173,19 @@ export default function GaleriaHero({
                 fill
                 priority
                 className="object-contain"
+                onClick={(e) => { e.stopPropagation()}} 
               />
             </div>
 
             {fotosDisplay.length > 1 && (
-              <button type="button" onClick={nextPhoto} className={styles.lightboxNavBtnRight}>
+              <button type="button" onClick={(e) => { e.stopPropagation(); nextPhoto();}} className={styles.lightboxNavBtnRight}>
                 ›
               </button>
             )}
           </div>
 
           {/* Footer del Lightbox con Thumbnails pequeños */}
-          <div className="flex gap-2 justify-center overflow-x-auto py-2 z-20">
+          <div className="flex gap-2 justify-center overflow-x-auto py-2 z-20" onClick={(e) => e.stopPropagation()}>
             {fotosDisplay.map((img, idx) => (
               <button
                 key={img.id || idx}

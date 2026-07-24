@@ -15,7 +15,7 @@ export const styles = {
   btnVerTodas: "absolute bottom-4 right-4 bg-white/90 backdrop-blur-md hover:bg-white text-slate-900 text-xs font-spartan font-bold uppercase tracking-wider px-4 py-2.5 rounded-xl shadow-lg transition-all flex items-center gap-2 border border-slate-200 z-10 hover:scale-105",
 
   // Modal / Lightbox Fullscreen
-  lightboxOverlay: "fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex flex-col justify-between p-4 md:p-8 animate-fadeIn",
+  lightboxOverlay: "fixed inset-0 z-100 bg-slate-950/90 backdrop-blur-md flex flex-col justify-between p-4 md:p-8 animate-fadeIn",
   lightboxHeader: "flex justify-between items-center text-white z-20",
   lightboxCounter: "text-xs font-spartan font-bold uppercase tracking-widest text-slate-400",
   lightboxCloseBtn: "w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors text-lg font-bold",
