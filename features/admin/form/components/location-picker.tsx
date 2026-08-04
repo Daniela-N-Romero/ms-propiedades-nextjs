@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 const LocationPickerMap = dynamic(() => import('./location-picker-map'), {
   ssr: false,
   loading: () => (
-    <div className="h-[320px] w-full rounded-2xl bg-slate-100 animate-pulse flex flex-col items-center justify-center gap-2 border border-slate-200 text-slate-400 text-xs font-semibold">
+    <div className="h-80 w-full rounded-2xl bg-slate-100 animate-pulse flex flex-col items-center justify-center gap-2 border border-slate-200 text-slate-400 text-xs font-semibold">
       <span>🗺️ Cargando Mapa Interactivo...</span>
     </div>
   ),

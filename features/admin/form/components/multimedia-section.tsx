@@ -3,8 +3,8 @@
 import { UseFormReturn, Controller } from 'react-hook-form';
 import { PropertyFormValues } from '@/features/admin/form/schemas/property-schema';
 import { getInputClass } from '../utils/form-utils';
-import { ImageUploader } from '../image-uploader';
-import { PdfUploader } from '../pdf-uploader';
+import { ImageUploader } from './image-uploader';
+import { PdfUploader } from './pdf-uploader';
 
 interface MultimediaSectionProps {
   form: UseFormReturn<PropertyFormValues>;

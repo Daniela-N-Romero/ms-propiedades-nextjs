@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { createColegaAction } from '@/features/admin/actions/catalogos-actions';
+import { createColegaAction } from '@/features/admin/form/actions/catalogos-actions';
 
 interface ColegaModalProps {
   isOpen: boolean;

@@ -3,7 +3,7 @@
 import { UseFormReturn } from 'react-hook-form';
 import { PropertyFormValues } from '@/features/admin/form/schemas/property-schema';
 import { getInputClass, getSelectClass } from '../utils/form-utils';
-import { LocationPicker } from '../location-picker';
+import { LocationPicker } from './location-picker';
 import type { ZonaServer } from '@/types/server-data';
 
 interface LocationSectionProps {

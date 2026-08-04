@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { createPropietarioAction } from '@/features/admin/actions/catalogos-actions';
+import { createPropietarioAction } from '@/features/admin/form/actions/catalogos-actions';
 
 interface PropietarioModalProps {
   isOpen: boolean;

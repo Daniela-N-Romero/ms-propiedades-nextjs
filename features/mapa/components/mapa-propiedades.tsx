@@ -8,6 +8,7 @@ interface MapaPropiedadesProps {
   centroInicial?: [number, number];
   zoomInicial?: number;
   alturaClass?: string;
+  isPrivateAdmin?: boolean; // Para habilitar botón de edición y datos de contacto
 }
 
 // Carga dinámica sin SSR para evitar errores de 'window is not defined'

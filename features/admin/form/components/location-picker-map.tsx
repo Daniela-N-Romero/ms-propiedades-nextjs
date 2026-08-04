@@ -147,7 +147,7 @@ export default function LocationPickerMap({
       </div>
 
       {/* CONTENEDOR DEL MAPA LEAFLET */}
-      <div className="relative h-[320px] w-full rounded-2xl overflow-hidden border border-slate-300 shadow-inner z-0">
+      <div className="relative h-80 w-full rounded-2xl overflow-hidden border border-slate-300 shadow-inner z-0">
         <MapContainer
           center={[currentLat, currentLng]}
           zoom={14}
