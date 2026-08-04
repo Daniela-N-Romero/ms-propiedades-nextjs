@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import type { Zona } from '@prisma-client';
+import { ZonaServer } from '@/types/server-data';
 
-export function useHomeSearch(zonasDB: Zona[]) {
+export function useHomeSearch(zonasDB: ZonaServer[]) {
   const router = useRouter();
   const zonasPadre = zonasDB.filter(z => z.padreId === null);
 
   const [zonaSelected, setZonaSelected] = useState<string>('');
-  const [localidadesFiltradas, setLocalidadesFiltradas] = useState<Zona[]>([]);
+  const [localidadesFiltradas, setLocalidadesFiltradas] = useState<ZonaServer[]>([]);
   const [localidadSelected, setLocalidadSelected] = useState<string>('');
   const [categoriaSelected, setCategoriaSelected] = useState<string>('');
   const [subtipoSelected, setSubtipoSelected] = useState<string>('');

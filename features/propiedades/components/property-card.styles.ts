@@ -2,7 +2,7 @@
 export const styles = {
   card: "group bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow duration-300",
   imageWrapper: "relative h-64 w-full bg-slate-900 overflow-hidden",
-  badgeOperation: "absolute top-4 left-4 z-10 font-spartan font-bold uppercase tracking-wider text-xs px-3 py-1.5 rounded-md text-white shadow-sm",
+  badgeOperation: "absolute top-4 left-4 z-10 font-spartan font-bold uppercase tracking-wider text-xs px-3 py-1.5 rounded-md shadow-sm",
   badgeType: "absolute top-4 right-4 z-10 font-spartan font-bold uppercase tracking-wider text-xs px-2.5 py-1 rounded-md bg-brand-dark text-white border border-slate-700/30",
   content: "p-5 flex-grow flex flex-col justify-between gap-4",
   infoGroup: "space-y-2",
@@ -10,7 +10,7 @@ export const styles = {
   title: "text-lg font-spartan font-bold text-brand-dark uppercase tracking-wide leading-snug line-clamp-3 min-h-[3.5rem] transition-colors",
   
   // Bloques de Valor y Ofertas (Estilo Canva)
-  priceBlock: "bg-brand-dark text-white px-4 py-2 rounded-lg font-spartan font-bold text-lg tracking-wider uppercase flex justify-between items-center",
+  priceBlock: "bg-brand-dark/95 text-white px-4 py-2 rounded-lg font-spartan font-bold text-lg tracking-wider uppercase flex justify-between items-center",
   greenBanner: "bg-brand-green text-white px-4 py-2 rounded-lg font-spartan font-bold text-sm tracking-wide uppercase text-center mt-1",
   
   // Detalles técnicos
@@ -18,5 +18,5 @@ export const styles = {
   featureItem: "flex flex-col items-center gap-1",
   
   // Botón Ficha
-  viewBtn: "w-full text-center shadow-sm hover:shadow-md bg-slate-400 group-hover:bg-brand-orange group-hover:text-md text-brand-dark font-spartan font-bold uppercase tracking-wider py-2.5 rounded-xl text-xs transition-colors"
+  viewBtn: "w-full text-center shadow-md hover:shadow-lg bg-brand-orange group-hover:bg-slate-400 group-hover:text-md text-brand-dark font-spartan font-bold uppercase tracking-wider py-2.5 rounded-xl text-xs transition-colors"
 };

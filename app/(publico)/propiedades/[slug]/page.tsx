@@ -1,0 +1,101 @@
+import { notFound } from 'next/navigation';
+import { getPropiedadBySlug } from '@/backend/services/property.service';
+import { buildPropertyMetadata } from '@/backend/services/seo.service';
+import { PropertyFullData } from '@/types/server-data';
+import { GaleriaHero, FichaTecnica } from '@/features/propiedades/index';
+import ContactoSection from '@/features/propiedades/components/detalle/contacto-section';
+import MapaDetallePropiedad from '@/features/mapa/components/mapa-detalle-propiedad';
+
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+
+// 1. METADATA (Llama al helper externo)
+export async function generateMetadata({ params }: PageProps) {
+  const { slug } = await params;
+  const propiedad = (await getPropiedadBySlug(slug)) || null;
+  return buildPropertyMetadata(propiedad);
+}
+
+// 2. VISTA (Solo renderizado)
+export default async function PropertyDetailPage({ params }: PageProps) {
+  const { slug } = await params;
+  const propiedadRaw = await getPropiedadBySlug(slug);
+
+  if (!propiedadRaw) {
+    notFound();
+  }
+
+  const propiedad = propiedadRaw as unknown as PropertyFullData;
+
+  return (
+    <main className="min-h-screen bg-white pb-24 md:pb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+
+        {/* BLOQUE HERO & GALERÍA */}
+        <GaleriaHero
+          titulo={propiedad.titulo}
+          codigo={propiedad.codigo}
+          categoria={propiedad.categoria}
+          zonaNombre={propiedad.zona.nombre}
+          padreZonaNombre={propiedad.zona.padre?.nombre}
+          imagenes={propiedad.imagenes as any}
+        />
+
+        {/* LAYOUT PRINCIPAL (A futuro tendrá 2 columnas: Ficha a la izquierda + Contacto Sticky a la derecha) */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+
+          {/* COLUMNA IZQUIERDA (2 Columnas) */}
+          <div className="lg:col-span-2">
+            <FichaTecnica
+              precio={propiedad.precio}
+              moneda={propiedad.moneda}
+              superficieTotal={propiedad.superficieTotal}
+              superficieCubierta={propiedad.superficieCubierta}
+              descripcion={propiedad.descripcion}
+              caracteristicas={propiedad.caracteristicas as any}
+              subtipoNombre={propiedad.tipoInmueble?.nombre}
+            />
+
+            {propiedad.latitud && propiedad.longitud && (
+              <MapaDetallePropiedad
+                propiedad={{
+                  id: propiedad.id,
+                  codigo: propiedad.codigo,
+                  slug: propiedad.slug,
+                  titulo: propiedad.titulo,
+                  precio: propiedad.precio,
+                  superficieCubierta: propiedad.superficieCubierta,
+                  superficieTotal: propiedad.superficieTotal,
+                  moneda: propiedad.moneda,
+                  latitud: Number(propiedad.latitud),
+                  longitud: Number(propiedad.longitud),
+                  zonaNombre: propiedad.zona.nombre,
+                  direccionTexto: propiedad.direccionPersonalizada,
+                  imagenPortada: propiedad.imagenes?.[0]?.url,
+                  tipoInmueble: propiedad.tipoInmueble.padre.slug
+                }}
+              />
+            )}
+          </div>
+
+          {/* COLUMNA DERECHA (Contacto Sticky & Agente) */}
+          <div className="lg:col-span-1">
+            <ContactoSection
+              codigo={propiedad.codigo}
+              titulo={propiedad.titulo}
+              precio={propiedad.precio}
+              moneda={propiedad.moneda}
+              pdfUrl={propiedad.pdfUrl}
+              agente={propiedad.agente}
+              slug={propiedad.slug}
+              propiedadId={propiedad.id}
+            />
+          </div>
+
+        </div>
+      </div>
+    </main>
+  );
+}

@@ -3,15 +3,15 @@
 import { PropertyCard } from '@/features/propiedades';
 import { PanelFiltros, OrdenarSelect, usePropertyFilters } from '../index';
 import { styles } from './resultados.styles';
-import type { Zona, Propiedad, TipoInmueble } from '@prisma-client';
+import type { TipoInmueble } from '@prisma-client';
 import { useState } from 'react';
-import { PropertyWithZona } from '@/types/propiedad';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
+import { PropertyFullData, ZonaServer } from '@/types/server-data';
 
 interface ResultsViewProps {
-  propiedades: PropertyWithZona[];
-  localidades: Zona[];
+  propiedades: PropertyFullData[];
+  localidades: ZonaServer[];
   subtipos: TipoInmueble[];
 }
 

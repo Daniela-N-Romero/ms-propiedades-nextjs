@@ -4,13 +4,14 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { PanelFiltros, usePropertyFilters } from '@/features/filtrado';
 import MapaPropiedades from './mapa-propiedades';
-import type { Zona, TipoInmueble } from '@prisma-client';
+import type { TipoInmueble } from '@prisma-client';
 import type { PropiedadMapaItem } from './mapa-propiedades-view';
 import { useSearchParams } from 'next/navigation';
+import { ZonaServer } from '@/types/server-data';
 
 interface MapaResultsViewProps {
   propiedades: PropiedadMapaItem[];
-  localidades: Zona[];
+  localidades: ZonaServer[];
   subtipos: TipoInmueble[];
   centroInicial?: [number, number];
   zoomInicial?: number;

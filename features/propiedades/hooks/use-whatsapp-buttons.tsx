@@ -2,9 +2,9 @@
 
 import { Agente } from '@prisma-client';
 import { useContactLinks } from '@/providers/config-provider';
-import { ContactLinks } from '@/types/contact-links';
+import { ContactLinks } from '@/config/contact-links';
 import { useState } from 'react';
-import { formatPrecio } from '@/lib/utils';
+import { formatPrecio } from '@/lib/utils-formatting';
 
 interface useWhatsAppButtonsProps {
     propiedadId?: number;

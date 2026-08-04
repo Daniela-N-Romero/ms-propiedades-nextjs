@@ -1,5 +1,5 @@
 import { styles } from './whatsapp-floating-button.styles'
-import { formatPrecio } from '@/lib/utils'
+import { formatPrecio } from '@/lib/utils-formatting'
 import { useWhatsAppButtons } from '@/features/propiedades/hooks/use-whatsapp-buttons';
 import { Agente } from '@prisma-client';
 

@@ -26,22 +26,10 @@ export default function GaleriaHero({
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Si no hay fotos cargadas en el array, usamos un placeholder elegante
-  const fotosDisplay = imagenes.length > 0 
-    ? imagenes 
-    : [
-      { id: 0, url: '/images/fotos_pitec/1.webp', altText: titulo, orden: 0 },
-      { id: 0, url: '/images/fotos_pitec/2.webp', altText: titulo, orden: 0 },
-      { id: 0, url: '/images/fotos_pitec/3.webp', altText: titulo, orden: 0 },
-      { id: 0, url: '/images/fotos_pitec/4.webp', altText: titulo, orden: 0 },
-      { id: 0, url: '/images/fotos_pitec/5.webp', altText: titulo, orden: 0 },
-      { id: 0, url: '/images/fotos_pitec/6.webp', altText: titulo, orden: 0 },
-      { id: 0, url: '/images/fotos_pitec/7.webp', altText: titulo, orden: 0 },
-      { id: 0, url: '/images/fotos_pitec/8.webp', altText: titulo, orden: 0 },
-      { id: 0, url: '/images/fotos_pitec/9.webp', altText: titulo, orden: 0 },
-      { id: 0, url: '/images/fotos_pitec/10.webp', altText: titulo, orden: 0 },
-      { id: 0, url: '/images/fotos_pitec/11.webp', altText: titulo, orden: 0 },
-      { id: 0, url: '/images/fotos_pitec/12.webp', altText: titulo, orden: 0 },
-      { id: 0, url: '/images/fotos_pitec/13.webp', altText: titulo, orden: 0 }
+const fotosDisplay = imagenes && imagenes.length > 0 
+  ? imagenes 
+  : [
+      { id: 0, url: '/images/placeholder.png', orden: 0, propiedadId: 0 }
     ];
 
   const openLightboxAt = (index: number) => {
@@ -77,6 +65,7 @@ export default function GaleriaHero({
     };
   }, [isLightboxOpen, nextPhoto, prevPhoto]);
 
+  
   return (
     <div className="space-y-4">
       {/* 🏷️ ENCABEZADO / TITULAR */}
@@ -102,7 +91,7 @@ export default function GaleriaHero({
           onClick={() => openLightboxAt(0)}
         >
           <Image
-            src={fotosDisplay[0].url}
+            src={`/api/properties/imagenes/watermark?url=${encodeURIComponent(fotosDisplay[0].url)}`}
             alt={titulo}
             fill
             priority
@@ -120,7 +109,7 @@ export default function GaleriaHero({
               onClick={() => openLightboxAt(idx + 1)}
             >
               <Image
-                src={img.url}
+                src={`/api/properties/imagenes/watermark?url=${encodeURIComponent(img.url)}`}
                 alt={`${titulo} - foto ${idx + 2}`}
                 fill
                 sizes="25vw"
@@ -168,7 +157,7 @@ export default function GaleriaHero({
 
             <div className="relative w-full h-full max-w-5xl max-h-[80vh]">
               <Image
-                src={fotosDisplay[currentIndex].url}
+                src={`/api/properties/imagenes/watermark?url=${encodeURIComponent(fotosDisplay[currentIndex].url)}`}
                 alt={titulo}
                 fill
                 priority
@@ -196,7 +185,7 @@ export default function GaleriaHero({
                 }`}
               >
                 <Image 
-                  src={img.url} 
+                  src={`/api/properties/imagenes/watermark?url=${encodeURIComponent(img.url)}`}
                   alt="thumb" 
                   fill 
                   className="object-cover" 

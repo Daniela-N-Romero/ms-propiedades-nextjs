@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import { formatPrecio } from '@/lib/utils';
-import type { PropertyFullData } from '@/types/propiedad'; // O donde tengas el tipo
+import { formatPrecio } from '@/lib/utils-formatting';
+import type { PropertyFullData } from '@/types/server-data'; // O donde tengas el tipo
 
 export function buildPropertyMetadata(propiedad: PropertyFullData | null): Metadata {
   if (!propiedad) {

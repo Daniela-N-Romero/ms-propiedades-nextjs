@@ -3,7 +3,6 @@ import { getContactLinks } from '@/backend/services/config.service';
 import { ConfigProvider } from '@/providers/config-provider';
 import MetaPixel from '@/components/analytics/meta-pixel';
 import type { Metadata } from "next";
-import { Header, Footer } from "@/features/navigation";
 import { Montserrat, League_Spartan } from "next/font/google";
 import "./globals.css";
 import 'leaflet/dist/leaflet.css';
@@ -39,12 +38,9 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <ConfigProvider links={links}>
-            <Header />
-            <main className="grow bg-slate-50">{children}</main>
-            <Footer />
-            {/* Analytics sin impactar la velocidad de carga de la página */}
-            <MetaPixel />
-            {gaId && <GoogleAnalytics gaId={gaId} />}
+          {children}
+          <MetaPixel />
+          {gaId && <GoogleAnalytics gaId={gaId} />}
         </ConfigProvider>
       </body>
     </html>

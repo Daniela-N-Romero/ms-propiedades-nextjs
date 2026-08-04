@@ -144,6 +144,7 @@ model Propiedad {
   notasPrivadas         String?             @map("notas_privadas") @db.Text
   caracteristicas       Json?               @map("caracteristicas_especificas")
   createdAt             DateTime            @default(now()) @map("created_at") @db.Timestamp
+  updatedAt             DateTime            @default(now()) @map("updated_at") @db.Timestamp
 
   // Claves Foráneas y Relaciones
 

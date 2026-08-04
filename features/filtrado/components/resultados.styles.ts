@@ -25,6 +25,6 @@ export const styles = {
   // Elementos de Filtro Individual (Filtros Aside)
   filterSection: "space-y-1 pb-1 border-b border-slate-100 last:border-b-0 last:pb-0",
   filterTitle: "font-spartan font-bold text-xs text-brand-dark uppercase tracking-wider",
-  checkboxLabel: "flex items-center gap-2.5 text-sm text-slate-600 cursor-pointer hover:text-slate-900",
+  checkboxLabel: "flex items-center gap-2.5 text-sm text-slate-600 cursor-pointer hover:text-slate-900 mb-0",
   inputRango: "w-full rounded-lg border border-slate-300 bg-slate-50 p-2 text-xs text-slate-900 focus:outline-none focus:border-brand-dark focus:bg-white"
 };

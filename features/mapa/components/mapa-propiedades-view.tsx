@@ -3,7 +3,7 @@
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { customBrandIcon } from '../utils/leaflet-icon';
-import { formatPrecio } from '@/lib/utils';
+import { formatPrecio } from '@/lib/utils-formatting';
 import Link from 'next/link';
 import { useEffect } from 'react';
 

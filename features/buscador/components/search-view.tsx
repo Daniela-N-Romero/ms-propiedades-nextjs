@@ -1,11 +1,12 @@
 // features/buscador/components/search-view.tsx
+import { ZonaServer } from '@/types/server-data';
 import { styles } from './search-view.styles';
-import type { TipoInmueble, Zona } from '@prisma-client'
+import type { TipoInmueble } from '@prisma-client'
 
 
 interface SearchViewProps {
-  zonasPadre: Zona[];
-  localidadesFiltradas: Zona[];
+  zonasPadre: ZonaServer[];
+  localidadesFiltradas: ZonaServer[];
   subtipos: TipoInmueble[];
   zonaSelected: string;
   localidadSelected: string;

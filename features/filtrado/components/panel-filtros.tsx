@@ -1,12 +1,13 @@
 'use client';
 
 import { usePropertyFilters } from '@/features/filtrado/index';
-import type { TipoInmueble, Zona } from '@prisma-client';
+import type { TipoInmueble } from '@prisma-client';
 import { styles } from './resultados.styles';
 import { MonedaEnum } from '@/prisma/generated/enums';
+import { ZonaServer } from '@/types/server-data';
 
 interface PanelFiltrosProps {
-    localidades: Zona[];
+    localidades: ZonaServer[];
     subtipos: TipoInmueble[];
 }
 export default function PanelFiltros({ localidades, subtipos }: PanelFiltrosProps) {
@@ -92,7 +93,7 @@ export default function PanelFiltros({ localidades, subtipos }: PanelFiltrosProp
             {subtipos.length > 0 && (
                 <div className={styles.filterSection}>
                     <h4 className={styles.filterTitle}>Categoría Específica</h4>
-                    <div className="space-y-2">
+                    <div className="space-y-2 max-h-20 overflow-y-auto ">
                         {subtipos.map((st) => (
                             <label key={st.id} className={styles.checkboxLabel}>
                                 <input
@@ -111,7 +112,7 @@ export default function PanelFiltros({ localidades, subtipos }: PanelFiltrosProp
             {/* CHECKBOXES LOCALIDADES */}
             <div className={styles.filterSection}>
                 <h4 className={styles.filterTitle}>Localidades Disponibles</h4>
-                <div className="space-y-4 max-h-60 overflow-y-auto pr-1">
+                <div className="space-y-4 max-h-40 overflow-y-auto pr-1">
                     {Object.entries(localidadesPorPadre).map(([padreNombre, locs]) => (
                         <div key={padreNombre} className="space-y-1.5">
                             <span className="block text-[11px] font-spartan font-bold uppercase text-amber-700 tracking-wider border-b border-slate-100 pb-0.5">

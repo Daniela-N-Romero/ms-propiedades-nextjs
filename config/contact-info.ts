@@ -1,4 +1,4 @@
-import { ContactLinks } from "@/types/contact-links";
+import { ContactLinks } from "@/config/contact-links";
 
 export const links: ContactLinks = {
     instagram: "https://www.instagram.com/grupoms.propiedades/", //TO DO: actualizar cuando cambie el nombre de instagram

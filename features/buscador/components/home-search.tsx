@@ -1,10 +1,11 @@
 'use client';
+import { ZonaServer } from '@/types/server-data';
 import { useHomeSearch } from '../hooks/use-home-search'
 import SearchView from './search-view';
-import type { TipoInmueble, Zona } from  '@prisma-client'
+import type { TipoInmueble } from  '@prisma-client'
 
 
-export default function HomeSearch({ zonasDB, subtipos }: { zonasDB: Zona[], subtipos: TipoInmueble[] }) {
+export default function HomeSearch({ zonasDB, subtipos }: { zonasDB: ZonaServer[], subtipos: TipoInmueble[] }) {
 
 const searchProps = useHomeSearch(zonasDB);
 
