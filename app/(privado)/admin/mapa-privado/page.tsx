@@ -46,7 +46,7 @@ export default async function MapaPrivadoAdminPage({ searchParams }: MapaPrivado
       supCubMin: search.supCubMin ? Number(search.supCubMin) : undefined,
       supCubMax: search.supCubMax ? Number(search.supCubMax) : undefined,
       localidades,
-    }),
+    }, false), // false para traer todas las propiedades, no solo las publicadas
     getLocalidadesActivasPorTipo(search.mercado || undefined),
     getSubtiposPorTipoMercado(search.mercado || undefined),
   ]);

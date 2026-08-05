@@ -118,7 +118,7 @@ export default function MapaAdminResultsView({
           <MapaPropiedades
             propiedades={propiedades}
             alturaClass="h-[calc(100vh-160px)] min-h-[500px]"
-            isPrivateAdmin={true} // 👈 Activa los marcadores por origen y la caja de contactos
+            isPrivateAdmin={true} 
           />
         </section>
       </div>

@@ -16,6 +16,9 @@ export default function PropertyCard({ propiedad }: PropertyCardProps) {
   // En el hito 3 esto vendrá del campo JSON 'caracteristicas'
   const tieneFinanciacion = propiedad.slug === 'lote-premium-parque-industrial-hudson-3088';
   const portadaUrl = propiedad.imagenes?.[0]?.url || '/images/placeholder.png';
+  console.log('Portada URL:', portadaUrl);
+  console.log('Propiedad:', propiedad);
+  console.log('Propiedad Imágenes:', propiedad.imagenes);
   return (
     <article className={`${styles.card} relative group cursor-pointer transition-shadow hover:shadow-xl`}>
       <div className={styles.imageWrapper}>
@@ -30,6 +33,7 @@ export default function PropertyCard({ propiedad }: PropertyCardProps) {
 
         {/* To do: CAMBIAR A FOTO REAL */}
         {/* Imagen de fondo (Placeholder corporativo por ahora) */}
+
         <Image
           src={portadaUrl}
           alt={`Propiedad ${propiedad.titulo} en ${propiedad.zona?.nombre || ''}`}

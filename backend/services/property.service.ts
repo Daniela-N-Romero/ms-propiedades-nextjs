@@ -163,9 +163,13 @@ interface SearchFilters {
   ordenar?: string;
 }
 
-export async function searchPropiedades(filters: SearchFilters) {
-  const queryWhere: any = { isPublished: true };
-
+export async function searchPropiedades(filters: SearchFilters, isPublishedOnly: boolean = true) {
+  const queryWhere: any = {};
+  
+  if (isPublishedOnly) {
+    queryWhere.isPublished = true;
+  }
+  
   if (filters.categoria) {
     queryWhere.categoria = filters.categoria as TipoOperacionEnum;
   }
@@ -221,6 +225,7 @@ export async function searchPropiedades(filters: SearchFilters) {
     where: queryWhere,
     include: {
       zona: true,
+      imagenes: true,
       tipoInmueble: { include: { padre: true } }
     },
     orderBy: queryOrderBy

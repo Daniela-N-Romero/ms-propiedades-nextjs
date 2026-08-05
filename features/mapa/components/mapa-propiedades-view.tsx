@@ -117,22 +117,29 @@ return (
                     <span className="text-[10px] font-bold text-slate-400 block uppercase">
                       REF: {prop.codigo} • {prop.zonaNombre}
                     </span>
-                    <h4 className="text-xs font-bold text-slate-900 line-clamp-2 leading-tight">
+                    {isOwn && (
+                    <Link href={`/propiedades/${prop.slug}`} className="text-sm font-bold text-slate-900 line-clamp-2 leading-tight">
                       {prop.titulo}
-                    </h4>
-                    <div className="text-[11px] font-medium text-slate-500">
+                    </Link>
+                    )}
+                    {!isOwn && (
+                      <span className="text-sm font-bold text-slate-900 line-clamp-2 leading-tight">
+                      {prop.titulo}
+                    </span>
+                    )}
+                    <div className="text-[13px] font-medium text-slate-500">
                       {prop.superficieTotal ? `${prop.superficieTotal} m² tot.` : ''}
                       {prop.superficieTotal && prop.superficieCubierta ? ' • ' : ''}
                       {prop.superficieCubierta ? `${prop.superficieCubierta} m² cub.` : ''}
                     </div>
-                    <p className="text-sm font-extrabold text-brand-green">
+                    <p className="text-base font-extrabold text-brand-green">
                       {formatPrecio(prop.precio, prop.moneda)}
                     </p>
                   </div>
 
                   {/* BLOQUE DE CONTACTO INTERNO (SOLO VISIBLE EN PANEL ADMIN) */}
                   {isPrivateAdmin && (
-                    <div className="p-2 bg-slate-50 border border-slate-200 rounded-lg text-[10px] space-y-0.5">
+                    <div className="p-2 bg-slate-50 border border-slate-200 rounded-lg text-[12px] space-y-0.5">
                       {isOwn ? (
                         <>
                           <span className="font-bold text-emerald-800 block">Propietario:</span>
@@ -157,14 +164,14 @@ return (
                   {isPrivateAdmin ? (
                     <Link
                       href={`/admin/editar/${prop.id}`}
-                      className="block w-full text-center bg-brand-orange hover:bg-slate-900 font-bold text-[11px] uppercase py-2 rounded-lg transition-all text-white"
+                      className="block w-full text-center bg-brand-orange hover:bg-slate-200 font-bold text-[13px] uppercase py-2 rounded-lg transition-all text-white"
                     >
                       ✏️ Editar Propiedad
                     </Link>
                   ) : (
                     <Link
                       href={`/propiedades/${prop.slug}`}
-                      className="block w-full text-center hover:text-brand-dark bg-brand-dark hover:bg-amber-500 font-bold text-[11px] uppercase py-2 rounded-lg transition-all text-white"
+                      className="block w-full text-center bg-brand-orange hover:bg-slate-200 font-bold text-[13px] uppercase py-2 rounded-lg transition-all text-white shadow-1xl"
                     >
                       Ver Propiedad
                     </Link>

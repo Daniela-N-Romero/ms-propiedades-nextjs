@@ -12,6 +12,7 @@ interface PropiedadAdmin {
   precio: number;
   moneda: string;
   isPublished: boolean;
+  isDestacada: boolean;
   videoUrl?: string | null;
   pdfUrl?: string | null;
   propertySource?: string | null; // 'ms_propia' | 'colega'
@@ -27,7 +28,7 @@ interface PropiedadAdmin {
 export default function DashboardPage() {
   const [propiedades, setPropiedades] = useState<PropiedadAdmin[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Filtros de estado
   const [currentSourceFilter, setCurrentSourceFilter] = useState<'ms_propia' | 'colega'>('ms_propia');
   const [search, setSearch] = useState('');
@@ -159,26 +160,24 @@ export default function DashboardPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        
+
         {/* PESTAÑAS DE ORIGEN (CARTERA PROPIA VS COLEGAS) */}
         <div className="flex border-b border-slate-200 bg-white rounded-2xl p-2 shadow-sm gap-2">
           <button
             onClick={() => setCurrentSourceFilter('ms_propia')}
-            className={`flex-1 py-2.5 px-4 rounded-xl font-spartan font-bold text-xs uppercase tracking-wider transition-all ${
-              currentSourceFilter === 'ms_propia'
+            className={`flex-1 py-2.5 px-4 rounded-xl font-spartan font-bold text-xs uppercase tracking-wider transition-all ${currentSourceFilter === 'ms_propia'
                 ? 'bg-brand-dark text-white shadow-sm'
                 : 'text-slate-500 hover:bg-slate-100'
-            }`}
+              }`}
           >
             🏢 Cartera Propia
           </button>
           <button
             onClick={() => setCurrentSourceFilter('colega')}
-            className={`flex-1 py-2.5 px-4 rounded-xl font-spartan font-bold text-xs uppercase tracking-wider transition-all ${
-              currentSourceFilter === 'colega'
+            className={`flex-1 py-2.5 px-4 rounded-xl font-spartan font-bold text-xs uppercase tracking-wider transition-all ${currentSourceFilter === 'colega'
                 ? 'bg-brand-dark text-white shadow-sm'
                 : 'text-slate-500 hover:bg-slate-100'
-            }`}
+              }`}
           >
             🤝 Propiedades de Colegas
           </button>
@@ -246,7 +245,7 @@ export default function DashboardPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-200 border-b border-slate-200 text-[10px] font-spartan font-bold uppercase text-brand-dark">
+                  <tr className="bg-slate-200 border-b border-slate-200 text-[12px] font-spartan font-bold uppercase text-brand-dark">
                     <th className="p-3">Portada</th>
                     <th className="p-3">Título / Ref</th>
                     <th className="p-3">Ubicación</th>
@@ -255,7 +254,8 @@ export default function DashboardPage() {
                     <th className="p-3 text-center">Video</th>
                     <th className="p-3 text-center">PDF</th>
                     <th className="p-3 text-center">Estado</th>
-                    <th className="p-3 text-right">Acciones</th>
+                    <th className="p-3 text-center">Destacada</th>
+                    <th className="p-3 text-center">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs">
@@ -263,7 +263,7 @@ export default function DashboardPage() {
                     <Fragment key={groupName}>
                       {groupBy !== 'none' && (
                         <tr className="bg-slate-100/70 border-y border-slate-200">
-                          <td colSpan={9} className="p-2.5 px-4 font-spartan font-bold text-slate-700 uppercase tracking-wider text-[11px]">
+                          <td colSpan={10} className="p-2.5 px-4 font-spartan font-bold text-slate-700 uppercase tracking-wider text-[13px]">
                             {groupName} ({props.length})
                           </td>
                         </tr>
@@ -286,7 +286,7 @@ export default function DashboardPage() {
                               >
                                 {prop.titulo}
                                 <span className=" font-extrabold text-[18px]">👆</span>
-                                
+
                               </Link>
                             ) : (
                               <span className="text-slate-700 font-extrabold leading-tight block">{prop.titulo}</span>
@@ -300,8 +300,10 @@ export default function DashboardPage() {
                             {formatPrecio(prop.precio, prop.moneda)}
                           </td>
                           <td className="p-3 font-semibold text-slate-600">
-                            <span className="capitalize">{prop.tipoInmueble?.nombre}</span>
-                            <span className="text-[10px] block uppercase text-slate-800">{prop.categoria}</span>
+                            <p className="capitalize">{prop.tipoInmueble?.nombre}</p>
+                            <span className={`text-[10px] uppercase text-slate-800 p-1 rounded-lg ${prop.categoria === 'venta' ? 'bg-cyan-300/50' : 'bg-brand-orange/50'}`}>
+                              {prop.categoria}
+                            </span>
                           </td>
                           <td className="p-3 text-center">
                             {prop.videoUrl ? '✔️' : '❌'}
@@ -312,12 +314,17 @@ export default function DashboardPage() {
                           <td className="p-3 text-center">
                             <button
                               onClick={() => togglePublishStatus(prop.id, prop.isPublished)}
-                              className={`px-3 py-1 rounded-full text-[10px] font-bold font-spartan uppercase tracking-wider text-white transition-all ${
-                                prop.isPublished ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-amber-500 hover:bg-amber-600'
-                              }`}
+                              className={`px-3 py-1 rounded-full text-[10px] font-bold font-spartan uppercase tracking-wider text-white transition-all ${prop.isPublished ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-amber-500 hover:bg-amber-600'
+                                }`}
                             >
                               {prop.isPublished ? 'Publicada' : 'Borrador'}
                             </button>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <StarButton
+                              propiedadId={prop.id}
+                              initialIsFeatured={prop.isDestacada}
+                            />
                           </td>
                           <td className="p-3 text-right space-x-1">
                             <Link
@@ -348,3 +355,4 @@ export default function DashboardPage() {
 }
 
 import { Fragment } from 'react';
+import StarButton from '@/features/admin/form/components/star-button';
