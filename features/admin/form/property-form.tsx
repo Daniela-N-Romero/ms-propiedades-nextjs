@@ -15,6 +15,7 @@ import { MultimediaSection } from './components/multimedia-section';
 import type { ZonaServer, PropertyFullData } from '@/types/server-data';
 import type { TipoInmueble, Agente, Propietario, Colega } from '@prisma-client';
 import { StatusSection } from './components/status-section';
+import { DynamicFeaturesSection } from './components/dynamic-features-section';
 
 interface PropertyFormProps {
   initialData?: PropertyFullData | null;
@@ -185,6 +186,7 @@ export default function PropertyForm({
         colegas={colegas}
         isPending={cascades.isPending}
       />
+
 
       {/* BLOQUE 2: UBICACIÓN */}
       <LocationSection

@@ -97,6 +97,7 @@ const fotosDisplay = imagenes && imagenes.length > 0
             alt={titulo}
             fill
             priority
+            unoptimized
             sizes="(max-width: 768px) 100vw, 50vw"
             className="object-cover hover:scale-105 transition-transform duration-500"
           />
@@ -114,6 +115,7 @@ const fotosDisplay = imagenes && imagenes.length > 0
                 src={`/api/properties/imagenes/watermark?url=${encodeURIComponent(img.url)}`}
                 alt={`${titulo} - foto ${idx + 2}`}
                 fill
+                unoptimized
                 sizes="25vw"
                 className="object-cover hover:scale-110 transition-transform duration-500"
               />
@@ -163,6 +165,7 @@ const fotosDisplay = imagenes && imagenes.length > 0
                 alt={titulo}
                 fill
                 priority
+                unoptimized
                 className="object-contain"
                 onClick={(e) => { e.stopPropagation()}} 
               />
@@ -190,6 +193,7 @@ const fotosDisplay = imagenes && imagenes.length > 0
                   src={`/api/properties/imagenes/watermark?url=${encodeURIComponent(img.url)}`}
                   alt="thumb" 
                   fill 
+                  unoptimized
                   className="object-cover" 
                 />
               </button>

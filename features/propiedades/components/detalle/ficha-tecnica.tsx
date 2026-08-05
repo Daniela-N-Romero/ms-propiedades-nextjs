@@ -1,35 +1,6 @@
 import { formatPrecio } from '@/lib/utils-formatting';
 import { styles } from './ficha-tecnica.styles';
-
-// 📚 Diccionario Mapeador de Íconos para Características Técnicas (JSON)
-const ICONOS_CARACTERISTICAS: Record<string, { label: string; icon: string }> = {
-  puenteGrua: { label: 'Puente Grúa', icon: '🏗️' },
-  dockCarga: { label: 'Docks de Carga', icon: '🚛' },
-  seguridad24hs: { label: 'Seguridad 24 hs', icon: '🛡️' },
-  zonificacionIndustrial: { label: 'Zonificación Industrial', icon: '🏭' },
-  playaManiobras: { label: 'Playa de Maniobras', icon: '🚚' },
-  cloacas: { label: 'Planta de Tratamiento / Cloacas', icon: '💧' },
-  balanza: { label: 'Balanza para Camiones', icon: '⚖️' },
-  tieneGas: { label: 'Gas Industrial', icon: '🔥' },
-  almaLlena: { label: 'Alma Llena', icon: '🏗️' },
-  redHidrante: { label: 'Red de Incendios', icon: '🧯' },
-  sprinklers: { label: 'Sprinklers', icon: '💧' },
-  tienePotencia: { label: 'Fuerza Motriz / T3', icon: '⚡' },
-  altura: { label: 'Altura', icon: '📏' },
-  oficinasM2: { label: 'Oficinas', icon: '🏢' },
-  banos: { label: 'Baños', icon: '🚽' },
-  dormitorios: { label: 'Dormitorios', icon: '🛏️' },
-  cocheras: { label: 'Cocheras', icon: '🚗' },
-  barrioCerrado: { label: 'Barrio Cerrado', icon: '🛡️' },
-  cercado: { label: 'Perímetro Cercado', icon: '🧱' },
-  metrosFondo: { label: 'Fondo', icon: '📏' },
-  metrosFrente: { label: 'Frente', icon: '📏' },
-  serviciosGas: { label: 'Gas', icon: '🔥' },
-  serviciosLuz: { label: 'Electricidad', icon: '⚡' },
-  serviciosAgua: { label: 'Agua Corriente', icon: '💧' },
-  cortinaElectrica: { label: 'Cortina Eléctrica', icon: '🗝️' },
-  cortinaMetalica: { label: 'Cortina Metalica', icon: '🗝️' }
-};
+import { CARACTERISTICAS_CATALOGO } from '@/types/caracteristicas';
 
 interface FichaTecnicaProps {
   precio: number;
@@ -51,7 +22,7 @@ export default function FichaTecnica({
   subtipoNombre
 }: FichaTecnicaProps) {
 
-  /* 1. Mapeo formateador por defecto (por si no está en ICONOS_CARACTERISTICAS) */
+  /* 1. Mapeo formateador por defecto (por si no está en CARACTERISTICAS_CATALOGO) */
   const formatCamelCase = (str: string) => {
     return str
       .replace(/([A-Z])/g, ' $1') // Agrega espacio antes de mayúsculas ("almaLlena" -> "alma Llena")
@@ -116,7 +87,7 @@ export default function FichaTecnica({
           <div className={styles.featuresGrid}>
             {caracteristicasValidas.map(([key, value]) => {
               // Mapeo o fallback elegante
-              const meta = ICONOS_CARACTERISTICAS[key] || {
+              const meta = CARACTERISTICAS_CATALOGO[key] || {
                 label: formatCamelCase(key),
                 icon: '✔',
               };
@@ -126,8 +97,10 @@ export default function FichaTecnica({
               if (typeof value === 'number' || typeof value === 'string') {
                 // Si el label ya contiene la descripción no repetimos, sino agregamos el valor
                 valorFormateado = `: ${value}`;
-                if (key.toLowerCase().includes('altura') || key.toLowerCase().includes('m2')) {
-                  valorFormateado += ' m²'; // o la unidad correspondiente
+                if (key.toLowerCase().includes('altura')) {
+                  valorFormateado += ' m';
+                } else if (key.toLowerCase().includes('m2')) {
+                  valorFormateado += ' m²';
                 }
               }
 

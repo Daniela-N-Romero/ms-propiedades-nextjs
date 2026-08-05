@@ -8,6 +8,7 @@ import { getInputClass, getSelectClass } from '../utils/form-utils';
 import { PropietarioModal } from '../modals/propietario-modal';
 import { ColegaModal } from '../modals/colega-modal';
 import type { TipoInmueble, Agente, Propietario, Colega } from '@prisma-client';
+import { DynamicFeaturesSection } from './dynamic-features-section';
 
 interface ComercialSectionProps {
   form: UseFormReturn<PropertyFormValues>;
@@ -44,6 +45,9 @@ export function ComercialSection({
 
   const [isPropietarioModalOpen, setIsPropietarioModalOpen] = useState(false);
   const [isColegaModalOpen, setIsColegaModalOpen] = useState(false);
+
+  const mercadoSeleccionado = mercados.find((m) => m.id === selectedMercadoId);
+  const mercadoSlugActual = mercadoSeleccionado?.slug?.toLowerCase() || '';
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-5">
@@ -286,6 +290,34 @@ export function ComercialSection({
           setValue('colegaId', nuevo.id, { shouldValidate: true, shouldDirty: true });
         }}
       />
+
+      {/* DESCRIPCIÓN PÚBLICA DE LA PROPIEDAD */}
+      <div className="col-span-full">
+        <label className="block text-xs font-bold text-slate-700 mb-1">
+          Descripción de la Publicación <span className="text-red-500">*</span>
+        </label>
+        <textarea
+          {...form.register('descripcion')}
+          rows={5}
+          placeholder="Redactá una descripción detallada de la propiedad, accesos, ventajas industriales, estado de los techos, etc..."
+          className="w-full text-sm p-3 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-orange outline-none transition"
+        />
+        {form.formState.errors.descripcion && (
+          <p className="text-xs text-red-500 mt-1 font-semibold">
+            {form.formState.errors.descripcion.message as string}
+          </p>
+        )}
+      </div>
+
+        {/* ESPECIFICACIONES TÉCNICAS / CARACTERÍSTICAS DINÁMICAS */}
+      {mercadoSlugActual && (
+        <DynamicFeaturesSection
+          form={form}
+          mercadoSlugActual={mercadoSlugActual}
+        />
+      )}
+
+
     </div>
   );
 }
