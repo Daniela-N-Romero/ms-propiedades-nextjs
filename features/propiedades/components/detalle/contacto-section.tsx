@@ -62,12 +62,12 @@ export default function ContactoSection({
                 {/* DESCARGA DE FICHA PDF (Si existe en la DB) */}
                 {pdfUrl && (
                     <a
-                        href={pdfUrl}
+                        href={pdfUrl ? pdfUrl : `/api/properties/${propiedadId}/pdf`} //cambiar cuando el generador de pdf funcione mejor
                         target="_blank"
-                        download
+                        rel="noopener noreferrer"
                         className={styles.btnPdf}
                     >
-                        <span>📄 Descargar Ficha en PDF</span>
+                        📄 Descargar Ficha PDF
                     </a>
                 )}
 

@@ -22,6 +22,7 @@ export function VideoSeccion({ videoUrl }: VideoSeccionProps) {
         const videoId = url.split('vimeo.com/')[1]?.split('?')[0];
         return `https://player.vimeo.com/video/${videoId}`;
       }
+
       return url; // Si ya viene en formato embed
     } catch {
       return url;

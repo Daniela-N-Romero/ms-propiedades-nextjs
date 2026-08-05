@@ -13,7 +13,7 @@ export function PdfUploader({ pdfUrl, onChange }: PdfUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
-const processPdfFile = async (file: File) => {
+  const processPdfFile = async (file: File) => {
     if (!file) return;
 
     if (file.type !== 'application/pdf') {
@@ -98,11 +98,10 @@ const processPdfFile = async (file: File) => {
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          className={`border-2 border-dashed rounded-xl p-4 text-center transition-all ${
-            isDragging
-              ? 'border-brand-orange bg-orange-100/50 scale-[1.01]'
-              : 'border-slate-300 hover:border-brand-orange bg-slate-50/50'
-          }`}
+          className={`border-2 border-dashed rounded-xl p-4 text-center transition-all ${isDragging
+            ? 'border-brand-orange bg-orange-100/50 scale-[1.01]'
+            : 'border-slate-300 hover:border-brand-orange bg-slate-50/50'
+            }`}
         >
           <input
             type="file"
@@ -121,12 +120,23 @@ const processPdfFile = async (file: File) => {
               {isUploading
                 ? '⏳ Subiendo PDF a Supabase...'
                 : isDragging
-                ? '¡Soltá el PDF acá!'
-                : 'Hacé clic para subir o arrastrá el archivo PDF'}
+                  ? '¡Soltá el PDF acá!'
+                  : 'Hacé clic para subir o arrastrá el archivo PDF'}
             </span>
           </label>
         </div>
       )}
+
+      <div className="bg-amber-50 border-l-4 border-amber-500 p-3.5 rounded-r-xl space-y-1">
+        <div className="flex items-center gap-2 text-amber-900 font-bold text-xs">
+          <span>⚠️</span>
+          <span>Aviso sobre PDFs Manuales</span>
+        </div>
+        <p className="text-[11px] text-amber-800 leading-relaxed">
+          Si adjuntás un PDF personalizado (Canva/Diseño), acordate de que <strong>no se actualizará automáticamente</strong> si modificás el precio, las superficies o la descripción más adelante. Si dejás este campo vacío, la web generará un PDF automático siempre actualizado con los datos del sitio.
+        </p>
+      </div>
+
     </div>
   );
 }
