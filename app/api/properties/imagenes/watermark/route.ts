@@ -2,69 +2,76 @@ import { NextRequest, NextResponse } from 'next/server';
 import sharp from 'sharp';
 
 export async function GET(request: NextRequest) {
+  let imageBuffer: Buffer | null = null;
+
   try {
     const { searchParams } = new URL(request.url);
     const imageUrl = searchParams.get('url');
 
     if (!imageUrl) {
-      return new NextResponse('URL de imagen no proporcionada', { status: 400 });
+      return new NextResponse('URL no proporcionada', { status: 400 });
     }
 
-    // 1. Descargar la imagen limpia desde Supabase Storage
+    // 1. Descargar la imagen original desde Supabase
     const response = await fetch(imageUrl);
     if (!response.ok) {
-      return new NextResponse('Error al obtener la imagen original', { status: 404 });
+      return new NextResponse('Error al obtener la imagen de Supabase', { status: 404 });
     }
-    const imageBuffer = Buffer.from(await response.arrayBuffer());
 
-    // 2. ✅ OBTENER EL LOGO VÍA HTTP (Funciona 100% garantizado en Vercel Serverless)
+    imageBuffer = Buffer.from(await response.arrayBuffer());
+
+    // 2. Intentar obtener el logo desde el dominio público
     const host = request.headers.get('host') || 'www.mspropiedadesindustrial.com.ar';
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const logoUrl = `${protocol}://${host}/images/logos/watermark.png`;
 
     const logoResponse = await fetch(logoUrl);
-    let resizedLogoBuffer: Buffer | null = null;
 
     if (logoResponse.ok) {
       const logoBuffer = Buffer.from(await logoResponse.arrayBuffer());
       
-      // 3. Dimensiones para escalar el logo proporcionalmente
+      // Obtener dimensiones
       const metadata = await sharp(imageBuffer).metadata();
       const imageWidth = metadata.width || 1200;
       const watermarkWidth = Math.round(imageWidth * 0.3); // 30% del ancho
 
-      resizedLogoBuffer = await sharp(logoBuffer)
+      // Redimensionar logo
+      const resizedLogoBuffer = await sharp(logoBuffer)
         .resize({ width: watermarkWidth })
         .toBuffer();
-    }
 
-    // 4. Si no se pudo obtener el logo, devolvemos la imagen limpia sin romper la web
-    if (!resizedLogoBuffer) {
-      return new NextResponse(imageBuffer, {
-        headers: { 'Content-Type': 'image/jpeg' },
+      // Procesar marca de agua
+      const outputBuffer = await sharp(imageBuffer)
+        .composite([
+          {
+            input: resizedLogoBuffer,
+            gravity: 'center',
+          },
+        ])
+        .jpeg({ quality: 85 }) // 💡 Convertimos a JPEG para máxima compatibilidad con todos los navegadores
+        .toBuffer();
+
+      return new NextResponse(outputBuffer, {
+        headers: {
+          'Content-Type': 'image/webp',
+          'Cache-Control': 'public, max-age=31536000, immutable',
+        },
       });
     }
 
-    // 5. Aplicar la marca de agua con Sharp
-    const outputBuffer = await sharp(imageBuffer)
-      .composite([
-        {
-          input: resizedLogoBuffer,
-          gravity: 'center',
-        },
-      ])
-      .toFormat('webp', { quality: 80 })
-      .toBuffer();
-
-    return new NextResponse(outputBuffer, {
-      headers: {
-        'Content-Type': 'image/webp',
-        'Cache-Control': 'public, max-age=31536000, immutable',
-      },
-    });
-
   } catch (error) {
-    console.error('Error procesando marca de agua:', error);
-    return new NextResponse('Error interno del servidor', { status: 500 });
+    console.error('⚠️ Error al aplicar marca de agua, devolviendo imagen original:', error);
   }
+
+  // FALLBACK DE SEGURIDAD: Si falla el logo o la marca de agua, devuelve la foto original
+  if (imageBuffer) {
+return new NextResponse(new Uint8Array(imageBuffer), {
+  headers: {
+    'Content-Type': 'image/webp', 
+    'Cache-Control': 'public, max-age=31536000, immutable',
+  },
+});
+  }
+
+  return new NextResponse('Error procesando imagen', { status: 500 });
 }

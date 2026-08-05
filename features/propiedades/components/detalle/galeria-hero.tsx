@@ -67,6 +67,13 @@ const fotosDisplay = imagenes && imagenes.length > 0
     };
   }, [isLightboxOpen, nextPhoto, prevPhoto]);
 
+  const getWatermarkUrl = (originalUrl: string) => {
+  if (!originalUrl || originalUrl.startsWith('/images/placeholder')) {
+    return originalUrl;
+  }
+
+  return `/api/properties/imagenes/watermark?url=${encodeURIComponent(originalUrl)}`;
+};
   
   return (
     <div className="space-y-4">
@@ -93,7 +100,7 @@ const fotosDisplay = imagenes && imagenes.length > 0
           onClick={() => openLightboxAt(0)}
         >
           <Image
-            src={`/api/properties/imagenes/watermark?url=${encodeURIComponent(fotosDisplay[0].url)}`}
+            src={getWatermarkUrl(fotosDisplay[0].url)}
             alt={titulo}
             fill
             priority
@@ -112,7 +119,7 @@ const fotosDisplay = imagenes && imagenes.length > 0
               onClick={() => openLightboxAt(idx + 1)}
             >
               <Image
-                src={`/api/properties/imagenes/watermark?url=${encodeURIComponent(img.url)}`}
+                src={getWatermarkUrl(img.url)}
                 alt={`${titulo} - foto ${idx + 2}`}
                 fill
                 unoptimized
@@ -161,7 +168,7 @@ const fotosDisplay = imagenes && imagenes.length > 0
 
             <div className="relative w-full h-full max-w-5xl max-h-[80vh]">
               <Image
-                src={`/api/properties/imagenes/watermark?url=${encodeURIComponent(fotosDisplay[currentIndex].url)}`}
+                src={getWatermarkUrl(fotosDisplay[currentIndex].url)}
                 alt={titulo}
                 fill
                 priority
@@ -190,7 +197,7 @@ const fotosDisplay = imagenes && imagenes.length > 0
                 }`}
               >
                 <Image 
-                  src={`/api/properties/imagenes/watermark?url=${encodeURIComponent(img.url)}`}
+                  src={getWatermarkUrl(img.url)}
                   alt="thumb" 
                   fill 
                   unoptimized
