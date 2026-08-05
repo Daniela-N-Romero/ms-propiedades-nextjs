@@ -32,7 +32,7 @@ const fotosDisplay = imagenes && imagenes.length > 0
       { id: 0, url: '/images/placeholder.png', orden: 0, propiedadId: 0 }
     ];
 
-  console.log('fotosDisplay:', fotosDisplay);
+
 
   const openLightboxAt = (index: number) => {
     setCurrentIndex(index);

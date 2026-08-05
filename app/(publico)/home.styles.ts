@@ -1,5 +1,5 @@
 export const styles = {
-  heroSection: "relative h-[85vh] w-full flex items-center justify-center bg-slate-900 bg-[url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center md:bg-[url('https://res.cloudinary.com/zemkjoec/image/upload/v1783458820/20260506_125705_b9nocz.jpg')] bg-cover bg-center",
+  heroSection: "relative pt-20 pb-20 w-full md:h-[85vh] flex items-center justify-center bg-slate-900 bg-[url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center md:bg-[url('https://res.cloudinary.com/zemkjoec/image/upload/v1783458820/20260506_125705_b9nocz.jpg')] bg-cover bg-center",
   heroOverlay: "absolute inset-0 bg-brand-dark/50 z-0",
   heroOverlayGradient: "absolute inset-0 bg-linear-to-b from-brand-dark/40 to-transparent z-10",
   heroContent: "relative z-20 w-full max-w-5xl mx-auto px-4 flex flex-col items-center text-center space-y-8",
