@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sharp from 'sharp';
-import path from 'path';
-import fs from 'fs';
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,44 +17,48 @@ export async function GET(request: NextRequest) {
     }
     const imageBuffer = Buffer.from(await response.arrayBuffer());
 
-    // 2. Cargar el logo desde la carpeta /public
-    const logoPath = path.join(process.cwd(), 'public/images/logos/', 'watermark.png');
-    
-    if (!fs.existsSync(logoPath)) {
-      // Si no existe el logo por alguna razón, devuelve la imagen original
+    // 2. ✅ OBTENER EL LOGO VÍA HTTP (Funciona 100% garantizado en Vercel Serverless)
+    const host = request.headers.get('host') || 'www.mspropiedadesindustrial.com.ar';
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    const logoUrl = `${protocol}://${host}/images/logos/watermark.png`;
+
+    const logoResponse = await fetch(logoUrl);
+    let resizedLogoBuffer: Buffer | null = null;
+
+    if (logoResponse.ok) {
+      const logoBuffer = Buffer.from(await logoResponse.arrayBuffer());
+      
+      // 3. Dimensiones para escalar el logo proporcionalmente
+      const metadata = await sharp(imageBuffer).metadata();
+      const imageWidth = metadata.width || 1200;
+      const watermarkWidth = Math.round(imageWidth * 0.3); // 30% del ancho
+
+      resizedLogoBuffer = await sharp(logoBuffer)
+        .resize({ width: watermarkWidth })
+        .toBuffer();
+    }
+
+    // 4. Si no se pudo obtener el logo, devolvemos la imagen limpia sin romper la web
+    if (!resizedLogoBuffer) {
       return new NextResponse(imageBuffer, {
         headers: { 'Content-Type': 'image/jpeg' },
       });
     }
 
-    // 3. Obtener dimensiones de la imagen original para escalar el logo de forma proporcional
-    const metadata = await sharp(imageBuffer).metadata();
-    const imageWidth = metadata.width || 1200;
-
-    // Queremos que el logo ocupe el 30% del ancho de la imagen
-    const watermarkWidth = Math.round(imageWidth * 0.3);
-
-    // Redimensionar el logo
-    const resizedLogoBuffer = await sharp(logoPath)
-      .resize({ width: watermarkWidth })
-      .toBuffer();
-
-    // 4. Aplicar la marca de agua en el centro con Sharp
+    // 5. Aplicar la marca de agua con Sharp
     const outputBuffer = await sharp(imageBuffer)
       .composite([
         {
           input: resizedLogoBuffer,
-          gravity: 'center', // Opciones: 'center', 'southeast' (esquina inferior derecha), etc.
+          gravity: 'center',
         },
       ])
-      .toFormat('webp', { quality: 80 }) // Formato WebP optimizado
+      .toFormat('webp', { quality: 80 })
       .toBuffer();
 
-    // 5. Retornar la imagen procesada con encabezados de Caché para Vercel
     return new NextResponse(outputBuffer, {
       headers: {
         'Content-Type': 'image/webp',
-        // Esto le indica a Vercel que guarde la foto en caché por 1 año
         'Cache-Control': 'public, max-age=31536000, immutable',
       },
     });

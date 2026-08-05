@@ -1,6 +1,6 @@
 import { formatPrecio } from '@/lib/utils-formatting';
 import { styles } from './ficha-tecnica.styles';
-import { CARACTERISTICAS_CATALOGO } from '@/types/caracteristicas';
+import { ICONOS_CARACTERISTICAS } from '@/types/caracteristicas';
 
 interface FichaTecnicaProps {
   precio: number;
@@ -22,7 +22,7 @@ export default function FichaTecnica({
   subtipoNombre
 }: FichaTecnicaProps) {
 
-  /* 1. Mapeo formateador por defecto (por si no está en CARACTERISTICAS_CATALOGO) */
+  /* 1. Mapeo formateador por defecto */
   const formatCamelCase = (str: string) => {
     return str
       .replace(/([A-Z])/g, ' $1') // Agrega espacio antes de mayúsculas ("almaLlena" -> "alma Llena")
@@ -87,7 +87,7 @@ export default function FichaTecnica({
           <div className={styles.featuresGrid}>
             {caracteristicasValidas.map(([key, value]) => {
               // Mapeo o fallback elegante
-              const meta = CARACTERISTICAS_CATALOGO[key] || {
+              const meta = ICONOS_CARACTERISTICAS[key] || {
                 label: formatCamelCase(key),
                 icon: '✔',
               };
@@ -125,7 +125,7 @@ export default function FichaTecnica({
           <div className={styles.descriptionText}>
             {descripcion}
           </div>
-          <span className="text-slate-600">MS PROPIEDADES INDUSTRIALES - Matías Settecerze Col. 1219</span>
+          <p className="mt-3 text-slate-500 font-bold">MS PROPIEDADES INDUSTRIALES - Matías Settecerze Col. 1219</p>
         </div>
       )}
 

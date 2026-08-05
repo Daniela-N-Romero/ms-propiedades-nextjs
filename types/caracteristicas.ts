@@ -19,8 +19,8 @@ export const CARACTERISTICAS_CATALOGO: CaracteristicaDefinicion[] = [
   { key: 'redHidrante', label: 'Red de Incendios', icon: '🧯', mercados: ['industrial'] },
   { key: 'sprinklers', label: 'Sprinklers', icon: '💧', mercados: ['industrial'] },
   { key: 'tienePotencia', label: 'Fuerza Motriz / T3', icon: '⚡', mercados: ['industrial'] },
-  { key: 'altura', label: 'Altura (m)', icon: '📏', mercados: ['industrial'], tipoInput: 'number' },
-  { key: 'oficinasM2', label: 'Oficinas (m²)', icon: '🏢', mercados: ['industrial', 'comercial'], tipoInput: 'number' },
+  { key: 'altura', label: 'Altura', icon: '📏', mercados: ['industrial'], tipoInput: 'number' },
+  { key: 'oficinasM2', label: 'Oficinas', icon: '🏢', mercados: ['industrial', 'comercial'], tipoInput: 'number' },
 
   // 🏡 RESIDENCIAL
   { key: 'dormitorios', label: 'Dormitorios', icon: '🛏️', mercados: ['residencial'], tipoInput: 'number' },
@@ -45,3 +45,9 @@ export const CARACTERISTICAS_CATALOGO: CaracteristicaDefinicion[] = [
   { key: 'serviciosLuz', label: 'Electricidad', icon: '⚡', mercados: ['residencial', 'terrenos', 'comercial'] },
   { key: 'serviciosAgua', label: 'Agua Corriente', icon: '💧', mercados: ['residencial', 'terrenos', 'comercial'] },
 ];
+
+export const ICONOS_CARACTERISTICAS: Record<string, { label: string; icon: string }> = 
+  CARACTERISTICAS_CATALOGO.reduce((acc, item) => {
+    acc[item.key] = { label: item.label, icon: item.icon };
+    return acc;
+  }, {} as Record<string, { label: string; icon: string }>);

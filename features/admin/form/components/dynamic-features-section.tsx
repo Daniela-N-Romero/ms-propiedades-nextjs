@@ -1,6 +1,6 @@
 'use client';
 
-import { UseFormReturn } from 'react-hook-form';
+import { UseFormReturn, useWatch } from 'react-hook-form';
 import { CARACTERISTICAS_CATALOGO } from '@/types/caracteristicas';
 import type { PropertyFormValues } from '../schemas/property-schema';
 
@@ -10,25 +10,38 @@ interface DynamicFeaturesSectionProps {
 }
 
 export function DynamicFeaturesSection({ form, mercadoSlugActual }: DynamicFeaturesSectionProps) {
-  const caracteristicas = form.watch('caracteristicas') || {};
+const caracteristicas = useWatch({
+    control: form.control,
+    name: 'caracteristicas',
+  }) || {};
 
-  // 🔍 Filtramos el catálogo según el mercado activo
-  const caracteristicasFiltradas = CARACTERISTICAS_CATALOGO.filter((item) =>
+const caracteristicasFiltradas = CARACTERISTICAS_CATALOGO.filter((item) =>
     item.mercados.includes(mercadoSlugActual as any)
   );
 
-  const toggleFeature = (key: string) => {
-    const current = { ...caracteristicas };
+  const toggleFeature = (e: React.MouseEvent, key: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Leemos directo con getValues
+    const current = { ...(form.getValues('caracteristicas') || {}) };
+
     if (current[key]) {
       delete current[key];
     } else {
       current[key] = true;
     }
-    form.setValue('caracteristicas', current, { shouldDirty: true });
+
+    // Actualizamos el estado global del form
+    form.setValue('caracteristicas', current, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
   };
 
   const handleValueChange = (key: string, val: string | number) => {
-    const current = { ...caracteristicas };
+    const current = { ...(form.getValues('caracteristicas') || {}) };
     if (val === '' || val === null) {
       delete current[key];
     } else {
@@ -52,7 +65,6 @@ export function DynamicFeaturesSection({ form, mercadoSlugActual }: DynamicFeatu
         {caracteristicasFiltradas.map((item) => {
           const isSelected = Boolean(caracteristicas[item.key]);
 
-          // Si es tipo número (ej: Dormitorios, Cocheras, Altura)
           if (item.tipoInput === 'number') {
             return (
               <div key={item.key} className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
@@ -70,13 +82,12 @@ export function DynamicFeaturesSection({ form, mercadoSlugActual }: DynamicFeatu
             );
           }
 
-          // Si es tipo Toggle / Checkbox
           return (
             <button
               key={item.key}
               type="button"
-              onClick={() => toggleFeature(item.key)}
-              className={`flex items-center gap-2 p-3 text-xs font-semibold rounded-xl border transition-all text-left ${
+              onClick={(e) => toggleFeature(e, item.key)}
+              className={`flex items-center gap-2 p-3 text-xs font-semibold rounded-xl border transition-all text-left cursor-pointer ${
                 isSelected
                   ? 'bg-orange-50 border-brand-orange text-brand-orange shadow-sm font-bold'
                   : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'

@@ -35,7 +35,7 @@ export function usePropertyCascades({
     }
     startTransition(async () => {
       try {
-        const res = await fetch(`/api/tipos/subtipos?padreId=${selectedMercadoId}`);
+        const res = await fetch(`/api/properties/tipos/subtipos?padreId=${selectedMercadoId}`);
         if (res.ok) setSubtiposDisponibles(await res.json());
       } catch (err) {
         console.error('Error al cargar subtipos:', err);

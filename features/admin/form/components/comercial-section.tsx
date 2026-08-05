@@ -81,8 +81,9 @@ export function ComercialSection({
             value={selectedMercadoId}
             onChange={(e) => {
               const id = Number(e.target.value);
-              setSelectedMercadoId(id);
-              setValue('tipoInmuebleId', 0);
+              setSelectedMercadoId(id); // Dispara el useEffect en usePropertyCascades
+              // ✅ Reseteamos tipoInmuebleId notificando a React Hook Form
+              setValue('tipoInmuebleId', 0, { shouldValidate: true, shouldDirty: true });
             }}
             className={getSelectClass(false)}
           >
@@ -309,7 +310,7 @@ export function ComercialSection({
         )}
       </div>
 
-        {/* ESPECIFICACIONES TÉCNICAS / CARACTERÍSTICAS DINÁMICAS */}
+      {/* ESPECIFICACIONES TÉCNICAS / CARACTERÍSTICAS DINÁMICAS */}
       {mercadoSlugActual && (
         <DynamicFeaturesSection
           form={form}
