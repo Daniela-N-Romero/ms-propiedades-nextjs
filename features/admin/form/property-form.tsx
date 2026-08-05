@@ -14,6 +14,7 @@ import { MultimediaSection } from './components/multimedia-section';
 
 import type { ZonaServer, PropertyFullData } from '@/types/server-data';
 import type { TipoInmueble, Agente, Propietario, Colega } from '@prisma-client';
+import { StatusSection } from './components/status-section';
 
 interface PropertyFormProps {
   initialData?: PropertyFullData | null;
@@ -200,6 +201,9 @@ export default function PropertyForm({
 
       {/* BLOQUE 3: MULTIMEDIA */}
       <MultimediaSection form={form} />
+
+      {/* NUEVO BLOQUE 4: ESTADO Y NOTAS PRIVADAS */}
+      <StatusSection form={form} />
 
       {/* FOOTER */}
       <div className="flex justify-end gap-4 pt-2">
