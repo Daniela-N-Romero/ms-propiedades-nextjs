@@ -6,6 +6,7 @@ import { styles } from "./contacto-section.styles";
 import { useWhatsAppButtons } from "../../hooks/use-whatsapp-buttons";
 import WhatsAppFloatingButton from "./propiedad-wpp-buttons/whatsapp-floating-button";
 
+
 interface ContactoSectionProps {
     codigo: string,
     titulo: string,
@@ -69,6 +70,7 @@ export default function ContactoSection({
                         <span>📄 Descargar Ficha en PDF</span>
                     </a>
                 )}
+
 
                 {/* FORMULARIO DE CONSULTA */}
                 <ContactoCard

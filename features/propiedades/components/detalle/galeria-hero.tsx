@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { styles } from './galeria.styles';
 import type { Imagen } from '@prisma-client';
+import { AccionesPropiedad } from './acciones-propiedad';
 
 interface GaleriaHeroProps {
   titulo: string;
@@ -26,9 +27,9 @@ export default function GaleriaHero({
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Si no hay fotos cargadas en el array, usamos un placeholder elegante
-const fotosDisplay = imagenes && imagenes.length > 0 
-  ? imagenes 
-  : [
+  const fotosDisplay = imagenes && imagenes.length > 0
+    ? imagenes
+    : [
       { id: 0, url: '/images/placeholder.png', orden: 0, propiedadId: 0 }
     ];
 
@@ -68,13 +69,13 @@ const fotosDisplay = imagenes && imagenes.length > 0
   }, [isLightboxOpen, nextPhoto, prevPhoto]);
 
   const getWatermarkUrl = (originalUrl: string) => {
-  if (!originalUrl || originalUrl.startsWith('/images/placeholder')) {
-    return originalUrl;
-  }
+    if (!originalUrl || originalUrl.startsWith('/images/placeholder')) {
+      return originalUrl;
+    }
 
-  return `/api/properties/imagenes/watermark?url=${encodeURIComponent(originalUrl)}`;
-};
-  
+    return `/api/properties/imagenes/watermark?url=${encodeURIComponent(originalUrl)}`;
+  };
+
   return (
     <div className="space-y-4">
       {/* 🏷️ ENCABEZADO / TITULAR */}
@@ -83,9 +84,16 @@ const fotosDisplay = imagenes && imagenes.length > 0
           <span className={styles.badgeOperacion}>En {categoria}</span>
           <span className={styles.codigoBadge}>CÓDIGO: {codigo}</span>
         </div>
-        
-        <h1 className={styles.titulo}>{titulo}</h1>
-        
+
+        <div className="flex items-start justify-between gap-4">
+          <h1 className={styles.titulo}>{titulo}</h1>
+
+          {/* 🚀 Botón ícono de compartir */}
+          <div className="shrink-0 pt-1">
+            <AccionesPropiedad titulo={titulo} codigo={codigo} variant="icons" />
+          </div>
+        </div>
+
         <p className={styles.ubicacion}>
           📍 {padreZonaNombre ? `${padreZonaNombre} > ` : ''}{zonaNombre}
         </p>
@@ -93,10 +101,10 @@ const fotosDisplay = imagenes && imagenes.length > 0
 
       {/* 🖼️ GRID MOSAICO DE FOTOS (HERO) */}
       <div className={styles.galleryGrid}>
-        
+
         {/* Foto Principal Grande (Izquierda o Completa en Mobile) */}
-        <div 
-          className={styles.mainImageContainer} 
+        <div
+          className={styles.mainImageContainer}
           onClick={() => openLightboxAt(0)}
         >
           <Image
@@ -113,8 +121,8 @@ const fotosDisplay = imagenes && imagenes.length > 0
         {/* Grilla Secundaria (Derecha - Solo visible en Desktop para 4 fotos adicionales) */}
         <div className={styles.secondaryGrid}>
           {fotosDisplay.slice(1, 5).map((img, idx) => (
-            <div 
-              key={img.id || idx} 
+            <div
+              key={img.id || idx}
               className={styles.smallImageContainer}
               onClick={() => openLightboxAt(idx + 1)}
             >
@@ -131,9 +139,9 @@ const fotosDisplay = imagenes && imagenes.length > 0
         </div>
 
         {/* Botón flotante para abrir todas las fotos */}
-        <button 
-          type="button" 
-          onClick={() => openLightboxAt(0)} 
+        <button
+          type="button"
+          onClick={() => openLightboxAt(0)}
           className={styles.btnVerTodas}
         >
           📸 Ver todas las fotos ({fotosDisplay.length})
@@ -143,14 +151,14 @@ const fotosDisplay = imagenes && imagenes.length > 0
       {/* 🌌 LIGHTBOX / MODAL FULLSCREEN */}
       {isLightboxOpen && (
         <div className={styles.lightboxOverlay} onClick={() => setIsLightboxOpen(false)}>
-          
+
           {/* Header del Lightbox */}
           <div id="lightboxHeader" className={styles.lightboxHeader}>
             <span className={styles.lightboxCounter}>
               Foto {currentIndex + 1} de {fotosDisplay.length} — REF: {codigo}
             </span>
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={() => setIsLightboxOpen(false)}
               className={styles.lightboxCloseBtn}
             >
@@ -161,7 +169,7 @@ const fotosDisplay = imagenes && imagenes.length > 0
           {/* Área Principal con Foto Activa y Botones de Navegación */}
           <div id="lightboxMainArea" className={styles.lightboxMainArea} >
             {fotosDisplay.length > 1 && (
-              <button type="button" onClick={(e) => { e.stopPropagation(); prevPhoto();}} className={styles.lightboxNavBtnLeft}>
+              <button type="button" onClick={(e) => { e.stopPropagation(); prevPhoto(); }} className={styles.lightboxNavBtnLeft}>
                 ‹
               </button>
             )}
@@ -174,12 +182,12 @@ const fotosDisplay = imagenes && imagenes.length > 0
                 priority
                 unoptimized
                 className="object-contain"
-                onClick={(e) => { e.stopPropagation()}} 
+                onClick={(e) => { e.stopPropagation() }}
               />
             </div>
 
             {fotosDisplay.length > 1 && (
-              <button type="button" onClick={(e) => { e.stopPropagation(); nextPhoto();}} className={styles.lightboxNavBtnRight}>
+              <button type="button" onClick={(e) => { e.stopPropagation(); nextPhoto(); }} className={styles.lightboxNavBtnRight}>
                 ›
               </button>
             )}
@@ -192,16 +200,15 @@ const fotosDisplay = imagenes && imagenes.length > 0
                 key={img.id || idx}
                 type="button"
                 onClick={() => setCurrentIndex(idx)}
-                className={`relative w-16 h-12 rounded-lg overflow-hidden border-2 transition-all shrink-0 ${
-                  currentIndex === idx ? 'border-brand-orange scale-105' : 'border-transparent opacity-50 hover:opacity-100'
-                }`}
+                className={`relative w-16 h-12 rounded-lg overflow-hidden border-2 transition-all shrink-0 ${currentIndex === idx ? 'border-brand-orange scale-105' : 'border-transparent opacity-50 hover:opacity-100'
+                  }`}
               >
-                <Image 
+                <Image
                   src={getWatermarkUrl(img.url)}
-                  alt="thumb" 
-                  fill 
+                  alt="thumb"
+                  fill
                   unoptimized
-                  className="object-cover" 
+                  className="object-cover"
                 />
               </button>
             ))}
