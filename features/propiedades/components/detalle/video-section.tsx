@@ -31,7 +31,7 @@ export function VideoSeccion({ videoUrl }: VideoSeccionProps) {
   const embedUrl = getEmbedUrl(videoUrl);
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+    <div className="bg-white p-6 mb-7 rounded-2xl shadow-sm border border-slate-200 space-y-4">
       <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
         <span>🎥</span> Recorrido en Video
       </h3>
