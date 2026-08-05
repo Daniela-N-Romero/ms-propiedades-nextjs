@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
         .jpeg({ quality: 85 }) // 💡 Convertimos a JPEG para máxima compatibilidad con todos los navegadores
         .toBuffer();
 
-      return new NextResponse(outputBuffer, {
+      return new NextResponse(new Uint8Array(outputBuffer), {
         headers: {
           'Content-Type': 'image/webp',
           'Cache-Control': 'public, max-age=31536000, immutable',
