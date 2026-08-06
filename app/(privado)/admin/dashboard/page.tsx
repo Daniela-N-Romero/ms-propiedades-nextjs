@@ -7,6 +7,13 @@ import { Fragment } from 'react';
 import StarButton from '@/features/admin/form/components/star-button';
 import { useContactLinks } from '@/providers/config-provider';
 
+interface ZonaNodo {
+  id: number;
+  nombre: string;
+  padreId?: number | null;
+  padre?: ZonaNodo | null;
+}
+
 interface PropiedadAdmin {
   id: number;
   codigo: string;
@@ -22,7 +29,8 @@ interface PropiedadAdmin {
   colegaId?: number | null;
   updatedAt: string;
   deletedAt?: string | null;
-  zona: { nombre: string };
+  zonaId?: number | null;
+  zona: ZonaNodo;
   tipoInmueble: { nombre: string; padre?: { slug: string } };
   imagenes: { url: string }[];
   direccionPersonalizada?: string | null;
@@ -68,6 +76,16 @@ export default function DashboardPage() {
     setSearch('');
     setMissingMedia('all');
   }, [activeTab]);
+
+
+const getZonaJerarquia = (prop: PropiedadAdmin) => {
+
+  const styles = `font-bold ${ prop.zona?.padre?.padreId  ?  '' : 'bg-yellow-500 px-2 py-1 rounded-lg text-[10px] font-spartan uppercase tracking-wider' }`;
+  // Imprimimos la zona como texto puro para ver qué llega exactamente
+  return (
+      <p className={styles}>{prop.zona?.padre?.padreId ? `📍 ${prop.zona.nombre}` : '⚠️ INCOMPLETA'}</p>
+  );
+};
 
   // Cambiar estado de publicación (Borrador / Publicada)
   const togglePublishStatus = async (id: number, currentStatus: boolean) => {
@@ -377,7 +395,7 @@ export default function DashboardPage() {
                             <span className="text-[10px] font-mono text-slate-400 block mt-0.5">REF: {prop.codigo}</span>
                           </td>
                           <td className="p-3 font-semibold text-slate-800">
-                            {prop.zona?.nombre || 'N/A'}
+                            {getZonaJerarquia(prop)}
                           </td>
                           <td className="p-3 font-extrabold text-slate-900">
                             {formatPrecio(prop.precio, prop.moneda)}

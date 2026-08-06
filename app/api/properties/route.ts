@@ -24,7 +24,15 @@ export async function GET(request: Request) {
         deletedAt: tab === 'papelera' ? { not: null } : null,
       },
       include: {
-        zona: true,
+        zona: {
+          include: {
+            padre: {
+              include: {
+                padre: true,
+              },
+            },
+          },
+        },
         tipoInmueble: {
           include: { padre: true },
         },
