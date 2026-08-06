@@ -299,7 +299,7 @@ export function ComercialSection({
         </label>
         <textarea
           {...form.register('descripcion')}
-          rows={5}
+          rows={9}
           placeholder="Redactá una descripción detallada de la propiedad, accesos, ventajas industriales, estado de los techos, etc..."
           className="w-full text-sm p-3 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-orange outline-none transition"
         />
