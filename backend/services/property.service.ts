@@ -18,7 +18,7 @@ import { PropertyFormValues } from '@/features/admin/form/schemas/property-schem
 export async function getDestacadas() {
   const destacadas = await prisma.propiedad.findMany({
     where: { isPublished: true, isDestacada: true },
-    include: { zona: true, tipoInmueble: true },
+    include: { zona: true, tipoInmueble: true, imagenes: true },
     orderBy: { createdAt: 'desc' }
   });
 
