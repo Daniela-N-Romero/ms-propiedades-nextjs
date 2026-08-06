@@ -1,53 +1,20 @@
 // backend/db/seed-zonas.ts
 import { prisma } from '@/backend/db';
 
-const ESTRUCTURA_TIPOS = [
-  {
-    nombre: 'Industrial',
-    slug: 'industrial',
-    hijos: [
-      { nombre: 'Nave Industrial', slug: 'nave_industrial' },
-      { nombre: 'Galpón / Depósito', slug: 'galpon' },
-      { nombre: 'Lote en Parque Ind.', slug: 'lote_parque_industrial' },
-      { nombre: 'Lote Industrial', slug: 'lote_industrial' },
-    ],
-  },
-  {
-    nombre: 'Comercial',
-    slug: 'comercial',
-    hijos: [
-      { nombre: 'Local Comercial', slug: 'local' },
-      { nombre: 'Oficina', slug: 'oficina' },
-      { nombre: 'Edificio Comercial', slug: 'edificio_comercial' },
-    ],
-  },
-  {
-    nombre: 'Residencial',
-    slug: 'residencial',
-    hijos: [
-      { nombre: 'Casa', slug: 'casa' },
-      { nombre: 'Departamento', slug: 'departamento' },
-      { nombre: 'Lote / Terreno', slug: 'terreno' },
-      { nombre: 'Lote en Barrio Cerrado', slug: 'lote_interno' },
-      { nombre: 'Quinta', slug: 'quinta' },
-    ],
-  },
-  {
-    nombre: 'Rural',
-    slug: 'rural',
-    hijos: [
-      { nombre: 'Chacra / Campo', slug: 'campo' },
-      { nombre: 'Fracción Rural', slug: 'fraccion_rural' },
-    ],
-  },
-];
-
 const REGIONES_ESTRUCTURA = [
   {
     nombre: 'GBA Sur',
     latitud: -34.78,
     longitud: -58.28,
     partidos: [
+      {
+        nombre: 'Presidente Perón',
+        latitud: -34.911,
+        longitud: -58.399,
+        localidades: [
+          { nombre: 'Guernica', latitud: -34.911, longitud: -58.399 },
+        ],
+      },
       {
         nombre: 'Berazategui',
         latitud: -34.763,
@@ -175,14 +142,6 @@ const REGIONES_ESTRUCTURA = [
         ],
       },
       {
-        nombre: 'Presidente Perón',
-        latitud: -34.911,
-        longitud: -58.399,
-        localidades: [
-          { nombre: 'Guernica', latitud: -34.911, longitud: -58.399 },
-        ],
-      },
-      {
         nombre: 'San Vicente',
         latitud: -35.048,
         longitud: -58.425,
@@ -193,19 +152,13 @@ const REGIONES_ESTRUCTURA = [
         ],
       },
       {
-        nombre: 'Partido de la Costa',
-        latitud: -36.372,
-        longitud: -56.725,
+        nombre: 'Cañuelas',
+        latitud: -35.05,
+        longitud: -58.76,
         localidades: [
-          { nombre: 'San Clemente del Tuyú', latitud: -36.372, longitud: -56.725 },
-        ],
-      },
-      {
-        nombre: 'Tres Arroyos',
-        latitud: -38.892,
-        longitud: -60.325,
-        localidades: [
-          { nombre: 'Reta', latitud: -38.892, longitud: -60.325 },
+          { nombre: 'Cañuelas', latitud: -35.05, longitud: -58.76 },
+          { nombre: 'Máximo Paz', latitud: -34.93, longitud: -58.62 },
+          { nombre: 'Vicente Casares', latitud: -34.95, longitud: -58.66 },
         ],
       },
     ],
@@ -229,6 +182,9 @@ const REGIONES_ESTRUCTURA = [
           { nombre: 'Caballito', latitud: -34.618, longitud: -58.442 },
           { nombre: 'Villa Devoto', latitud: -34.598, longitud: -58.512 },
           { nombre: 'Microcentro', latitud: -34.603, longitud: -58.375 },
+          { nombre: 'Villa Lugano', latitud: -34.671, longitud: -58.473 },
+          { nombre: 'Nueva Pompeya', latitud: -34.653, longitud: -58.419 },
+          { nombre: 'Mataderos', latitud: -34.656, longitud: -58.502 },
         ],
       },
     ],
@@ -246,6 +202,8 @@ const REGIONES_ESTRUCTURA = [
           { nombre: 'San Isidro', latitud: -34.472, longitud: -58.526 },
           { nombre: 'Martínez', latitud: -34.496, longitud: -58.51 },
           { nombre: 'Beccar', latitud: -34.462, longitud: -58.536 },
+          { nombre: 'Villa Adelina', latitud: -34.523, longitud: -58.544 },
+          { nombre: 'Boulogne', latitud: -34.505, longitud: -58.563 },
         ],
       },
       {
@@ -257,6 +215,7 @@ const REGIONES_ESTRUCTURA = [
           { nombre: 'Olivos', latitud: -34.509, longitud: -58.489 },
           { nombre: 'Munro', latitud: -34.538, longitud: -58.539 },
           { nombre: 'Florida', latitud: -34.533, longitud: -58.497 },
+          { nombre: 'Carapachay', latitud: -34.53, longitud: -58.55 },
         ],
       },
       {
@@ -268,6 +227,8 @@ const REGIONES_ESTRUCTURA = [
           { nombre: 'Nordelta', latitud: -34.412, longitud: -58.653 },
           { nombre: 'Don Torcuato', latitud: -34.492, longitud: -58.608 },
           { nombre: 'General Pacheco', latitud: -34.457, longitud: -58.628 },
+          { nombre: 'El Talar', latitud: -34.474, longitud: -58.651 },
+          { nombre: 'Benavídez', latitud: -34.396, longitud: -58.687 },
         ],
       },
       {
@@ -278,6 +239,51 @@ const REGIONES_ESTRUCTURA = [
           { nombre: 'Garín', latitud: -34.424, longitud: -58.729 },
           { nombre: 'Belén de Escobar', latitud: -34.348, longitud: -58.793 },
           { nombre: 'Ingeniero Maschwitz', latitud: -34.383, longitud: -58.733 },
+          { nombre: 'Matheu', latitud: -34.385, longitud: -58.832 },
+          { nombre: 'Loma Verde', latitud: -34.301, longitud: -58.852 },
+        ],
+      },
+      {
+        nombre: 'Pilar',
+        latitud: -34.458,
+        longitud: -58.914,
+        localidades: [
+          { nombre: 'Pilar', latitud: -34.458, longitud: -58.914 },
+          { nombre: 'Parque Industrial Pilar', latitud: -34.44, longitud: -58.98 },
+          { nombre: 'Del Viso', latitud: -34.444, longitud: -58.802 },
+          { nombre: 'Villa Rosa', latitud: -34.429, longitud: -58.868 },
+          { nombre: 'Fatima', latitud: -34.428, longitud: -59.006 },
+        ],
+      },
+      {
+        nombre: 'San Fernando',
+        latitud: -34.442,
+        longitud: -58.558,
+        localidades: [
+          { nombre: 'San Fernando', latitud: -34.442, longitud: -58.558 },
+          { nombre: 'Victoria', latitud: -34.452, longitud: -58.544 },
+          { nombre: 'Virreyes', latitud: -34.459, longitud: -58.572 },
+        ],
+      },
+      {
+        nombre: 'General San Martín',
+        latitud: -34.577,
+        longitud: -58.536,
+        localidades: [
+          { nombre: 'San Martín', latitud: -34.577, longitud: -58.536 },
+          { nombre: 'San Andrés', latitud: -34.561, longitud: -58.548 },
+          { nombre: 'Villa Ballester', latitud: -34.549, longitud: -58.555 },
+          { nombre: 'José León Suárez', latitud: -34.53, longitud: -58.575 },
+        ],
+      },
+      {
+        nombre: 'Malvinas Argentinas',
+        latitud: -34.502,
+        longitud: -58.69,
+        localidades: [
+          { nombre: 'Los Polvorines', latitud: -34.502, longitud: -58.69 },
+          { nombre: 'Tortuguitas', latitud: -34.471, longitud: -58.756 },
+          { nombre: 'Grand Bourg', latitud: -34.484, longitud: -58.718 },
         ],
       },
     ],
@@ -297,6 +303,9 @@ const REGIONES_ESTRUCTURA = [
           { nombre: 'Ramos Mejía', latitud: -34.641, longitud: -58.562 },
           { nombre: 'La Tablada', latitud: -34.697, longitud: -58.533 },
           { nombre: 'Ciudad Evita', latitud: -34.721, longitud: -58.536 },
+          { nombre: 'González Catán', latitud: -34.767, longitud: -58.618 },
+          { nombre: 'Virrey del Pino', latitud: -34.829, longitud: -58.729 },
+          { nombre: 'Lomas del Mirador', latitud: -34.662, longitud: -58.538 },
         ],
       },
       {
@@ -307,6 +316,8 @@ const REGIONES_ESTRUCTURA = [
           { nombre: 'Caseros', latitud: -34.608, longitud: -58.563 },
           { nombre: 'Pablo Podestá', latitud: -34.583, longitud: -58.603 },
           { nombre: 'Ciudadela', latitud: -34.637, longitud: -58.539 },
+          { nombre: 'El Palomar', latitud: -34.61, longitud: -58.583 },
+          { nombre: 'Sáenz Peña', latitud: -34.597, longitud: -58.526 },
         ],
       },
       {
@@ -316,85 +327,182 @@ const REGIONES_ESTRUCTURA = [
         localidades: [
           { nombre: 'Hurlingham', latitud: -34.595, longitud: -58.625 },
           { nombre: 'William C. Morris', latitud: -34.577, longitud: -58.643 },
+          { nombre: 'Villa Tesei', latitud: -34.61, longitud: -58.63 },
+        ],
+      },
+      {
+        nombre: 'Morón',
+        latitud: -34.652,
+        longitud: -58.618,
+        localidades: [
+          { nombre: 'Morón', latitud: -34.652, longitud: -58.618 },
+          { nombre: 'Haedo', latitud: -34.645, longitud: -58.598 },
+          { nombre: 'Castelar', latitud: -34.658, longitud: -58.645 },
+        ],
+      },
+      {
+        nombre: 'Ituzaingó',
+        latitud: -34.658,
+        longitud: -58.667,
+        localidades: [
+          { nombre: 'Ituzaingó', latitud: -34.658, longitud: -58.667 },
+          { nombre: 'Udaondo', latitud: -34.62, longitud: -58.68 },
+        ],
+      },
+      {
+        nombre: 'Merlo',
+        latitud: -34.665,
+        longitud: -58.728,
+        localidades: [
+          { nombre: 'Merlo', latitud: -34.665, longitud: -58.728 },
+          { nombre: 'San Antonio de Padua', latitud: -34.661, longitud: -58.698 },
+          { nombre: 'Parque San Martín', latitud: -34.68, longitud: -58.73 },
+        ],
+      },
+      {
+        nombre: 'Moreno',
+        latitud: -34.65,
+        longitud: -58.78,
+        localidades: [
+          { nombre: 'Moreno', latitud: -34.65, longitud: -58.78 },
+          { nombre: 'Paso del Rey', latitud: -34.648, longitud: -58.749 },
+          { nombre: 'Trujui', latitud: -34.59, longitud: -58.76 },
+          { nombre: 'Francisco Álvarez', latitud: -34.63, longitud: -58.85 },
+        ],
+      },
+    ],
+  },
+  {
+    nombre: 'Interior de Bs. As.',
+    latitud: -37.0,
+    longitud: -60.0,
+    partidos: [
+      {
+        nombre: 'Partido de la Costa',
+        latitud: -36.372,
+        longitud: -56.725,
+        localidades: [
+          { nombre: 'San Clemente del Tuyú', latitud: -36.372, longitud: -56.725 },
+          { nombre: 'Mar del Tuyú', latitud: -36.57, longitud: -56.68 },
+          { nombre: 'San Bernardo', latitud: -36.68, longitud: -56.67 },
+        ],
+      },
+      {
+        nombre: 'Tres Arroyos',
+        latitud: -38.892,
+        longitud: -60.325,
+        localidades: [
+          { nombre: 'Reta', latitud: -38.892, longitud: -60.325 },
+          { nombre: 'Tres Arroyos', latitud: -38.37, longitud: -60.27 },
+        ],
+      },
+      {
+        nombre: 'General Pueyrredón',
+        latitud: -38.0,
+        longitud: -57.55,
+        localidades: [
+          { nombre: 'Mar del Plata', latitud: -38.0, longitud: -57.55 },
+          { nombre: 'Batán', latitud: -38.0, longitud: -57.71 },
+        ],
+      },
+      {
+        nombre: 'Bahía Blanca',
+        latitud: -38.71,
+        longitud: -62.26,
+        localidades: [
+          { nombre: 'Bahía Blanca', latitud: -38.71, longitud: -62.26 },
+          { nombre: 'Ingeniero White', latitud: -38.78, longitud: -62.26 },
+        ],
+      },
+      {
+        nombre: 'Zárate',
+        latitud: -34.09,
+        longitud: -59.02,
+        localidades: [
+          { nombre: 'Zárate', latitud: -34.09, longitud: -59.02 },
+          { nombre: 'Lima', latitud: -33.98, longitud: -59.19 },
+        ],
+      },
+      {
+        nombre: 'Campana',
+        latitud: -34.16,
+        longitud: -58.95,
+        localidades: [
+          { nombre: 'Campana', latitud: -34.16, longitud: -58.95 },
         ],
       },
     ],
   },
 ];
-export async function seedZonasYTipos() {
-  console.log('🏷️ Cargando Categorías y Tipos de Inmueble...');
 
-  for (const catPadre of ESTRUCTURA_TIPOS) {
-    const padreDb = await prisma.tipoInmueble.upsert({
-      where: { slug: catPadre.slug },
-      update: { nombre: catPadre.nombre },
-      create: {
-        nombre: catPadre.nombre,
-        slug: catPadre.slug,
-      },
-    });
+export async function seedZonas() {
+  console.log('🌍 Sincronizando Árbol de Zonas de forma segura (sin borrar ni duplicar)...');
 
-    for (const hijo of catPadre.hijos) {
-      await prisma.tipoInmueble.upsert({
-        where: { slug: hijo.slug },
-        update: {
-          nombre: hijo.nombre,
-          padreId: padreDb.id,
-        },
-        create: {
-          nombre: hijo.nombre,
-          slug: hijo.slug,
-          padreId: padreDb.id,
-        },
-      });
-    }
-  }
-
-  console.log('✅ Categorías y Subtipos de Inmueble procesados.');
-
-  console.log('🌍 Cargando Árbol Completo de Zonas (GBA Sur, Norte, Oeste y CABA)...');
-
-  let totalNodos = 0;
+  let creados = 0;
+  let existentes = 0;
 
   for (const reg of REGIONES_ESTRUCTURA) {
-    // Crear Región (Nivel 1 - Sin padre)
-    const regionDb = await prisma.zona.create({
-      data: {
-        nombre: reg.nombre,
-        latitud: reg.latitud,
-        longitud: reg.longitud,
-        padreId: null,
-      },
+    // 1. Buscar o crear Región
+    let regionDb = await prisma.zona.findFirst({
+      where: { nombre: reg.nombre, padreId: null },
     });
-    totalNodos++;
 
-    for (const part of reg.partidos) {
-      // Crear Partido (Nivel 2 - Padre: regionDb.id)
-      const partidoDb = await prisma.zona.create({
+    if (!regionDb) {
+      regionDb = await prisma.zona.create({
         data: {
-          nombre: part.nombre,
-          latitud: part.latitud,
-          longitud: part.longitud,
-          padreId: regionDb.id,
+          nombre: reg.nombre,
+          latitud: reg.latitud,
+          longitud: reg.longitud,
+          padreId: null,
         },
       });
-      totalNodos++;
+      creados++;
+    } else {
+      existentes++;
+    }
 
-      for (const loc of part.localidades) {
-        // Crear Localidad (Nivel 3 - Padre: partidoDb.id)
-        const locCreada = await prisma.zona.create({
+    for (const part of reg.partidos) {
+      // 2. Buscar o crear Partido
+      let partidoDb = await prisma.zona.findFirst({
+        where: { nombre: part.nombre, padreId: regionDb.id },
+      });
+
+      if (!partidoDb) {
+        partidoDb = await prisma.zona.create({
           data: {
-            nombre: loc.nombre,
-            latitud: loc.latitud,
-            longitud: loc.longitud,
-            padreId: partidoDb.id,
+            nombre: part.nombre,
+            latitud: part.latitud,
+            longitud: part.longitud,
+            padreId: regionDb.id,
           },
         });
-        totalNodos++;
+        creados++;
+      } else {
+        existentes++;
+      }
+
+      for (const loc of part.localidades) {
+        // 3. Buscar o crear Localidad
+        let locDb = await prisma.zona.findFirst({
+          where: { nombre: loc.nombre, padreId: partidoDb.id },
+        });
+
+        if (!locDb) {
+          await prisma.zona.create({
+            data: {
+              nombre: loc.nombre,
+              latitud: loc.latitud,
+              longitud: loc.longitud,
+              padreId: partidoDb.id,
+            },
+          });
+          creados++;
+        } else {
+          existentes++;
+        }
       }
     }
   }
 
-  console.log(`✅ Árbol Completo de Zonas cargado con éxito. Total nodos creados: ${totalNodos}`);
+  console.log(`✅ Árbol de Zonas sincronizado. Nodos nuevos agregados: ${creados}, Nodos preexistentes conservados: ${existentes}.`);
 }
-

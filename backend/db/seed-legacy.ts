@@ -2,7 +2,8 @@ import 'dotenv/config';
 import { prisma } from '@/backend/db';
 import { generarCodigoRef, slugify } from '@/lib/utils-formatting'
 import { readLegacyJson } from '@/lib/utils-server'
-import { seedZonasYTipos } from './seed-zonas';
+import { seedZonas } from './seed-zonas';
+import { seedTipos } from './seed-tipos';
 import bcrypt from 'bcryptjs';
 import {
     UserRoleEnum,
@@ -18,7 +19,8 @@ async function main() {
     const passwordHash = await bcrypt.hash('admin123', 10);
 
     //  Ejecutar el Seed de Zonas, tipos y admin
-    await seedZonasYTipos();
+    await seedZonas();
+    await seedTipos();
 
     const admin = await prisma.agente.upsert({
         where: { email: 'admin@mspropiedades.com.ar' },
