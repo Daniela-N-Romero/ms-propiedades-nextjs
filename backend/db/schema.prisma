@@ -142,6 +142,7 @@ model Propiedad {
   isDestacada           Boolean             @default(false) @map("is_destacada") 
   notasPrivadas         String?             @map("notas_privadas") @db.Text
   caracteristicas       Json?               @map("caracteristicas_especificas")
+  deletedAt             DateTime?           @map("deleted_at") @db.Timestamp
   createdAt             DateTime            @default(now()) @map("created_at") @db.Timestamp
   updatedAt             DateTime            @default(now()) @map("updated_at") @db.Timestamp
 
@@ -166,6 +167,7 @@ model Propiedad {
   imagenes              Imagen[]
   leads                 Lead[]
 
+  @@index([deletedAt])
   @@map("propiedades")
 }
 

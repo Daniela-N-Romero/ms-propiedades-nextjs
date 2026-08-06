@@ -3,7 +3,7 @@ import { prisma } from '@/backend/db';
 import { verifySession } from '@/lib/utils-auth';
 import { cookies } from 'next/headers';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     // Validar sesión
     const cookieStore = await cookies();
@@ -14,8 +14,15 @@ export async function GET() {
       return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
 
+    // Leer si estamos pidiendo activas o la papelera
+    const { searchParams } = new URL(request.url);
+    const tab = searchParams.get('tab') || 'activas';
+
     // Traer todas las propiedades ordenadas por fecha de actualización
     const propiedades = await prisma.propiedad.findMany({
+      where: {
+        deletedAt: tab === 'papelera' ? { not: null } : null,
+      },
       include: {
         zona: true,
         tipoInmueble: {

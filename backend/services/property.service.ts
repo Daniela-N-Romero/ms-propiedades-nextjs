@@ -238,7 +238,15 @@ export async function getPropiedadById(propertyId: number) {
   const propiedad = await prisma.propiedad.findUnique({
     where: { id: propertyId },
     include: {
-      zona: { include: { padre: true } },
+      zona: {
+      include: {
+        padre: {
+          include: {
+            padre: true, 
+          },
+        },
+      },
+    },
       tipoInmueble: { include: { padre: true } },
       agente: true,
       imagenes: { orderBy: { orden: 'asc' } }

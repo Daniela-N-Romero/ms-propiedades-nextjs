@@ -15,7 +15,6 @@ import { MultimediaSection } from './components/multimedia-section';
 import type { ZonaServer, PropertyFullData } from '@/types/server-data';
 import type { TipoInmueble, Agente, Propietario, Colega } from '@prisma-client';
 import { StatusSection } from './components/status-section';
-import { DynamicFeaturesSection } from './components/dynamic-features-section';
 
 interface PropertyFormProps {
   initialData?: PropertyFullData | null;
@@ -45,8 +44,13 @@ export default function PropertyForm({
   // Inicialización de IDs para zonas y tipos
   const mercadoPadreInicialId = initialData?.tipoInmueble?.padreId || initialData?.tipoInmuebleId || 0;
   const localidadActual = initialData?.zona;
-  const partidoInicialId = localidadActual?.padreId || 0;
-  const regionInicialId = localidadActual?.padre?.padreId || 0;
+  const regionInicialId = localidadActual?.padre?.padreId 
+    ? localidadActual.padre.padreId 
+    : (localidadActual?.padreId || 0);
+
+  const partidoInicialId = localidadActual?.padre?.padreId 
+    ? localidadActual.padreId 
+    : (localidadActual?.id || 0)
 
   // Custom Hook para Cascadas
   const cascades = usePropertyCascades({
@@ -128,6 +132,7 @@ export default function PropertyForm({
       setIsSubmitting(false);
     }
   };
+  console.log(initialData)
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit as any)} className="space-y-6 max-w-5xl mx-auto p-4 sm:p-8">

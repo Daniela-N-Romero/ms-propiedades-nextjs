@@ -5,8 +5,7 @@ import Link from 'next/link';
 import { formatPrecio } from '@/lib/utils-formatting';
 import { Fragment } from 'react';
 import StarButton from '@/features/admin/form/components/star-button';
-import { useContactLinks } from '@/providers/config-provider'
-
+import { useContactLinks } from '@/providers/config-provider';
 
 interface PropiedadAdmin {
   id: number;
@@ -19,24 +18,27 @@ interface PropiedadAdmin {
   isDestacada: boolean;
   videoUrl?: string | null;
   pdfUrl?: string | null;
-  propertySource?: string | null; // 'ms_propia' | 'colega'
+  propertySource?: string | null;
   colegaId?: number | null;
   updatedAt: string;
+  deletedAt?: string | null;
   zona: { nombre: string };
   tipoInmueble: { nombre: string; padre?: { slug: string } };
   imagenes: { url: string }[];
   direccionPersonalizada?: string | null;
-  categoria: string; // 'venta' | 'alquiler'
+  categoria: string;
 }
 
 export default function DashboardPage() {
-    const links = useContactLinks();
+  const links = useContactLinks();
 
   const [propiedades, setPropiedades] = useState<PropiedadAdmin[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Filtros de estado
+  const [activeTab, setActiveTab] = useState<'activas' | 'papelera'>('activas');
   const [currentSourceFilter, setCurrentSourceFilter] = useState<'ms_propia' | 'colega'>('ms_propia');
+  const [missingMedia, setMissingMedia] = useState<'all' | 'no_images' | 'no_video' | 'no_pdf'>('all');
   const [search, setSearch] = useState('');
   const [groupBy, setGroupBy] = useState<'none' | 'tipo' | 'categoria' | 'zona'>('tipo');
   const [sortBy, setSortBy] = useState('updatedAt_desc');
@@ -45,7 +47,7 @@ export default function DashboardPage() {
   const fetchPropiedades = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/properties');
+      const res = await fetch(`/api/properties?tab=${activeTab}`);
       if (res.ok) {
         const data = await res.json();
         setPropiedades(data);
@@ -59,7 +61,13 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchPropiedades();
-  }, []);
+  }, [activeTab]);
+
+  // Resetear filtros al cambiar entre 'activas' y 'papelera'
+  useEffect(() => {
+    setSearch('');
+    setMissingMedia('all');
+  }, [activeTab]);
 
   // Cambiar estado de publicación (Borrador / Publicada)
   const togglePublishStatus = async (id: number, currentStatus: boolean) => {
@@ -79,9 +87,9 @@ export default function DashboardPage() {
     }
   };
 
-  // Eliminar propiedad
-  const handleDelete = async (id: number) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar esta propiedad? Esta acción no se puede deshacer.')) return;
+  // Soft Delete (Mover a Papelera)
+  const handleSoftDelete = async (id: number) => {
+    if (!confirm('¿Mover esta propiedad a la papelera de reciclaje?')) return;
 
     try {
       const res = await fetch(`/api/properties/${id}`, { method: 'DELETE' });
@@ -89,16 +97,44 @@ export default function DashboardPage() {
         setPropiedades((prev) => prev.filter((p) => p.id !== id));
       }
     } catch (err) {
-      alert('Error al eliminar la propiedad');
+      alert('Error al mover a la papelera');
     }
   };
 
-  // Lógica de filtrado, búsqueda y orden
+  // Restaurar desde Papelera
+  const handleRestore = async (id: number) => {
+    try {
+      const res = await fetch(`/api/properties/${id}`, { method: 'PATCH' });
+      if (res.ok) {
+        setPropiedades((prev) => prev.filter((p) => p.id !== id));
+        alert('Propiedad restaurada exitosamente.');
+      }
+    } catch (err) {
+      alert('Error al restaurar la propiedad');
+    }
+  };
+
+  // Borrado Definitivo
+  const handleHardDelete = async (id: number) => {
+    if (!confirm('⚠️ ¿ELIMINAR DEFINITIVAMENTE? Esta acción NO se podrá deshacer.')) return;
+
+    try {
+      const res = await fetch(`/api/properties/${id}?force=true`, { method: 'DELETE' });
+      if (res.ok) {
+        setPropiedades((prev) => prev.filter((p) => p.id !== id));
+      }
+    } catch (err) {
+      alert('Error al eliminar definitivamente');
+    }
+  };
+
+  // Lógica unificada de filtrado, faltantes y ordenamiento en el cliente
   const filteredAndSorted = useMemo(() => {
     return propiedades
       .filter((prop) => {
-        // 1. Filtro por origen (Cartera Propia vs Colega)
-        const isColega = prop.propertySource === 'colega' || !!prop.colegaId;
+        // 1. Origen (Cartera Propia vs Colega)
+        const isColega = prop.propertySource === 'colega' || Boolean(prop.colegaId);
+
         if (currentSourceFilter === 'colega' && !isColega) return false;
         if (currentSourceFilter === 'ms_propia' && isColega) return false;
 
@@ -108,26 +144,40 @@ export default function DashboardPage() {
           const matchTitulo = prop.titulo.toLowerCase().includes(q);
           const matchCodigo = prop.codigo.toLowerCase().includes(q);
           const matchZona = prop.zona?.nombre.toLowerCase().includes(q);
-          return matchTitulo || matchCodigo || matchZona;
+          if (!matchTitulo && !matchCodigo && !matchZona) return false;
         }
+
+        // 3. Filtros de Faltantes / Calidad
+        const hasCustomVideo = Boolean(prop.videoUrl && prop.videoUrl !== links.videoIndustrialDefault);
+        const hasImages = Boolean(prop.imagenes && prop.imagenes.length > 0 && prop.imagenes[0].url !== '/images/placeholder.jpg' && prop.imagenes[0].url !== '/images/placeholder.png');
+        const hasPdf = Boolean(prop.pdfUrl);
+
+        if (missingMedia === 'no_images' && hasImages) return false;
+        if (missingMedia === 'no_video' && hasCustomVideo) return false;
+        if (missingMedia === 'no_pdf' && hasPdf) return false;
 
         return true;
       })
       .sort((a, b) => {
         const [field, direction] = sortBy.split('_');
-        let valA: any = a[field as keyof PropiedadAdmin];
-        let valB: any = b[field as keyof PropiedadAdmin];
 
-        if (field === 'price') {
-          valA = a.precio;
-          valB = b.precio;
+        if (field === 'updatedAt') {
+          const dateA = new Date(a.updatedAt).getTime();
+          const dateB = new Date(b.updatedAt).getTime();
+          return direction === 'asc' ? dateA - dateB : dateB - dateA;
         }
 
-        if (valA < valB) return direction === 'asc' ? -1 : 1;
-        if (valA > valB) return direction === 'asc' ? 1 : -1;
+        if (field === 'precio') {
+          return direction === 'asc' ? a.precio - b.precio : b.precio - a.precio;
+        }
+
+        if (field === 'titulo') {
+          return direction === 'asc' ? a.titulo.localeCompare(b.titulo) : b.titulo.localeCompare(a.titulo);
+        }
+
         return 0;
       });
-  }, [propiedades, currentSourceFilter, search, sortBy]);
+  }, [propiedades, currentSourceFilter, search, missingMedia, sortBy, links.videoIndustrialDefault]);
 
   // Agrupamiento dinámico
   const groupedProperties = useMemo(() => {
@@ -167,30 +217,41 @@ export default function DashboardPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
-        {/* PESTAÑAS DE ORIGEN (CARTERA PROPIA VS COLEGAS) */}
-        <div className="flex border-b border-slate-200 bg-white rounded-2xl p-2 shadow-sm gap-2">
-          <button
-            onClick={() => setCurrentSourceFilter('ms_propia')}
-            className={`flex-1 py-2.5 px-4 rounded-xl font-spartan font-bold text-xs uppercase tracking-wider transition-all ${currentSourceFilter === 'ms_propia'
-                ? 'bg-brand-dark text-white shadow-sm'
-                : 'text-slate-500 hover:bg-slate-100'
-              }`}
-          >
-            🏢 Cartera Propia
-          </button>
-          <button
-            onClick={() => setCurrentSourceFilter('colega')}
-            className={`flex-1 py-2.5 px-4 rounded-xl font-spartan font-bold text-xs uppercase tracking-wider transition-all ${currentSourceFilter === 'colega'
-                ? 'bg-brand-dark text-white shadow-sm'
-                : 'text-slate-500 hover:bg-slate-100'
-              }`}
-          >
-            🤝 Propiedades de Colegas
-          </button>
+        {/* PESTAÑAS ACTIVAS VS PAPELERA & ORIGEN */}
+        <div className="flex flex-col md:flex-row border-b border-slate-300 bg-white rounded-2xl p-2 shadow-sm justify-between items-center gap-2">
+          <div className="flex gap-2 w-full md:w-auto">
+            <button
+              onClick={() => setActiveTab('activas')}
+              className={`flex-1 md:flex-none py-2.5 px-6 rounded-xl font-spartan font-bold text-xs uppercase tracking-wider transition-all ${activeTab === 'activas' ? 'bg-brand-dark text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100'}`}
+            >
+              🏢 Propiedades Activas
+            </button>
+            <button
+              onClick={() => setActiveTab('papelera')}
+              className={`flex-1 md:flex-none py-2.5 px-6 rounded-xl font-spartan font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${activeTab === 'papelera' ? 'bg-red-700 text-white shadow-sm' : 'text-slate-500 hover:bg-red-50'}`}
+            >
+              🗑️ Papelera de Reciclaje
+            </button>
+          </div>
+
+          <div className="flex gap-1 bg-brand-dark/20 rounded-xl w-full md:w-auto shadow-lg">
+            <button
+              onClick={() => setCurrentSourceFilter('ms_propia')}
+              className={`flex-1 md:flex-none px-4 py-2 rounded-lg font-spartan font-bold text-[11px] uppercase tracking-wider transition-all ${currentSourceFilter === 'ms_propia' ? 'bg-green-900 text-white shadow-xs' : 'text-slate-600'}`}
+            >
+              🏢 Cartera Propia
+            </button>
+            <button
+              onClick={() => setCurrentSourceFilter('colega')}
+              className={`flex-1 md:flex-none px-4 py-2 rounded-lg font-spartan font-bold text-[11px] uppercase tracking-wider transition-all ${currentSourceFilter === 'colega' ? 'bg-green-900 text-white shadow-xs' : 'text-slate-600 '}`}
+            >
+              🤝 De Colegas
+            </button>
+          </div>
         </div>
 
-        {/* BARRA DE CONTROLES (BÚSQUEDA, AGRUPAR, ORDENAR) */}
-        <div className=" text-brand-dark bg-slate-300 p-4 rounded-2xl border border-slate-300 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* BARRA DE CONTROLES (BÚSQUEDA, FALTANTES, AGRUPAR, ORDENAR) */}
+        <div className="bg-slate-300 p-4 rounded-2xl border border-slate-300 shadow-sm grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-brand-dark">
           <div>
             <label className="block text-[10px] font-bold font-spartan uppercase mb-1">
               Buscar por Nombre / Código:
@@ -200,8 +261,24 @@ export default function DashboardPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Escriba para filtrar..."
-              className="w-full px-3 py-2 border border-slate-400 rounded-xl text-xs bg-slate-50 focus:bg-white outline-none focus:border-brand-dark  placeholder:text-brand-dark"
+              className="w-full px-3 py-2 border border-slate-400 rounded-xl text-xs bg-slate-50 focus:bg-white outline-none focus:border-brand-dark placeholder:text-slate-400"
             />
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-bold font-spartan uppercase mb-1">
+              Faltantes / Calidad:
+            </label>
+            <select
+              value={missingMedia}
+              onChange={(e) => setMissingMedia(e.target.value as any)}
+              className="w-full px-3 py-2 border border-slate-400 rounded-xl text-xs bg-slate-50 focus:bg-white outline-none focus:border-brand-dark"
+            >
+              <option value="all">Todas las propiedades</option>
+              <option value="no_images">⚠️ Sin Fotos (Placeholder)</option>
+              <option value="no_video">🎥 Sin Video Propio</option>
+              <option value="no_pdf">📄 Sin PDF Adjunto</option>
+            </select>
           </div>
 
           <div>
@@ -211,7 +288,7 @@ export default function DashboardPage() {
             <select
               value={groupBy}
               onChange={(e) => setGroupBy(e.target.value as any)}
-              className="w-full px-3 py-2 border  border-slate-400  rounded-xl text-xs bg-slate-50 focus:bg-white outline-none focus:border-brand-dark"
+              className="w-full px-3 py-2 border border-slate-400 rounded-xl text-xs bg-slate-50 focus:bg-white outline-none focus:border-brand-dark"
             >
               <option value="none">Sin agrupar</option>
               <option value="tipo">Tipo de Inmueble</option>
@@ -227,9 +304,10 @@ export default function DashboardPage() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="w-full px-3 py-2 border  border-slate-400  rounded-xl text-xs bg-slate-50 focus:bg-white outline-none focus:border-brand-dark"
+              className="w-full px-3 py-2 border border-slate-400 rounded-xl text-xs bg-slate-50 focus:bg-white outline-none focus:border-brand-dark"
             >
-              <option value="updatedAt_desc">Más recientes</option>
+              <option value="updatedAt_desc">Última modificación (Recientes)</option>
+              <option value="updatedAt_asc">Última modificación (Antiguos)</option>
               <option value="precio_asc">Precio (menor a mayor)</option>
               <option value="precio_desc">Precio (mayor a menor)</option>
               <option value="titulo_asc">Nombre (A-Z)</option>
@@ -245,7 +323,7 @@ export default function DashboardPage() {
             </div>
           ) : Object.keys(groupedProperties).length === 0 ? (
             <div className="p-12 text-center text-slate-400 text-xs font-semibold">
-              No se encontraron propiedades registradas en este apartado.
+              {activeTab === 'papelera' ? 'La papelera de reciclaje está vacía.' : 'No se encontraron propiedades registradas con estos filtros.'}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -260,7 +338,7 @@ export default function DashboardPage() {
                     <th className="p-3 text-center">Video</th>
                     <th className="p-3 text-center">PDF</th>
                     <th className="p-3 text-center">Estado</th>
-                    <th className="p-3 text-center">Destacada</th>
+                    {activeTab === 'activas' && <th className="p-3 text-center">Destacada</th>}
                     <th className="p-3 text-center">Acciones</th>
                   </tr>
                 </thead>
@@ -291,8 +369,7 @@ export default function DashboardPage() {
                                 className="text-blue-700 hover:text-amber-600 font-bold flex items-center gap-1 leading-tight"
                               >
                                 {prop.titulo}
-                                <span className=" font-extrabold text-[18px]">👆</span>
-
+                                <span className="font-extrabold text-[18px]">👆</span>
                               </Link>
                             ) : (
                               <span className="text-slate-700 font-extrabold leading-tight block">{prop.titulo}</span>
@@ -312,6 +389,7 @@ export default function DashboardPage() {
                             </span>
                           </td>
                           <td className="p-3 text-center">
+                            {/* Verificación de Video Propio contra el default */}
                             {prop.videoUrl && prop.videoUrl !== links.videoIndustrialDefault ? '✔️' : '❌'}
                           </td>
                           <td className="p-3 text-center">
@@ -320,31 +398,54 @@ export default function DashboardPage() {
                           <td className="p-3 text-center">
                             <button
                               onClick={() => togglePublishStatus(prop.id, prop.isPublished)}
-                              className={`px-3 py-1 rounded-full text-[10px] font-bold font-spartan uppercase tracking-wider text-white transition-all ${prop.isPublished ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-amber-500 hover:bg-amber-600'
-                                }`}
+                              disabled={activeTab === 'papelera'}
+                              className={`px-3 py-1 rounded-full text-[10px] font-bold font-spartan uppercase tracking-wider text-white transition-all disabled:opacity-50 ${prop.isPublished ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-amber-500 hover:bg-amber-600'}`}
                             >
                               {prop.isPublished ? 'Publicada' : 'Borrador'}
                             </button>
                           </td>
-                          <td className="px-4 py-3 text-center">
-                            <StarButton
-                              propiedadId={prop.id}
-                              initialIsFeatured={prop.isDestacada}
-                            />
-                          </td>
+
+                          {activeTab === 'activas' && (
+                            <td className="px-4 py-3 text-center">
+                              <StarButton propiedadId={prop.id} initialIsFeatured={prop.isDestacada} />
+                            </td>
+                          )}
+
                           <td className="p-3 text-right space-x-1">
-                            <Link
-                              href={`/admin/${prop.id}/editar`}
-                              className="px-2 py-1.5 bg-cyan-300 hover:bg-cyan-500 text-slate-800 text-[15px] font-bold rounded-lg transition-colors inline-block"
-                            >
-                              ✏️
-                            </Link>
-                            <button
-                              onClick={() => handleDelete(prop.id)}
-                              className="px-2 py-1.5 bg-red-300 hover:bg-red-500 text-red-700 text-[15px] font-bold rounded-lg transition-colors inline-block"
-                            >
-                              🗑️
-                            </button>
+                            {activeTab === 'activas' ? (
+                              <>
+                                <Link
+                                  href={`/admin/${prop.id}/editar`}
+                                  className="px-2 py-1.5 bg-cyan-300 hover:bg-cyan-500 text-slate-800 text-[15px] font-bold rounded-lg transition-colors inline-block"
+                                >
+                                  ✏️
+                                </Link>
+                                <button
+                                  onClick={() => handleSoftDelete(prop.id)}
+                                  title="Mover a Papelera"
+                                  className="px-2 py-1.5 bg-amber-200 hover:bg-amber-400 text-amber-800 text-[15px] font-bold rounded-lg transition-colors inline-block"
+                                >
+                                  🗑️
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  onClick={() => handleRestore(prop.id)}
+                                  title="Restaurar Propiedad"
+                                  className="px-2 py-1.5 bg-emerald-300 hover:bg-emerald-500 text-emerald-900 text-[15px] font-bold rounded-lg transition-colors inline-block"
+                                >
+                                  ♻️
+                                </button>
+                                <button
+                                  onClick={() => handleHardDelete(prop.id)}
+                                  title="Eliminar Definitivamente"
+                                  className="px-2 py-1.5 bg-red-400 hover:bg-red-600 text-white text-[15px] font-bold rounded-lg transition-colors inline-block"
+                                >
+                                  ❌
+                                </button>
+                              </>
+                            )}
                           </td>
                         </tr>
                       ))}
@@ -359,4 +460,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
