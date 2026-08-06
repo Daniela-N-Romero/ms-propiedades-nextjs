@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/backend/db';
-import { getContactLinks } from '@/backend/services/config.service'; // 👈 Importamos el servicio
+import { getContactLinks } from '@/backend/services/config.service'; 
 import { renderToStream } from '@react-pdf/renderer';
 import { PlantillaPdf } from '@/features/propiedades/components/pdf/plantilla-pdf';
 import React from 'react';

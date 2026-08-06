@@ -17,6 +17,7 @@ export async function getContactLinks() {
       telefono: config.telefono || defaultLinks.telefono,
       direccion: config.direccion || defaultLinks.direccion,
       email: config.email || defaultLinks.email,
+      videoIndustrialDefault: config.videoIndustrialDefault || defaultLinks.videoIndustrialDefault,
     };
     
   } catch (error) {

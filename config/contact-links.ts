@@ -5,5 +5,6 @@ export type ContactLinks = {
     linkedIn: string,
     telefono: string,
     direccion: string,
-    email: string
+    email: string,
+    videoIndustrialDefault: string
 }

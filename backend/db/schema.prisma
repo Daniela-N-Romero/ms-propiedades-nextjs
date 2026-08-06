@@ -203,13 +203,14 @@ model Lead {
 }
 
 model configuracionEmpresa {
-  id          Int      @id @default(1) // Siempre habrá 1 solo registro (ID: 1)
-  email       String   @db.VarChar(150)
-  telefono    String   @db.VarChar(50)
-  whatsapp    String   @db.VarChar(50)
-  direccion   String   @db.VarChar(255)
-  instagram   String   @db.VarChar(255)
-  facebook    String   @db.VarChar(255)
-  linkedin    String   @db.VarChar(255)
-  updatedAt   DateTime @updatedAt
+  id                        Int      @id @default(1) // Siempre habrá 1 solo registro (ID: 1)
+  email                     String   @db.VarChar(150)
+  telefono                  String   @db.VarChar(50)
+  whatsapp                  String   @db.VarChar(50)
+  direccion                 String   @db.VarChar(255)
+  instagram                 String   @db.VarChar(255)
+  facebook                  String   @db.VarChar(255)
+  linkedin                  String   @db.VarChar(255)
+  videoIndustrialDefault    String   @db.VarChar(255) @default("https://www.youtube.com/embed/lLOIMzl-7_Q")
+  updatedAt                 DateTime @updatedAt
 }

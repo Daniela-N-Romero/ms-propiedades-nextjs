@@ -3,6 +3,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { formatPrecio } from '@/lib/utils-formatting';
+import { Fragment } from 'react';
+import StarButton from '@/features/admin/form/components/star-button';
+import { useContactLinks } from '@/providers/config-provider'
+
 
 interface PropiedadAdmin {
   id: number;
@@ -26,6 +30,8 @@ interface PropiedadAdmin {
 }
 
 export default function DashboardPage() {
+    const links = useContactLinks();
+
   const [propiedades, setPropiedades] = useState<PropiedadAdmin[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -306,7 +312,7 @@ export default function DashboardPage() {
                             </span>
                           </td>
                           <td className="p-3 text-center">
-                            {prop.videoUrl ? '✔️' : '❌'}
+                            {prop.videoUrl && prop.videoUrl !== links.videoIndustrialDefault ? '✔️' : '❌'}
                           </td>
                           <td className="p-3 text-center">
                             {prop.pdfUrl ? '✔️' : '❌'}
@@ -354,5 +360,3 @@ export default function DashboardPage() {
   );
 }
 
-import { Fragment } from 'react';
-import StarButton from '@/features/admin/form/components/star-button';
