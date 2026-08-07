@@ -118,8 +118,16 @@ export function LocationSection({
                     latitud={currentLat || -34.78}
                     longitud={currentLng || -58.28}
                     onChangeLocation={(newLat, newLng) => {
-                        setValue('latitud', newLat, { shouldValidate: true, shouldDirty: true });
-                        setValue('longitud', newLng, { shouldValidate: true, shouldDirty: true });
+                        setValue('latitud', newLat, {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                            shouldTouch: true
+                        });
+                        setValue('longitud', newLng, {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                            shouldTouch: true
+                        });
                     }}
                 />
             </div>

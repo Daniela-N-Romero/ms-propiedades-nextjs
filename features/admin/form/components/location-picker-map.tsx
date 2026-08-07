@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -20,18 +20,18 @@ interface LocationPickerMapProps {
   onChangeLocation: (lat: number, lng: number) => void;
 }
 
-// Subcomponente para recentrar el mapa cuando cambian lat/lng externamente (por buscador)
+// Subcomponente para re-centrar el mapa cuando cambian coordenadas
 function MapRecenter({ lat, lng }: { lat: number; lng: number }) {
   const map = useMap();
   useEffect(() => {
-    if (lat && lng) {
-      map.flyTo([lat, lng], 15, { animate: true });
+    if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
+      map.setView([lat, lng], map.getZoom(), { animate: true });
     }
   }, [lat, lng, map]);
   return null;
 }
 
-// Subcomponente para capturar clics directamente en el mapa
+// Subcomponente para capturar clics directos sobre el mapa
 function MapClickHandler({ onClick }: { onClick: (lat: number, lng: number) => void }) {
   useMapEvents({
     click(e) {
@@ -46,112 +46,90 @@ export default function LocationPickerMap({
   longitud,
   onChangeLocation,
 }: LocationPickerMapProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
   const [estimatedAddress, setEstimatedAddress] = useState<string | null>(null);
   const [isLoadingAddress, setIsLoadingAddress] = useState(false);
 
-  const markerRef = useRef<L.Marker>(null);
+  // Garantizar valores numéricos limpios
+  const currentLat = typeof latitud === 'number' && !isNaN(latitud) && latitud !== 0 ? latitud : -34.78;
+  const currentLng = typeof longitud === 'number' && !isNaN(longitud) && longitud !== 0 ? longitud : -58.28;
 
-  // Coordenadas por defecto (ej. Quilmes / Berazategui - GBA Sur si viene en 0)
-  const currentLat = latitud || -34.78;
-  const currentLng = longitud || -58.28;
-
-  // 📍 REVERSE GEOCODING: Obtener dirección estimada desde lat/lng con OpenStreetMap
+  // 📍 REVERSE GEOCODING: Obtener dirección estimada según lat/lng
   useEffect(() => {
-    if (!latitud || !longitud) return;
+    if (!currentLat || !currentLng) return;
 
     const timer = setTimeout(async () => {
       setIsLoadingAddress(true);
       try {
         const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitud}&lon=${longitud}&zoom=18&addressdetails=1`
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${currentLat}&lon=${currentLng}&zoom=18&addressdetails=1`,
+          { headers: { 'Accept-Language': 'es' } }
         );
         if (res.ok) {
           const data = await res.json();
           setEstimatedAddress(data.display_name || 'Ubicación seleccionada en el mapa');
         }
       } catch (err) {
-        console.error('Error obteniendo dirección:', err);
+        console.error('Error al obtener dirección:', err);
       } finally {
         setIsLoadingAddress(false);
       }
-    }, 600); // Debounce para no saturar la API gratuita
+    }, 500);
 
     return () => clearTimeout(timer);
-  }, [latitud, longitud]);
+  }, [currentLat, currentLng]);
 
-  // 🔍 FORWARD GEOCODING: Buscar dirección por texto
-  const handleSearchAddress = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
-
-    setIsSearching(true);
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-          searchQuery + ', Buenos Aires, Argentina'
-        )}`
-      );
-      if (res.ok) {
-        const results = await res.json();
-        if (results && results.length > 0) {
-          const firstResult = results[0];
-          const newLat = parseFloat(firstResult.lat);
-          const newLng = parseFloat(firstResult.lon);
-          onChangeLocation(newLat, newLng);
-        } else {
-          alert('No se encontraron coordenadas para esa dirección.');
-        }
+  // 📌 MANEJADOR DE ARRASTRE (DRAG) DEL PIN
+  const handleDragEnd = useCallback(
+    (e: any) => {
+      const marker = e.target;
+      if (marker) {
+        const position = marker.getLatLng();
+        onChangeLocation(position.lat, position.lng);
       }
-    } catch (err) {
-      console.error('Error buscando dirección:', err);
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  // Evento al arrastrar el Pin (Drag)
-  const eventHandlers = useMemo(
-    () => ({
-      dragend() {
-        const marker = markerRef.current;
-        if (marker != null) {
-          const latLng = marker.getLatLng();
-          onChangeLocation(latLng.lat, latLng.lng);
-        }
-      },
-    }),
+    },
     [onChangeLocation]
   );
 
+  const eventHandlers = useMemo(() => ({ dragend: handleDragEnd }), [handleDragEnd]);
+
+ // 📌 MANEJADOR DE ARRASTRE ZOOM
+function WheelZoomHandler() {
+  const map = useMap();
+
+  useEffect(() => {
+    const container = map.getContainer();
+
+    const handleWheel = (e: WheelEvent) => {
+      // Si el usuario usa la rueda sobre el mapa, prevenimos el zoom/scroll de la página
+      e.preventDefault();
+      
+      if (e.deltaY < 0) {
+        map.zoomIn();
+      } else {
+        map.zoomOut();
+      }
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => {
+      container.removeEventListener('wheel', handleWheel);
+    };
+  }, [map]);
+
+  return null;
+}
+
   return (
     <div className="space-y-3">
-      {/* BUSCADOR DE DIRECCIÓN */}
-      <div className="flex gap-2">
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="🔍 Buscar dirección o lugar (ej: Av. Mitre 1200, Berazategui)"
-          className="w-full p-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-orange bg-white shadow-sm"
-        />
-        <button
-          type="button"
-          onClick={handleSearchAddress}
-          disabled={isSearching}
-          className="px-4 py-2.5 bg-slate-800 text-white text-xs font-bold rounded-xl hover:bg-slate-900 transition disabled:opacity-50 whitespace-nowrap shadow-sm"
-        >
-          {isSearching ? 'Buscando...' : 'Buscar en Mapa'}
-        </button>
-      </div>
-
-      {/* CONTENEDOR DEL MAPA LEAFLET */}
+      {/* CONTENEDOR DEL MAPA */}
       <div className="relative h-80 w-full rounded-2xl overflow-hidden border border-slate-300 shadow-inner z-0">
         <MapContainer
           center={[currentLat, currentLng]}
-          zoom={14}
-          scrollWheelZoom={false}
+          zoom={15}
+          scrollWheelZoom={false} 
+          doubleClickZoom={true}  
+          keyboard={true}
           className="h-full w-full"
         >
           <TileLayer
@@ -163,21 +141,21 @@ export default function LocationPickerMap({
             draggable={true}
             eventHandlers={eventHandlers}
             position={[currentLat, currentLng]}
-            ref={markerRef}
             icon={defaultIcon}
           />
+          <WheelZoomHandler />
 
           <MapRecenter lat={currentLat} lng={currentLng} />
           <MapClickHandler onClick={(lat, lng) => onChangeLocation(lat, lng)} />
         </MapContainer>
       </div>
 
-      {/* SPAN / FOOTER CON DIRECCIÓN ESTIMADA Y COORDENADAS */}
+      {/* FOOTER CON COORDENADAS Y DIRECCIÓN ESTIMADA */}
       <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs">
         <div className="flex items-center gap-2 text-slate-700">
           <span className="text-base">📍</span>
           <div>
-            <span className="font-bold text-slate-800 block">Dirección estimativa OSM:</span>
+            <span className="font-bold text-slate-800 block">Dirección estimada (OSM):</span>
             <span className="text-slate-600 font-medium">
               {isLoadingAddress
                 ? 'Obteniendo dirección...'
@@ -186,7 +164,7 @@ export default function LocationPickerMap({
           </div>
         </div>
 
-        <div className="flex items-center gap-3 bg-white px-3 py-1.5 rounded-lg border border-slate-200 text-[11px] font-mono text-slate-600 font-semibold self-end sm:self-auto">
+        <div className="flex items-center gap-3 bg-white px-3 py-1.5 rounded-lg border border-slate-200 text-[11px] font-mono text-slate-600 font-semibold self-end sm:self-auto shadow-2xs">
           <span>Lat: {currentLat.toFixed(6)}</span>
           <span>Lng: {currentLng.toFixed(6)}</span>
         </div>

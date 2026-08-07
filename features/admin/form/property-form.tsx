@@ -132,7 +132,6 @@ export default function PropertyForm({
       setIsSubmitting(false);
     }
   };
-  console.log(initialData)
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit as any)} className="space-y-6 max-w-5xl mx-auto p-4 sm:p-8">
