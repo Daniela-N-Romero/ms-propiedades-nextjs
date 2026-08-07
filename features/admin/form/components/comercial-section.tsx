@@ -115,7 +115,7 @@ export function ComercialSection({
       </div>
 
       {/* PRECIO, OPERACIÓN Y AGENTE */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
         <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-slate-800">
             Operación <span className="text-red-500">*</span>
@@ -159,46 +159,91 @@ export function ComercialSection({
 
         <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-slate-800">
-            Agente Responsable <span className="text-red-500">*</span>
+            Superficie Total (m²)
           </label>
-          <select {...register('agenteId', { valueAsNumber: true })} className={getSelectClass(!!errors.agenteId)}>
-            {agentes.map((a) => (
-              <option key={a.id} value={a.id}>{a.nombre} {a.apellido}</option>
-            ))}
-          </select>
+          <Controller
+            name="superficieTotal"
+            control={control}
+            render={({ field: { value, onChange, onBlur } }) => (
+              <input
+                type="text"
+                placeholder="Ej: 5.000"
+                value={value ? formatNumberWithDots(value) : ''}
+                onChange={(e) => onChange(e.target.value ? parseRawNumber(e.target.value) : null)}
+                onBlur={onBlur}
+                className={getInputClass(!!errors.superficieTotal)}
+              />
+            )}
+          />
+          {errors.superficieTotal && <span className="text-xs font-semibold text-red-500 mt-1 block">❌ {errors.superficieTotal.message}</span>}
         </div>
+
+        {/* SUPERFICIE CUBIERTA */}
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-800">
+            Sup. Cubierta (m²)
+          </label>
+          <Controller
+            name="superficieCubierta"
+            control={control}
+            render={({ field: { value, onChange, onBlur } }) => (
+              <input
+                type="text"
+                placeholder="Ej: 2.800"
+                value={value ? formatNumberWithDots(value) : ''}
+                onChange={(e) => onChange(e.target.value ? parseRawNumber(e.target.value) : null)}
+                onBlur={onBlur}
+                className={getInputClass(!!errors.superficieCubierta)}
+              />
+            )}
+          />
+          {errors.superficieCubierta && <span className="text-xs font-semibold text-red-500 mt-1 block">❌ {errors.superficieCubierta.message}</span>}
+        </div>
+
       </div>
 
       {/* ORIGEN DE CARTERA Y ASIGNACIÓN (PROPIETARIO / COLEGA) */}
       <div className="space-y-4 pt-2 border-t border-slate-100">
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-800">
-            Origen de la Cartera <span className="text-red-500">*</span>
-          </label>
-          <Controller
-            name="origen"
-            control={control}
-            render={({ field }) => (
-              <select
-                value={field.value}
-                onChange={(e) => {
-                  const nuevoOrigen = e.target.value as 'own' | 'fromColleague';
-                  field.onChange(nuevoOrigen);
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-800">
+              Agente Responsable <span className="text-red-500">*</span>
+            </label>
+            <select {...register('agenteId', { valueAsNumber: true })} className={getSelectClass(!!errors.agenteId)}>
+              {agentes.map((a) => (
+                <option key={a.id} value={a.id}>{a.nombre} {a.apellido}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-800">
+              Origen de la Cartera <span className="text-red-500">*</span>
+            </label>
+            <Controller
+              name="origen"
+              control={control}
+              render={({ field }) => (
+                <select
+                  value={field.value}
+                  onChange={(e) => {
+                    const nuevoOrigen = e.target.value as 'own' | 'fromColleague';
+                    field.onChange(nuevoOrigen);
 
-                  // Reseteamos de manera limpia el campo contrario para no ensuciar Zod
-                  if (nuevoOrigen === 'own') {
-                    setValue('colegaId', null);
-                  } else {
-                    setValue('propietarioId', null);
-                  }
-                }}
-                className={getSelectClass(!!errors.origen)}
-              >
-                <option value="own">Cartera Propia</option>
-                <option value="fromColleague">De Colega</option>
-              </select>
-            )}
-          />
+                    // Reseteamos de manera limpia el campo contrario para no ensuciar Zod
+                    if (nuevoOrigen === 'own') {
+                      setValue('colegaId', null);
+                    } else {
+                      setValue('propietarioId', null);
+                    }
+                  }}
+                  className={getSelectClass(!!errors.origen)}
+                >
+                  <option value="own">Cartera Propia</option>
+                  <option value="fromColleague">De Colega</option>
+                </select>
+              )}
+            />
+          </div>
         </div>
 
         {/* PROPIETARIO DIRECTO */}

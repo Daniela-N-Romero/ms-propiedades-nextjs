@@ -23,42 +23,49 @@ export function MultimediaSection({ form }: MultimediaSectionProps) {
       </div>
 
       {/* GALERÍA SUPABASE */}
-      <Controller
-        name="imagenes"
-        control={control}
-        render={({ field }) => (
-          <ImageUploader
-            imagenes={field.value || []}
-            onChange={field.onChange}
-            error={errors.imagenes?.message}
-          />
-        )}
-      />
-
- 
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
-            Video de YouTube (URL)
-          </label>
-          <input
-            {...register('videoUrl')}
-            placeholder="https://www.youtube.com/watch?v=..."
-            className={getInputClass(!!errors.videoUrl)}
-          />
-        </div>
-
-        {/* UPLOADER DE PDF */}
+      <div>
         <Controller
-          name="pdfUrl"
+          name="imagenes"
           control={control}
           render={({ field }) => (
-            <PdfUploader
-              pdfUrl={field.value}
+            <ImageUploader
+              imagenes={field.value || []}
               onChange={field.onChange}
+              error={errors.imagenes?.message}
             />
           )}
         />
+        {errors.imagenes && (
+          <span className="text-xs font-semibold text-red-500 mt-2 block">
+            ❌ {errors.imagenes.message}
+          </span>
+        )}
       </div>
+
+
+      <div>
+        <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+          Video de YouTube (URL)
+        </label>
+        <input
+          {...register('videoUrl')}
+          placeholder="https://www.youtube.com/watch?v=..."
+          className={getInputClass(!!errors.videoUrl)}
+        />
+      </div>
+
+      {/* UPLOADER DE PDF */}
+      <Controller
+        name="pdfUrl"
+        control={control}
+        render={({ field }) => (
+          <PdfUploader
+            pdfUrl={field.value}
+            onChange={field.onChange}
+          />
+        )}
+      />
+    </div>
 
   );
 }
