@@ -21,16 +21,20 @@ export default function PropertyCard({ propiedad }: PropertyCardProps) {
     <article className={`${styles.card} relative group cursor-pointer transition-shadow hover:shadow-xl`}>
       <div className={styles.imageWrapper}>
 
-        <span className={`${styles.badgeOperation} ${propiedad.categoria === 'venta' ? 'bg-brand-cyan text-brand-dark' : 'bg-green-600 text-white'}`}>
+        <span className={`${styles.badgeOperation} ${propiedad.categoria === 'venta' ? 'bg-brand-dark text-white' : 'bg-green-700 text-white'}`}>
           {propiedad.categoria}
         </span>
-
+{/* 
         <span className={styles.badgeType}>
           {propiedad.tipoInmueble.nombre}
-        </span>
+        </span> */}
 
-        {/* To do: CAMBIAR A FOTO REAL */}
-        {/* Imagen de fondo (Placeholder corporativo por ahora) */}
+        {/* BADGE DESTACADA */}
+        {propiedad.isDestacada && (
+          <span className="absolute top-12 right-4 bg-brand-orange text-brand-dark text-[10px] font-spartan font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg shadow-lg flex items-center gap-1 z-10">
+            ⭐ Destacada
+          </span>
+        )}
 
         <Image
           src={portadaUrl}
@@ -86,7 +90,7 @@ export default function PropertyCard({ propiedad }: PropertyCardProps) {
           <div className={styles.featureItem}>
             <span>🏢 Cubierta:</span>
             <span className="text-slate-800 font-bold">
-              {propiedad.superficieCubierta ? `${propiedad.superficieCubierta} m²` : ( propiedad.tipoInmueble.nombre.includes("Lote") ? 'No aplica' : 'Consultar' ) }
+              {propiedad.superficieCubierta ? `${propiedad.superficieCubierta} m²` : (propiedad.tipoInmueble.nombre.includes("Lote") ? 'No aplica' : 'Consultar')}
             </span>
           </div>
         </div>

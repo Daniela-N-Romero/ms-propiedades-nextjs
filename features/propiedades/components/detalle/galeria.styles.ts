@@ -4,7 +4,9 @@ export const styles = {
   codigoBadge: "inline-block text-sm font-spartan font-bold uppercase tracking-wider px-3 py-1 bg-slate-200 text-slate-700 rounded-md",
   titulo: "text-2xl md:text-3xl font-extrabold text-slate-900 leading-tight",
   ubicacion: "text-sm text-slate-500 flex items-center gap-1 font-medium",
-  
+    // Botón Secundario Descarga PDF
+  btnPdf: "w-full shadow-md hover:scale-105 bg-brand-dark text-white font-spartan font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-xs border border-slate-200",
+
   // Grid de Galería
   galleryGrid: "grid grid-cols-1 md:grid-cols-4 gap-2 rounded-2xl overflow-hidden relative cursor-pointer  max-h-[480px]",
   mainImageContainer: "md:col-span-2 relative aspect-[4/3] md:aspect-auto h-full min-h-[300px] overflow-hidden",

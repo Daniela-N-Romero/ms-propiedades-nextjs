@@ -1,7 +1,7 @@
 // src/backend/services/property.service.ts
 import { prisma } from '@/backend/db';
 import { PropertyFullData, ZonaServer } from '@/types/server-data';
-import { sanearParaServer} from '@/lib/sanitizers';
+import { sanearParaServer } from '@/lib/sanitizers';
 import { TipoOperacionEnum, MonedaEnum, TipoInmueble } from '@prisma-client'
 import { sanearPropiedadCompleta, sanearZona } from '@/lib/sanitizers';
 import { getAgentes, getColegas, getPropietarios } from './admin-catalogos.service';
@@ -165,15 +165,15 @@ interface SearchFilters {
 
 export async function searchPropiedades(filters: SearchFilters, isPublishedOnly: boolean = true) {
   const queryWhere: any = {};
-  
+
   if (isPublishedOnly) {
     queryWhere.isPublished = true;
   }
-  
+
   if (filters.categoria) {
     queryWhere.categoria = filters.categoria as TipoOperacionEnum;
   }
-// Filtrado por jerarquía de tipos de inmueble
+  // Filtrado por jerarquía de tipos de inmueble
   if (filters.subtiposSlugs && filters.subtiposSlugs.length > 0) {
     // Si filtran un subtipo específico (ej: "nave-industrial")
     queryWhere.tipoInmueble = { slug: { in: filters.subtiposSlugs } };
@@ -228,7 +228,10 @@ export async function searchPropiedades(filters: SearchFilters, isPublishedOnly:
       imagenes: true,
       tipoInmueble: { include: { padre: true } }
     },
-    orderBy: queryOrderBy
+    orderBy: [
+      { isDestacada: 'desc' }, // Primero las destacadas (true va antes que false)
+      queryOrderBy           // Luego el orden secundario elegido por el usuario
+    ],
   });
 
   return resultados.map(prop => sanearParaServer(prop));
@@ -239,14 +242,14 @@ export async function getPropiedadById(propertyId: number) {
     where: { id: propertyId },
     include: {
       zona: {
-      include: {
-        padre: {
-          include: {
-            padre: true, 
+        include: {
+          padre: {
+            include: {
+              padre: true,
+            },
           },
         },
       },
-    },
       tipoInmueble: { include: { padre: true } },
       agente: true,
       imagenes: { orderBy: { orden: 'asc' } }
@@ -273,7 +276,7 @@ export async function getFormData(propertyId?: number) {
     propietarios,
     colegas
   ] = await Promise.all([
-    propertyId? getPropiedadById(propertyId) : null,
+    propertyId ? getPropiedadById(propertyId) : null,
     getMercadosPadre(),
     getZonasPadre(),
     getAgentes(),
@@ -306,4 +309,75 @@ export async function getFormData(propertyId?: number) {
     propietarios,
     colegas,
   };
+}
+
+// En backend/services/property.service.ts
+
+export async function getPropiedadesSimilares(
+  propiedadActualId: number,
+  tipoInmuebleId: number,
+  zonaId: number,
+  limit = 3
+) {
+  try {
+    // 📍 CAPA 1: Prioridad Absoluta a la Misma Zona Exacta (Localidad)
+    const mismasZona = await prisma.propiedad.findMany({
+      where: {
+        id: { not: propiedadActualId }, // Excluimos la propiedad que está viendo
+        zonaId: zonaId,                // Misma localidad exacta
+        isPublished: true,
+        deletedAt: null,
+      },
+      take: limit,
+      orderBy: [
+        { isDestacada: 'desc' }, // Entre las de la misma zona, primero las destacadas
+        { updatedAt: 'desc' },
+      ],
+      include: {
+        zona: { select: { nombre: true } },
+        tipoInmueble: { select: { nombre: true, padre: { select: { slug: true } } } },
+        imagenes: {
+          orderBy: { orden: 'asc' },
+          take: 1,
+        },
+      },
+    });
+
+    // Si ya completamos el cupo con la misma zona, las devolvemos directo
+    if (mismasZona.length >= limit) {
+      return mismasZona;
+    }
+
+    // 🗺️ CAPA 2: FALLBACK POR TIPO DE INMUEBLE (Si faltan para completar los 3 casilleros)
+    const idsYaEncontrados = [propiedadActualId, ...mismasZona.map((p) => p.id)];
+    const faltantes = limit - mismasZona.length;
+
+    const adicionalesMismoTipo = await prisma.propiedad.findMany({
+      where: {
+        id: { notIn: idsYaEncontrados },
+        tipoInmuebleId: tipoInmuebleId, // Mismo tipo (ej. Nave Industrial)
+        isPublished: true,
+        deletedAt: null,
+      },
+      take: faltantes,
+      orderBy: [
+        { isDestacada: 'desc' },
+        { updatedAt: 'desc' },
+      ],
+      include: {
+        zona: { select: { nombre: true } },
+        tipoInmueble: { select: { nombre: true, padre: { select: { slug: true } } } },
+        imagenes: {
+          orderBy: { orden: 'asc' },
+          take: 1,
+        },
+      },
+    });
+
+    // Unimos los resultados: Primero las de la zona, luego las alternativas
+    return [...mismasZona, ...adicionalesMismoTipo];
+  } catch (error) {
+    console.error('Error al obtener propiedades similares:', error);
+    return [];
+  }
 }

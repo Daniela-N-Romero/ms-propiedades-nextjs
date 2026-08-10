@@ -13,9 +13,10 @@ interface ResultsViewProps {
   propiedades: PropertyFullData[];
   localidades: ZonaServer[];
   subtipos: TipoInmueble[];
+  esFallback?: boolean; 
 }
 
-export default function ResultsView({ propiedades, localidades, subtipos }: ResultsViewProps) {
+export default function ResultsView({ propiedades, localidades, subtipos, esFallback }: ResultsViewProps) {
   const { filters } = usePropertyFilters();
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
@@ -25,7 +26,7 @@ export default function ResultsView({ propiedades, localidades, subtipos }: Resu
   const mercadoActual = pathname.split('/')[2];
   const params = new URLSearchParams(searchParams.toString());
 
-  if (mercadoActual in ['industrial', 'residencial', 'comercial']) {
+if (['industrial', 'residencial', 'comercial'].includes(mercadoActual)) {
     const params = new URLSearchParams(searchParams.toString());
     if (!params.has('mercado')) {
       params.set('mercado', mercadoActual);
@@ -122,6 +123,20 @@ export default function ResultsView({ propiedades, localidades, subtipos }: Resu
         </aside>
 
         <section className={styles.mainContent}>
+          {/* BANNER AVISO DE FALLBACK (SI NO HUBIERON RESULTADOS EXACTOS) */}
+          {esFallback && (
+            <div className="mb-6 p-4 bg-amber-200/40 border border-amber-300 rounded-2xl flex items-center gap-3 text-amber-900 shadow-sm">
+              <span className="text-2xl">⚠️</span>
+              <div>
+                <h4 className="font-spartan font-bold text-xs uppercase tracking-wider text-amber-800">
+                  Sin coincidencias exactas
+                </h4>
+                <p className="text-xs text-amber-700 mt-0.5">
+                  No encontramos propiedades con todos los filtros aplicados. <span className="font-semibold">Te sugerimos estas alternativas</span> dentro del mismo mercado:
+                </p>
+              </div>
+            </div>
+          )}
           <div className="flex justify-end mb-4">
             <OrdenarSelect />
           </div>
@@ -133,8 +148,14 @@ export default function ResultsView({ propiedades, localidades, subtipos }: Resu
           </div>
 
           {propiedades.length === 0 && (
-            <div className="text-center py-20 bg-slate-50 border border-dashed border-slate-300 rounded-2xl">
-              <p className="text-slate-400 font-medium">No se encontraron propiedades.</p>
+            <div className="text-center py-20 bg-slate-50 border border-dashed border-slate-300 rounded-2xl space-y-2">
+              <p className="text-2xl">🔍</p>
+              <p className="text-slate-500 font-bold text-sm font-spartan uppercase">
+                No se encontraron propiedades
+              </p>
+              <p className="text-slate-400 text-xs">
+                Intente limpiar los filtros para ver más opciones en esta categoría.
+              </p>
             </div>
           )}
         </section>

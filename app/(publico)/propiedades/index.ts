@@ -25,7 +25,7 @@ export async function renderPageByPropertyType({ searchParams, mercadoSlug }: Re
 
 
   // 2. Ejecutamos los servicios en paralelo
-  const [propiedades, localidades, subtipos] = await Promise.all([
+  let [propiedades, localidades, subtipos] = await Promise.all([
     searchPropiedades({
       categoria: categoriaParam,
       mercadoSlug: mercadoSlug,
@@ -41,7 +41,23 @@ export async function renderPageByPropertyType({ searchParams, mercadoSlug }: Re
     getLocalidadesActivasPorTipo(mercadoSlug, categoriaParam),
     getSubtiposPorTipoMercado(mercadoSlug)
   ]);
+let esFallback = false;
 
-  return [propiedades, localidades, subtipos] as const;
+  // 3. 💡 SI NO HAY RESULTADOS: Búsqueda Relajada / Similares
+if (propiedades.length === 0) {
+    esFallback = true;
+    propiedades = await searchPropiedades({
+      mercadoSlug: mercadoSlug,
+      categoria: categoriaParam, // Mantiene venta/alquiler si el usuario lo seleccionó
+      // Liberamos deliberadamente precios, superficies, subtipos y localidades
+    });
+  }
+
+  return {
+    propiedades,
+    localidades,
+    subtipos,
+    esFallback 
+  };
 
 }

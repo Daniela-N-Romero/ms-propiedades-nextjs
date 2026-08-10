@@ -13,6 +13,8 @@ interface GaleriaHeroProps {
   zonaNombre: string;
   padreZonaNombre?: string;
   imagenes: Imagen[];
+  pdfUrl?: string | null;
+  propiedadId?: number;
 }
 
 export default function GaleriaHero({
@@ -21,7 +23,9 @@ export default function GaleriaHero({
   categoria,
   zonaNombre,
   padreZonaNombre,
-  imagenes
+  imagenes,
+  pdfUrl,
+  propiedadId,
 }: GaleriaHeroProps) {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -96,7 +100,23 @@ export default function GaleriaHero({
 
         <p className={styles.ubicacion}>
           📍 {padreZonaNombre ? `${padreZonaNombre} > ` : ''}{zonaNombre}
+
         </p>
+         {pdfUrl && (
+          
+          <p className="mr-3 max-w-50">
+              <a
+              href={pdfUrl ? pdfUrl : `/api/properties/${propiedadId}/pdf`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.btnPdf}
+            >
+              📄 Descargar Ficha PDF
+            </a>
+          </p>
+          
+        )}
+
       </div>
 
       {/* 🖼️ GRID MOSAICO DE FOTOS (HERO) */}

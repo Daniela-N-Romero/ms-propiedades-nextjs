@@ -14,7 +14,7 @@ export default async function IndustrialPage({ searchParams }: PageProps) {
 
   const mercadoSlug = mercadoParam;
  
-  const [propiedades, localidades, subtipos ] = await renderPageByPropertyType({
+  const { propiedades, localidades, subtipos, esFallback } = await renderPageByPropertyType({
       searchParams: params,
       mercadoSlug: mercadoSlug
   }); 
@@ -23,5 +23,6 @@ export default async function IndustrialPage({ searchParams }: PageProps) {
       propiedades={propiedades as any} 
       localidades={localidades} 
       subtipos={subtipos} 
+      esFallback={esFallback}
     />
 }

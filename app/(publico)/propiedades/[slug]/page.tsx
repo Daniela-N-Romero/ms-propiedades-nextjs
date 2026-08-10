@@ -1,11 +1,12 @@
 import { notFound } from 'next/navigation';
-import { getPropiedadBySlug } from '@/backend/services/property.service';
+import { getPropiedadBySlug, getPropiedadesSimilares } from '@/backend/services/property.service';
 import { buildPropertyMetadata } from '@/backend/services/seo.service';
 import { PropertyFullData } from '@/types/server-data';
 import { GaleriaHero, FichaTecnica } from '@/features/propiedades/index';
 import ContactoSection from '@/features/propiedades/components/detalle/contacto-section';
 import MapaDetallePropiedad from '@/features/mapa/components/mapa-detalle-propiedad';
 import { VideoSeccion } from '@/features/propiedades/components/detalle/video-section';
+import { PropiedadesSimilares } from '@/features/propiedades/components/detalle/propiedades-similares';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -30,6 +31,14 @@ export default async function PropertyDetailPage({ params }: PageProps) {
 
   const propiedad = propiedadRaw as unknown as PropertyFullData;
 
+// Obtenemos hasta 3 propiedades similares
+  const similares = await getPropiedadesSimilares(
+    propiedad.id,
+    propiedad.tipoInmuebleId,
+    propiedad.zonaId,
+    3
+  );
+
   return (
     <main className="min-h-screen bg-white pb-24 md:pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
@@ -42,6 +51,8 @@ export default async function PropertyDetailPage({ params }: PageProps) {
           zonaNombre={propiedad.zona.nombre}
           padreZonaNombre={propiedad.zona.padre?.nombre}
           imagenes={propiedad.imagenes as any}
+          pdfUrl={propiedad.pdfUrl}
+          propiedadId={propiedad.id}
         />
 
         {/* LAYOUT PRINCIPAL (A futuro tendrá 2 columnas: Ficha a la izquierda + Contacto Sticky a la derecha) */}
@@ -100,7 +111,11 @@ export default async function PropertyDetailPage({ params }: PageProps) {
           </div>
 
         </div>
+        {/* SECCIÓN DE PROPIEDADES SIMILARES */}
+        <PropiedadesSimilares propiedades={similares} />
+        
       </div>
     </main>
   );
 }
+

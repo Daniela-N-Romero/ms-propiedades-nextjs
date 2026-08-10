@@ -12,6 +12,6 @@ export const styles = {
   btnWhatsApp: "w-full bg-[#25D366] hover:bg-[#20ba5a] text-white font-spartan font-bold uppercase tracking-wider py-3.5 px-4 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm",
 
   // Botón Secundario Descarga PDF
-  btnPdf: "w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-spartan font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-xs border border-slate-200",
+  btnPdf: "w-full bg-brand-dark hover:bg-brand-dark/90 transition-all text-white font-spartan font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-xs border border-slate-200",
 
 };
