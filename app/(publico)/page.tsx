@@ -46,12 +46,12 @@ export default async function HomePage() {
       </section>
 
       {/* 3. SECCIÓN CAPTACIÓN / TASACIONES */}
-      <section className={styles.ctaSection}>
+      <section id="tasaciones" className={`${styles.ctaSection} scroll-mt-24`}>
         <BannerTasacion />
       </section>
 
       {/* 4. SECCIÓN CONTACTO Y FORMULARIO (CRM READY) */}
-      <section id="contacto" className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+      <section id="contacto" className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 scroll-mt-24">
         <h2 className={styles.sectionTitle}>Contactanos</h2>
         <p className="text-center text-slate-500 mt-2 mb-10">Dejanos tu consulta y un asesor industrial se comunicará a la brevedad.</p>
 

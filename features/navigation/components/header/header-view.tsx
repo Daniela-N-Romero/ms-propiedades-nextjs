@@ -29,8 +29,8 @@ export default function HeaderView({ isMenuOpen, toggleMenu }: HeaderViewProps) 
                 <nav className={styles.navDesktop}>
                     <Link href="/" className={styles.link}>Inicio</Link>
                     <Link href="/propiedades?mercado=industrial" className={styles.link}>Buscador</Link>
-                    <Link href="/tasaciones" className={styles.link}>Tasaciones</Link>
-                    <Link href="/contacto" className={styles.link}>Contacto</Link>
+                    <Link href="/#tasaciones" className={styles.link}>Tasaciones</Link>
+                    <Link href="/#contacto" className={styles.link}>Contacto</Link>
 
                     {/* Redes e interacciones */}
                     <div className={styles.socialGroup}>
@@ -60,8 +60,8 @@ export default function HeaderView({ isMenuOpen, toggleMenu }: HeaderViewProps) 
                 <nav className={styles.mobileMenu}>
                     <Link href="/" onClick={toggleMenu} className={styles.mobileLink}>Inicio</Link>
                     <Link href="/propiedades" onClick={toggleMenu} className={styles.mobileLink}>Buscador</Link>
-                    <Link href="/tasaciones" onClick={toggleMenu} className={styles.mobileLink}>Tasaciones</Link>
-                    <Link href="/contacto" onClick={toggleMenu} className={styles.mobileLink}>Contacto</Link>
+                    <Link href="/#tasaciones" onClick={toggleMenu} className={styles.mobileLink}>Tasaciones</Link>
+                    <Link href="/#contacto" onClick={toggleMenu} className={styles.mobileLink}>Contacto</Link>
 
                     <div className={styles.mobileSocials}>
                         <a href={links.instagram} target="_blank" className={styles.mobileLink}> 
