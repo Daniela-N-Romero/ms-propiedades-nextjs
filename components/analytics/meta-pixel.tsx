@@ -1,20 +1,21 @@
 'use client';
 
 import Script from 'next/script';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 
 const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 
 export default function MetaPixel() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  // Dispara 'PageView' automáticamente al cambiar de página en Next.js
+  // Dispara 'PageView' automáticamente al navegar entre páginas o filtros en Next.js
   useEffect(() => {
     if (PIXEL_ID && typeof window !== 'undefined' && (window as any).fbq) {
       (window as any).fbq('track', 'PageView');
     }
-  }, [pathname]);
+  }, [pathname, searchParams]);
 
   if (!PIXEL_ID) return null;
 
@@ -34,7 +35,6 @@ export default function MetaPixel() {
             s.parentNode.insertBefore(t,s)}(window, document,'script',
             'https://connect.facebook.net/en_US/fbevents.js');
             fbq('init', '${PIXEL_ID}');
-            fbq('track', 'PageView');
           `,
         }}
       />
