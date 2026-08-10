@@ -21,6 +21,7 @@ export default async function CrearPropiedadPage() {
         propietarios ={propietarios}
         colegas ={colegas}              
         />
+        
         </Suspense>
     </div>
   );
