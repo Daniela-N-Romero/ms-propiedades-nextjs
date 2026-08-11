@@ -54,23 +54,29 @@ export default function DashboardPage() {
   const [isExcelModalOpen, setIsExcelModalOpen] = useState(false);
 
   // Cargar propiedades de la API
-  const fetchPropiedades = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(`/api/properties?tab=${activeTab}`);
-      if (res.ok) {
-        const data = await res.json();
-        setPropiedades(data);
-      }
-    } catch (err) {
-      console.error('Error cargando propiedades:', err);
-    } finally {
-      setLoading(false);
+const fetchPropiedades = async () => {
+  try {
+    setLoading(true);
+    // Agregamos no-store para forzar a la API a traer datos frescos
+    const res = await fetch(`/api/properties?tab=${activeTab}`, { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      console.log('📦 Propiedades recibidas de la API:', data); // <--- Inspecciona las fechas aquí
+      setPropiedades(data);
     }
-  };
+  } catch (err) {
+    console.error('Error cargando propiedades:', err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchPropiedades();
+
+    const onFocus = () => fetchPropiedades();
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
   }, [activeTab]);
 
   // Resetear filtros al cambiar entre 'activas' y 'papelera'
@@ -80,33 +86,36 @@ export default function DashboardPage() {
   }, [activeTab]);
 
 
-const getZonaJerarquia = (prop: PropiedadAdmin) => {
+  const getZonaJerarquia = (prop: PropiedadAdmin) => {
 
-  const styles = `font-bold ${ prop.zona?.padre?.padreId  ?  '' : 'bg-yellow-500 px-2 py-1 rounded-lg text-[10px] font-spartan uppercase tracking-wider' }`;
-  // Imprimimos la zona como texto puro para ver qué llega exactamente
-  return (
+    const styles = `font-bold ${prop.zona?.padre?.padreId ? '' : 'bg-yellow-500 px-2 py-1 rounded-lg text-[10px] font-spartan uppercase tracking-wider'}`;
+    // Imprimimos la zona como texto puro para ver qué llega exactamente
+    return (
       <p className={styles}>{prop.zona?.padre?.padreId ? `📍 ${prop.zona.nombre}` : '⚠️ INCOMPLETA'}</p>
-  );
-};
-
-  // Cambiar estado de publicación (Borrador / Publicada)
-  const togglePublishStatus = async (id: number, currentStatus: boolean) => {
-    try {
-      const res = await fetch(`/api/properties/${id}/toggle-published`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isPublished: !currentStatus }),
-      });
-      if (res.ok) {
-        setPropiedades((prev) =>
-          prev.map((p) => (p.id === id ? { ...p, isPublished: !currentStatus } : p))
-        );
-      }
-    } catch (err) {
-      alert('Error al cambiar el estado de publicación');
-    }
+    );
   };
 
+  // Cambiar estado de publicación (Borrador / Publicada)
+const togglePublishStatus = async (id: number, currentStatus: boolean) => {
+  try {
+    const res = await fetch(`/api/properties/${id}/toggle-published`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isPublished: !currentStatus }),
+    });
+    if (res.ok) {
+      setPropiedades((prev) =>
+        prev.map((p) =>
+          p.id === id
+            ? { ...p, isPublished: !currentStatus } 
+            : p
+        )
+      );
+    }
+  } catch (err) {
+    alert('Error al cambiar el estado de publicación');
+  }
+};
   // Soft Delete (Mover a Papelera)
   const handleSoftDelete = async (id: number) => {
     if (!confirm('¿Mover esta propiedad a la papelera de reciclaje?')) return;
@@ -182,8 +191,8 @@ const getZonaJerarquia = (prop: PropiedadAdmin) => {
         const [field, direction] = sortBy.split('_');
 
         if (field === 'updatedAt') {
-          const dateA = new Date(a.updatedAt).getTime();
-          const dateB = new Date(b.updatedAt).getTime();
+          const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+          const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
           return direction === 'asc' ? dateA - dateB : dateB - dateA;
         }
 
@@ -227,12 +236,12 @@ const getZonaJerarquia = (prop: PropiedadAdmin) => {
             <h1 className="text-lg font-spartan font-bold">Dashboard de Propiedades</h1>
           </div>
           {/* BOTÓN PARA EXPORTAR EXCEL */}
-            <button
-              onClick={() => setIsExcelModalOpen(true)}
-              className="ml-auto mr-2 px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-spartan font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center gap-2 cursor-pointer"
-            >
-              📊 Exportar Excel
-            </button>
+          <button
+            onClick={() => setIsExcelModalOpen(true)}
+            className="ml-auto mr-2 px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-spartan font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center gap-2 cursor-pointer"
+          >
+            📊 Exportar Excel
+          </button>
           <Link
             href="/admin/crear"
             className="px-4 py-2 bg-brand-orange hover:bg-amber-600 text-brand-dark font-spartan font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm"
@@ -397,6 +406,7 @@ const getZonaJerarquia = (prop: PropiedadAdmin) => {
                               >
                                 {prop.titulo}
                                 <span className="font-extrabold text-[18px]">👆</span>
+ 
                               </Link>
                             ) : (
                               <span className="text-slate-700 font-extrabold leading-tight block">{prop.titulo}</span>

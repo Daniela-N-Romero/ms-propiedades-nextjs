@@ -72,6 +72,7 @@ export async function savePropertyAction(
             isDestacada: values.isDestacada,
             notasPrivadas: values.notasPrivadas,
             caracteristicas: values.caracteristicas || {},
+            updatedAt: new Date(),
           },
         });
 

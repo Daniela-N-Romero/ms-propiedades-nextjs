@@ -6,11 +6,12 @@ export async function toggleDestacadaAction(id: number, currentIsFeatured: boole
   try {
     const updated = await prisma.propiedad.update({
       where: { id },
-      data: { isDestacada: !currentIsFeatured }, // Cambia de true a false o viceversa
+      data: { isDestacada: !currentIsFeatured, updatedAt: new Date(), }, // Cambia de true a false o viceversa
     });
 
     // Revalidamos las rutas para que se actualice la lista del admin y la Home pública
-    revalidatePath('/admin/propiedades');
+    revalidatePath('/admin/dashboard');
+    revalidatePath('/api/properties');
     revalidatePath('/propiedades');
     revalidatePath('/');
 
