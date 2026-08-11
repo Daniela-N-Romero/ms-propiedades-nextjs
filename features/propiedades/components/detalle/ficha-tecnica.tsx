@@ -5,6 +5,7 @@ import { ICONOS_CARACTERISTICAS } from '@/types/caracteristicas';
 interface FichaTecnicaProps {
   precio: number;
   moneda: string;
+  financiacion?: string | null;
   superficieTotal: number | null;
   superficieCubierta: number | null;
   descripcion: string | null;
@@ -15,6 +16,7 @@ interface FichaTecnicaProps {
 export default function FichaTecnica({
   precio,
   moneda,
+  financiacion,
   superficieTotal,
   superficieCubierta,
   descripcion,
@@ -51,6 +53,11 @@ export default function FichaTecnica({
           <span className={styles.highlightLabel}>Valor de la Propiedad</span>
           <span className={styles.highlightPrice}>
             {formatPrecio(precio, moneda)}
+            {financiacion && (
+            <span className="inline-block mt-1 text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">
+              💳 {financiacion}
+            </span>
+          )}
           </span>
         </div>
 

@@ -13,7 +13,7 @@ export const styles = {
   
   // Estructura de Paneles (Aside + Grilla)
   layoutGrid: "grid grid-cols-1 md:grid-cols-4 gap-8 items-start",
-  asideDesktop: "hidden md:block md:col-span-1 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm sticky top-24 space-y-6",
+  asideDesktop: "hidden md:block md:col-span-1 sticky top-24 self-start max-h-[calc(100vh-7rem)] overflow-y-auto pr-2 space-y-4",
   
   // Contenedor Derecho (Controles superiores + Cards)
   mainContent: "md:col-span-3 space-y-4",

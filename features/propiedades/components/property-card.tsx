@@ -11,10 +11,7 @@ interface PropertyCardProps {
 }
 
 export default function PropertyCard({ propiedad }: PropertyCardProps) {
-  //to do: 
-  // Simulación de banner destacado tipo PDF de Canva (Anticipo + Cuotas)
-  // En el hito 3 esto vendrá del campo JSON 'caracteristicas'
-  const tieneFinanciacion = propiedad.slug === 'lote-premium-parque-industrial-hudson-3088';
+
   const portadaUrl = propiedad.imagenes?.[0]?.url || '/images/placeholder.png';
 
   return (
@@ -24,7 +21,7 @@ export default function PropertyCard({ propiedad }: PropertyCardProps) {
         <span className={`${styles.badgeOperation} ${propiedad.categoria === 'venta' ? 'bg-brand-dark text-white' : 'bg-green-700 text-white'}`}>
           {propiedad.categoria}
         </span>
-{/* 
+        {/* 
         <span className={styles.badgeType}>
           {propiedad.tipoInmueble.nombre}
         </span> */}
@@ -33,6 +30,13 @@ export default function PropertyCard({ propiedad }: PropertyCardProps) {
         {propiedad.isDestacada && (
           <span className="absolute top-12 right-4 bg-brand-orange text-brand-dark text-[10px] font-spartan font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg shadow-lg flex items-center gap-1 z-10">
             ⭐ Destacada
+          </span>
+        )}
+
+        {/* 💳 BADGE FLOTANTE DE FINANCIACIÓN (SOBRE LA FOTO) */}
+        {propiedad.financiacion && (
+          <span className="absolute bottom-3 left-3 right-3 bg-red-600 text-white text-[12px] font-spartan font-extrabold uppercase tracking-wider px-2.5 py-1.5 rounded-lg shadow-md backdrop-blur-xs flex items-center justify-center gap-1 z-10 text-center">
+            💳 {propiedad.financiacion}
           </span>
         )}
 
@@ -69,13 +73,6 @@ export default function PropertyCard({ propiedad }: PropertyCardProps) {
               <span>VALOR:</span>
               <span>{formatPrecio(propiedad.precio, propiedad.moneda)}</span>
             </div>
-
-            {/* Si tiene financiación (Ej: Lote Hudson), clavamos el banner verde vibrante */}
-            {tieneFinanciacion && (
-              <div className={styles.greenBanner}>
-                Anticipo USD 182.000 + 20 Cuotas
-              </div>
-            )}
           </div>
         </div>
 

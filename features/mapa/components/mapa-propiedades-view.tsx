@@ -13,6 +13,7 @@ export interface PropiedadMapaItem {
   slug: string;
   titulo: string;
   precio: number;
+  financiacion: string;
   superficieTotal: number | null;
   superficieCubierta: number | null;
   moneda: string;
@@ -66,7 +67,7 @@ export default function MapaPropiedadesView({
   alturaClass = 'h-full min-h-[300px]',
   isPrivateAdmin = false,
 }: MapaPropiedadesViewProps) {
-return (
+  return (
     <div className={`w-full rounded-2xl overflow-hidden border border-slate-200 shadow-sm relative z-0 ${alturaClass}`}>
       <MapContainer
         center={centroInicial}
@@ -75,7 +76,7 @@ return (
         className="w-full h-full"
       >
         <RecenterMap center={centroInicial} zoom={zoomInicial} />
-        
+
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -103,9 +104,8 @@ return (
                       />
                       {isPrivateAdmin && (
                         <span
-                          className={`absolute top-1.5 left-1.5 px-2 py-0.5 text-[9px] font-bold text-white uppercase rounded shadow-sm ${
-                            isOwn ? 'bg-emerald-600' : 'bg-blue-600'
-                          }`}
+                          className={`absolute top-1.5 left-1.5 px-2 py-0.5 text-[9px] font-bold text-white uppercase rounded shadow-sm ${isOwn ? 'bg-emerald-600' : 'bg-blue-600'
+                            }`}
                         >
                           {isOwn ? 'Propia' : 'Colega'}
                         </span>
@@ -118,14 +118,14 @@ return (
                       REF: {prop.codigo} • {prop.zonaNombre}
                     </span>
                     {isOwn && (
-                    <Link href={`/propiedades/${prop.slug}`} className="text-sm font-bold text-slate-900 line-clamp-2 leading-tight">
-                      {prop.titulo}
-                    </Link>
+                      <Link href={`/propiedades/${prop.slug}`} className="text-sm font-bold text-slate-900 line-clamp-2 leading-tight">
+                        {prop.titulo}
+                      </Link>
                     )}
                     {!isOwn && (
                       <span className="text-sm font-bold text-slate-900 line-clamp-2 leading-tight">
-                      {prop.titulo}
-                    </span>
+                        {prop.titulo}
+                      </span>
                     )}
                     <div className="text-[13px] font-medium text-slate-500">
                       {prop.superficieTotal ? `${prop.superficieTotal} m² tot.` : ''}
@@ -135,6 +135,11 @@ return (
                     <p className="text-base font-extrabold text-brand-green">
                       {formatPrecio(prop.precio, prop.moneda)}
                     </p>
+                    {prop.financiacion && (
+                      <span className="inline-block text-[10px] font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded mt-0.5">
+                        💳 {prop.financiacion}
+                      </span>
+                    )}
                   </div>
 
                   {/* BLOQUE DE CONTACTO INTERNO (SOLO VISIBLE EN PANEL ADMIN) */}
@@ -144,7 +149,7 @@ return (
                         <>
                           <span className="font-bold text-emerald-800 block">Propietario:</span>
                           <span className="text-slate-700 block truncate">
-                            {prop.propietarioNombre || 'Sin asignar'} 
+                            {prop.propietarioNombre || 'Sin asignar'}
                             {prop.propietarioTel ? ` (${prop.propietarioTel})` : ''}
                           </span>
                         </>

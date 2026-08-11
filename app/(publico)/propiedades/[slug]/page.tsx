@@ -7,7 +7,6 @@ import ContactoSection from '@/features/propiedades/components/detalle/contacto-
 import MapaDetallePropiedad from '@/features/mapa/components/mapa-detalle-propiedad';
 import { VideoSeccion } from '@/features/propiedades/components/detalle/video-section';
 import { PropiedadesSimilares } from '@/features/propiedades/components/detalle/propiedades-similares';
-import { Metadata } from 'next';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -15,19 +14,11 @@ interface PageProps {
 
 
 // 1. METADATA (Llama al helper externo)
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const propiedad = await getPropiedadBySlug(params.slug);
+export async function generateMetadata({ params }: PageProps) {
+  const resolvedParams = await params; // 👈 Imprescindible para Next.js 15+
+  const propiedad = await getPropiedadBySlug(resolvedParams.slug);
 
-  if (!propiedad) return {};
-
-  return {
-    title: `${propiedad.titulo} | MS Propiedades`,
-    description: propiedad.descripcion,
-    // SI ES OCULTA/PRIVADA, SE DESACTIVA LA INDEXACIÓN DE GOOGLE
-    robots: propiedad.isUnlisted
-      ? { index: false, follow: false }
-      : { index: true, follow: true },
-  };
+  return buildPropertyMetadata(propiedad as any);
 }
 
 // 2. VISTA (Solo renderizado)
@@ -73,6 +64,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
             <FichaTecnica
               precio={propiedad.precio}
               moneda={propiedad.moneda}
+              financiacion={propiedad.financiacion}
               superficieTotal={propiedad.superficieTotal}
               superficieCubierta={propiedad.superficieCubierta}
               descripcion={propiedad.descripcion}

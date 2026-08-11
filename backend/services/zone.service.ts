@@ -93,8 +93,12 @@ const wherePropiedad: any = {
       }
     },
     include: {
-      padre: true 
+    padre: {
+      include: {
+        padre: true, 
+      },
     },
+  },
     orderBy: [
       { padre: { nombre: 'asc' } },
       { nombre: 'asc' }

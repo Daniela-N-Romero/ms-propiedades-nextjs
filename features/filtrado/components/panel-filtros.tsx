@@ -14,12 +14,20 @@ export default function PanelFiltros({ localidades, subtipos }: PanelFiltrosProp
 
     const { filters, setFilter, toggleArrayFilter, clearAllFilters } = usePropertyFilters();
 
-    const localidadesPorPadre = localidades.reduce((acc, loc: any) => {
-        const padreNombre = loc.padre?.nombre || 'Otras Zonas';
-        if (!acc[padreNombre]) acc[padreNombre] = [];
-        acc[padreNombre].push(loc);
+    // Agrupamos en 3 niveles: MacroZona (GBA Sur) -> Partido (Berazategui) -> Localidades
+    const localidadesEstructuradas = localidades.reduce((acc, loc: any) => {
+        const partidoNodo = loc.padre;        // Ej: Berazategui
+        const regionNodo = loc.padre?.padre; // Ej: GBA Sur
+
+        const regionNombre = regionNodo?.nombre || 'Otras Regiones';
+        const partidoNombre = partidoNodo?.nombre || 'General';
+
+        if (!acc[regionNombre]) acc[regionNombre] = {};
+        if (!acc[regionNombre][partidoNombre]) acc[regionNombre][partidoNombre] = [];
+
+        acc[regionNombre][partidoNombre].push(loc);
         return acc;
-    }, {} as Record<string, typeof localidades>);
+    }, {} as Record<string, Record<string, typeof localidades>>);
 
     return (
         <div className="space-y-6">
@@ -92,45 +100,91 @@ export default function PanelFiltros({ localidades, subtipos }: PanelFiltrosProp
             {/* TIPO DE INMUEBLE */}
             {subtipos.length > 0 && (
                 <div className={styles.filterSection}>
-                    <h4 className={styles.filterTitle}>Categoría Específica</h4>
-                    <div className="space-y-2 max-h-20 overflow-y-auto ">
-                        {subtipos.map((st) => (
-                            <label key={st.id} className={styles.checkboxLabel}>
-                                <input
-                                    type="checkbox"
-                                    checked={filters.subtipos.includes(st.slug)}
-                                    onChange={(e) => toggleArrayFilter('subtipo', st.slug, e.target.checked)}
-                                    className="accent-brand-dark"
-                                />
-                                <span>{st.nombre}</span>
-                            </label>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* CHECKBOXES LOCALIDADES */}
-            <div className={styles.filterSection}>
-                <h4 className={styles.filterTitle}>Localidades Disponibles</h4>
-                <div className="space-y-4 max-h-40 overflow-y-auto pr-1">
-                    {Object.entries(localidadesPorPadre).map(([padreNombre, locs]) => (
-                        <div key={padreNombre} className="space-y-1.5">
-                            <span className="block text-[11px] font-spartan font-bold uppercase text-amber-700 tracking-wider border-b border-slate-100 pb-0.5">
-                                📍 {padreNombre}
-                            </span>
-                            {locs.map((loc) => (
-                                <label key={loc.id} className={styles.checkboxLabel}>
+                    <details className="group" open>
+                        <summary className="flex justify-between items-center cursor-pointer select-none pb-1">
+                            <h4 className={styles.filterTitle}>Categoría Específica</h4>
+                            <span className="text-xs text-slate-400 group-open:rotate-180 transition-transform">▼</span>
+                        </summary>
+                        <div className="space-y-2 pt-2">
+                            {subtipos.map((st) => (
+                                <label key={st.id} className={styles.checkboxLabel}>
                                     <input
                                         type="checkbox"
-                                        checked={filters.localidades.includes(String(loc.id))}
-                                        onChange={(e) => toggleArrayFilter('localidad', String(loc.id), e.target.checked)}
+                                        checked={filters.subtipos.includes(st.slug)}
+                                        onChange={(e) => toggleArrayFilter('subtipo', st.slug, e.target.checked)}
                                         className="accent-brand-dark"
                                     />
-                                    <span>{loc.nombre}</span>
+                                    <span>{st.nombre}</span>
                                 </label>
                             ))}
                         </div>
-                    ))}
+                    </details>
+                </div>
+            )}
+            {/* LOCALIDADES Y ZONAS */}
+            <div className={styles.filterSection}>
+                <h4 className={styles.filterTitle}>Localidades y Zonas</h4>
+
+                <div className="space-y-2 pt-2">
+                    {Object.entries(localidadesEstructuradas).map(([regionNombre, partidos]) => {
+                        // Revisa si hay algún checkbox activo en esta Macro Zona (ej: GBA Sur)
+                        const isRegionActive = Object.values(partidos).some((locs) =>
+                            locs.some((loc) => filters.localidades.includes(String(loc.id)))
+                        );
+
+                        return (
+                            <details
+                                key={regionNombre}
+                                className="group border border-slate-300 rounded-xl bg-white overflow-hidden shadow-2xs transition-all"
+                                open={isRegionActive}
+                            >
+                                {/* NIVEL 1: MACRO REGIÓN (Ej: GBA SUR) */}
+                                <summary className="flex justify-between items-center cursor-pointer select-none p-3 bg-slate-100 hover:bg-slate-200/70 transition-colors">
+                                    <span className="text-xs font-spartan font-bold uppercase text-brand-dark tracking-wider flex items-center gap-1.5">
+                                        🗺️ {regionNombre}
+                                    </span>
+                                    <span className="text-xs text-slate-400 group-open:rotate-180 transition-transform">▼</span>
+                                </summary>
+
+                                {/* NIVEL 2: PARTIDOS (Ej: Berazategui, Quilmes, Florencio Varela) */}
+                                <div className="p-2 space-y-2 bg-slate-50/50 border-t border-slate-200">
+                                    {Object.entries(partidos).map(([partidoNombre, locs]) => {
+                                        const isPartidoActive = locs.some((loc) =>
+                                            filters.localidades.includes(String(loc.id))
+                                        );
+
+                                        return (
+                                            <details
+                                                key={partidoNombre}
+                                                className="group/partido border border-slate-200 rounded-lg bg-white p-2.5 transition-all"
+                                                open={isPartidoActive}
+                                            >
+                                                <summary className="flex justify-between items-center cursor-pointer select-none text-[11px] font-spartan font-bold uppercase text-amber-800 tracking-wider">
+                                                    <span>📍 {partidoNombre}</span>
+                                                    <span className="text-[10px] text-slate-400 group-open/partido:rotate-180 transition-transform">▼</span>
+                                                </summary>
+
+                                                {/* NIVEL 3: LOCALIDADES (Ej: G.E. Hudson, Sourigues, Ranelagh) */}
+                                                <div className="space-y-1.5 pt-2 pl-2 border-t border-slate-100 mt-1.5">
+                                                    {locs.map((loc) => (
+                                                        <label key={loc.id} className={styles.checkboxLabel}>
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={filters.localidades.includes(String(loc.id))}
+                                                                onChange={(e) => toggleArrayFilter('localidad', String(loc.id), e.target.checked)}
+                                                                className="accent-brand-dark cursor-pointer"
+                                                            />
+                                                            <span>{loc.nombre}</span>
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            </details>
+                                        );
+                                    })}
+                                </div>
+                            </details>
+                        );
+                    })}
                 </div>
             </div>
 

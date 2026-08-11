@@ -21,6 +21,7 @@ export const propertyFormSchema = z.object({
   // Números estrictos para React Hook Form
   precio: coerceNumber('Ingrese un precio válido').refine((val) => val >= 0, 'El precio debe ser un número positivo'),
   moneda: z.enum(['USD', 'ARS']),
+  financiacion: z.string().optional().nullable(),
   descripcion: z.string().optional(),
 
   // Ubicación

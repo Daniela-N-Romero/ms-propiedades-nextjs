@@ -157,6 +157,21 @@ export function ComercialSection({
           {errors.precio && <span className="text-xs font-semibold text-red-500 mt-1 block">❌ {errors.precio.message}</span>}
         </div>
 
+        <div className="col-span-2">
+          <label className="block text-xs font-bold text-slate-700 mb-1">
+            💳 Financiación / Facilidades de Pago (Opcional)
+          </label>
+          <input
+            type="text"
+            {...register('financiacion')}
+            placeholder="Ej: Anticipo USD 182.000 + 20 cuotas"
+            className="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-orange outline-none transition"
+          />
+          <p className="text-[11px] text-slate-400 mt-1">
+            Si la propiedad cuenta con plan de pago, completá este campo para mostrar un banner promocional destacado.
+          </p>
+        </div>
+
         <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-slate-800">
             Superficie Total (m²)
@@ -200,14 +215,9 @@ export function ComercialSection({
           {errors.superficieCubierta && <span className="text-xs font-semibold text-red-500 mt-1 block">❌ {errors.superficieCubierta.message}</span>}
         </div>
 
-      </div>
-
-      {/* ORIGEN DE CARTERA Y ASIGNACIÓN (PROPIETARIO / COLEGA) */}
-      <div className="space-y-4 pt-2 border-t border-slate-100">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-800">
-              Agente Responsable <span className="text-red-500">*</span>
+              Agente Responsable<span className="text-red-500">*</span>
             </label>
             <select {...register('agenteId', { valueAsNumber: true })} className={getSelectClass(!!errors.agenteId)}>
               {agentes.map((a) => (
@@ -215,7 +225,7 @@ export function ComercialSection({
               ))}
             </select>
           </div>
-          <div>
+          <div className="col-span-2">
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-800">
               Origen de la Cartera <span className="text-red-500">*</span>
             </label>
@@ -244,7 +254,10 @@ export function ComercialSection({
               )}
             />
           </div>
-        </div>
+      </div>
+
+      {/* ORIGEN DE CARTERA Y ASIGNACIÓN (PROPIETARIO / COLEGA) */}
+      <div>
 
         {/* PROPIETARIO DIRECTO */}
         {origen === 'own' && (

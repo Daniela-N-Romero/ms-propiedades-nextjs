@@ -55,6 +55,7 @@ export async function savePropertyAction(
             origen: values.origen,
             precio: values.precio,
             moneda: values.moneda,
+            financiacion: values.financiacion,
             descripcion: values.descripcion,
             direccionPersonalizada: values.direccionPersonalizada,
             latitud: values.latitud,
@@ -91,6 +92,8 @@ export async function savePropertyAction(
 
       revalidatePath('/admin/dashboard');
       revalidatePath(`/propiedades/${propiedadExistente.slug}`);
+      revalidatePath('/');
+      revalidatePath('/propiedades');
 
       return { success: true, propertyId };
 
@@ -119,6 +122,7 @@ export async function savePropertyAction(
           origen: values.origen,
           precio: values.precio,
           moneda: values.moneda,
+          financiacion: values.financiacion,
           descripcion: values.descripcion,
           direccionPersonalizada: values.direccionPersonalizada,
           latitud: values.latitud,
@@ -148,6 +152,8 @@ export async function savePropertyAction(
       });
 
       revalidatePath('/admin/dashboard');
+      revalidatePath('/');
+      revalidatePath('/propiedades');
       return { success: true, propertyId: nuevaPropiedad.id };
     }
   } catch (error) {

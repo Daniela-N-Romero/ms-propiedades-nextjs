@@ -20,6 +20,12 @@ export function buildPropertyMetadata(propiedad: PropertyFullData | null): Metad
   return {
     title: tituloSEO,
     description: descripcionSEO,
+    // 🔒 CONTROL DE GOOGLE Y BUSCADORES (SI ES PRIVADA / UNLISTED)
+    robots: propiedad.isUnlisted
+      ? { index: false, follow: false }
+      : { index: true, follow: true },
+
+    // 📱 OPENGRAPH (PREVISUALIZACIÓN EN WHATSAPP / FACEBOOK)
     openGraph: {
       title: `${propiedad.titulo} (${precioFormateado})`,
       description: `REF: ${propiedad.codigo} — ${propiedad.tipoInmueble?.nombre} en ${propiedad.zona.nombre}.`,
