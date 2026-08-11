@@ -6,6 +6,7 @@ import { formatPrecio } from '@/lib/utils-formatting';
 import { Fragment } from 'react';
 import StarButton from '@/features/admin/form/components/star-button';
 import { useContactLinks } from '@/providers/config-provider';
+import { ExportExcelModal } from '@/features/admin/form/components/export-excel-modal';
 
 interface ZonaNodo {
   id: number;
@@ -50,6 +51,7 @@ export default function DashboardPage() {
   const [search, setSearch] = useState('');
   const [groupBy, setGroupBy] = useState<'none' | 'tipo' | 'categoria' | 'zona'>('tipo');
   const [sortBy, setSortBy] = useState('updatedAt_desc');
+  const [isExcelModalOpen, setIsExcelModalOpen] = useState(false);
 
   // Cargar propiedades de la API
   const fetchPropiedades = async () => {
@@ -224,9 +226,16 @@ const getZonaJerarquia = (prop: PropiedadAdmin) => {
             </Link>
             <h1 className="text-lg font-spartan font-bold">Dashboard de Propiedades</h1>
           </div>
+          {/* BOTÓN PARA EXPORTAR EXCEL */}
+            <button
+              onClick={() => setIsExcelModalOpen(true)}
+              className="ml-auto mr-2 px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-spartan font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center gap-2 cursor-pointer"
+            >
+              📊 Exportar Excel
+            </button>
           <Link
             href="/admin/crear"
-            className="px-4 py-2 bg-brand-orange hover:bg-amber-600 text-white font-spartan font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm"
+            className="px-4 py-2 bg-brand-orange hover:bg-amber-600 text-brand-dark font-spartan font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm"
           >
             + Crear Nueva Propiedad
           </Link>
@@ -475,6 +484,12 @@ const getZonaJerarquia = (prop: PropiedadAdmin) => {
           )}
         </div>
       </div>
+      {/* MODAL DE EXPORTACIÓN */}
+      <ExportExcelModal
+        isOpen={isExcelModalOpen}
+        onClose={() => setIsExcelModalOpen(false)}
+        activeTab={activeTab}
+      />
     </div>
   );
 }
