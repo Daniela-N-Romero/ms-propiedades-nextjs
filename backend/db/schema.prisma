@@ -139,6 +139,7 @@ model Propiedad {
   latitud               Decimal?            @db.Decimal(9, 6)
   longitud              Decimal?            @db.Decimal(9, 6)
   isPublished           Boolean             @default(false) @map("is_published")
+  isUnlisted            Boolean             @default(false)
   isDestacada           Boolean             @default(false) @map("is_destacada") 
   notasPrivadas         String?             @map("notas_privadas") @db.Text
   caracteristicas       Json?               @map("caracteristicas_especificas")

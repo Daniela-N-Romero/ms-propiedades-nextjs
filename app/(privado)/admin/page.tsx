@@ -187,7 +187,7 @@ export default function AdminHomePage() {
           </div>
 
           {/* TARJETA 5: BLOG */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between text-center">
+          <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between text-center mb-5">
             <div className="space-y-3">
               <div className="w-14 h-14 bg-slate-100 text-slate-600 rounded-2xl flex items-center justify-center mx-auto text-2xl">
                 📘

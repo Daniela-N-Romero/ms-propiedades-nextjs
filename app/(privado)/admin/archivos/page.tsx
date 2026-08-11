@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 export default async function ArchivosPage() {
   const propiedadesRaw = await prisma.propiedad.findMany({
     select: {
-id: true,
+      id: true,
       titulo: true,
       categoria: true,
       precio: true,
@@ -18,6 +18,7 @@ id: true,
       pdfUrl: true,
       direccionPersonalizada: true,
       descripcion: true,
+      deletedAt: true,
       zona: {
         select: { 
           nombre: true, 
@@ -36,6 +37,7 @@ id: true,
   });
 
 const propiedades = propiedadesRaw.map((p) => sanearPropiedadCompleta(p));
+console.log('Propiedades sanadas:', propiedades); // Log the sanitized properties
 
   return <ArchivosClient propiedades={propiedades} />;
 }

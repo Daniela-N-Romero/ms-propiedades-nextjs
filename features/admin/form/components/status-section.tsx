@@ -12,6 +12,7 @@ export function StatusSection({ form }: StatusSectionProps) {
 
   const isPublished = watch('isPublished');
   const isDestacada = watch('isDestacada');
+  const isUnlisted = watch('isUnlisted'); 
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
@@ -47,6 +48,29 @@ export function StatusSection({ form }: StatusSectionProps) {
           />
         </label>
 
+        {/* SWITCH: FICHA PRIVADA / UNLISTED (NUEVO) */}
+        <label
+          className={`cursor-pointer p-4 rounded-xl border transition-all flex items-center justify-between ${
+            isUnlisted
+              ? 'bg-indigo-50 border-indigo-300 text-indigo-900'
+              : 'bg-slate-50 border-slate-200 text-slate-700'
+          }`}
+        >
+          <div>
+            <h4 className="font-bold text-sm flex items-center gap-2">
+              🔒 Ficha Privada / No Listada
+            </h4>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Oculta del buscador y Google. Accesible solo por enlace directo.
+            </p>
+          </div>
+          <input
+            type="checkbox"
+            {...register('isUnlisted')}
+            className="w-5 h-5 accent-indigo-600 rounded cursor-pointer"
+          />
+        </label>
+
         {/* SWITCH: DESTACADA (Ahora es un <label>) */}
         <label
           className={`cursor-pointer p-4 rounded-xl border transition-all flex items-center justify-between ${
@@ -70,6 +94,7 @@ export function StatusSection({ form }: StatusSectionProps) {
           />
         </label>
       </div>
+      
 
       {/* NOTAS PRIVADAS DE LA INMOBILIARIA */}
       <div>

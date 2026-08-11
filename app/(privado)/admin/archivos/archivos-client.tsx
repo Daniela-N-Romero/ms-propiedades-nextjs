@@ -20,6 +20,7 @@ interface PropiedadArchivo {
   superficieTotal: number | null;
   superficieCubierta: number | null;
   caracteristicas: Record<string, any> | null;
+  deletedAt?: Date | null;
 }
 
 export function ArchivosClient({ propiedades }: { propiedades: PropiedadArchivo[] }) {
@@ -28,6 +29,7 @@ export function ArchivosClient({ propiedades }: { propiedades: PropiedadArchivo[
 
   // BÚSQUEDA ROBUSTA POR MULTI-PALABRAS CLAVE (TOKENS)
   const filtered = propiedades.filter((p) => {
+    if (p.deletedAt) return false; 
     if (!searchTerm.trim()) return true;
 
     // 1. Unificamos todo el texto de la propiedad en un solo String de búsqueda

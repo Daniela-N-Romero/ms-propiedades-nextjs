@@ -76,3 +76,4 @@ export async function PATCH(
     return NextResponse.json({ error: 'Error al restaurar propiedad' }, { status: 500 });
   }
 }
+

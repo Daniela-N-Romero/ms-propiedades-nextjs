@@ -17,7 +17,7 @@ import { PropertyFormValues } from '@/features/admin/form/schemas/property-schem
  */
 export async function getDestacadas() {
   const destacadas = await prisma.propiedad.findMany({
-    where: { isPublished: true, isDestacada: true },
+    where: { isPublished: true, isDestacada: true, isUnlisted: false, }, // isUnlisted: false para excluir propiedades no listadas
     include: { zona: true, tipoInmueble: true, imagenes: true },
     orderBy: { createdAt: 'desc' }
   });
@@ -96,7 +96,7 @@ export async function getSubtiposPorTipoMercado(mercadoSlug?: string) {
   const whereCondition: any = {
     padreId: { not: null }, // EXIGE QUE SEA UN HIJO
     propiedades: {
-      some: { isPublished: true } // Solo con stock publicado
+      some: { isPublished: true,  isUnlisted: false, } // Solo con stock publicado
     }
   };
 
@@ -163,11 +163,15 @@ interface SearchFilters {
   ordenar?: string;
 }
 
-export async function searchPropiedades(filters: SearchFilters, isPublishedOnly: boolean = true) {
+export async function searchPropiedades(filters: SearchFilters, isPublishedOnly: boolean = true, isNotUnlisted: boolean = true) {
   const queryWhere: any = {};
 
   if (isPublishedOnly) {
     queryWhere.isPublished = true;
+  }
+  //excluimos las propiedades no listadas si isNotUnlisted es true
+  if (isNotUnlisted) {
+    queryWhere.isUnlisted = false;
   }
 
   if (filters.categoria) {
@@ -311,8 +315,6 @@ export async function getFormData(propertyId?: number) {
   };
 }
 
-// En backend/services/property.service.ts
-
 export async function getPropiedadesSimilares(
   propiedadActualId: number,
   tipoInmuebleId: number,
@@ -326,6 +328,7 @@ export async function getPropiedadesSimilares(
         id: { not: propiedadActualId }, // Excluimos la propiedad que está viendo
         zonaId: zonaId,                // Misma localidad exacta
         isPublished: true,
+        isUnlisted: false,
         deletedAt: null,
       },
       take: limit,
@@ -357,6 +360,7 @@ export async function getPropiedadesSimilares(
         id: { notIn: idsYaEncontrados },
         tipoInmuebleId: tipoInmuebleId, // Mismo tipo (ej. Nave Industrial)
         isPublished: true,
+        isUnlisted: false,
         deletedAt: null,
       },
       take: faltantes,

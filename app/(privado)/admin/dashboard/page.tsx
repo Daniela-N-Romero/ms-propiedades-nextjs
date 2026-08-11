@@ -23,6 +23,7 @@ interface PropiedadAdmin {
   precio: number;
   moneda: string;
   isPublished: boolean;
+  isUnlisted: boolean;
   isDestacada: boolean;
   videoUrl?: string | null;
   pdfUrl?: string | null;
@@ -43,6 +44,7 @@ export default function DashboardPage() {
 
   const [propiedades, setPropiedades] = useState<PropiedadAdmin[]>([]);
   const [loading, setLoading] = useState(true);
+  const [copiedId, setCopiedId] = useState<number | null>(null);
 
   // Filtros de estado
   const [activeTab, setActiveTab] = useState<'activas' | 'papelera'>('activas');
@@ -54,22 +56,22 @@ export default function DashboardPage() {
   const [isExcelModalOpen, setIsExcelModalOpen] = useState(false);
 
   // Cargar propiedades de la API
-const fetchPropiedades = async () => {
-  try {
-    setLoading(true);
-    // Agregamos no-store para forzar a la API a traer datos frescos
-    const res = await fetch(`/api/properties?tab=${activeTab}`, { cache: 'no-store' });
-    if (res.ok) {
-      const data = await res.json();
-      console.log('📦 Propiedades recibidas de la API:', data); // <--- Inspecciona las fechas aquí
-      setPropiedades(data);
+  const fetchPropiedades = async () => {
+    try {
+      setLoading(true);
+      // Agregamos no-store para forzar a la API a traer datos frescos
+      const res = await fetch(`/api/properties?tab=${activeTab}`, { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        console.log('📦 Propiedades recibidas de la API:', data); // <--- Inspecciona las fechas aquí
+        setPropiedades(data);
+      }
+    } catch (err) {
+      console.error('Error cargando propiedades:', err);
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error('Error cargando propiedades:', err);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   useEffect(() => {
     fetchPropiedades();
@@ -96,26 +98,63 @@ const fetchPropiedades = async () => {
   };
 
   // Cambiar estado de publicación (Borrador / Publicada)
-const togglePublishStatus = async (id: number, currentStatus: boolean) => {
-  try {
-    const res = await fetch(`/api/properties/${id}/toggle-published`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ isPublished: !currentStatus }),
-    });
-    if (res.ok) {
-      setPropiedades((prev) =>
-        prev.map((p) =>
-          p.id === id
-            ? { ...p, isPublished: !currentStatus } 
-            : p
-        )
-      );
+  const togglePublishStatus = async (id: number, currentStatus: boolean) => {
+    try {
+      const res = await fetch(`/api/properties/${id}/toggle-published`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isPublished: !currentStatus }),
+      });
+      if (res.ok) {
+        setPropiedades((prev) =>
+          prev.map((p) =>
+            p.id === id
+              ? { ...p, isPublished: !currentStatus }
+              : p
+          )
+        );
+      }
+    } catch (err) {
+      alert('Error al cambiar el estado de publicación');
     }
-  } catch (err) {
-    alert('Error al cambiar el estado de publicación');
-  }
-};
+  };
+
+  // Toggle rápido de propiedad Privada / Pública
+  const toggleUnlistedStatus = async (id: number, currentStatus: boolean) => {
+    try {
+      const res = await fetch(`/api/properties/${id}/toggle-unlisted`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isUnlisted: !currentStatus }),
+      });
+      if (res.ok) {
+        setPropiedades((prev) =>
+          prev.map((p) => (p.id === id ? { ...p, isUnlisted: !currentStatus } : p))
+        );
+      }
+    } catch (err) {
+      alert('Error al cambiar la privacidad');
+    }
+  };
+
+  // Cambiar estado de listado (Listada / No Listada)
+  const copyToClipboard = async (e: React.MouseEvent, prop: PropiedadAdmin) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!prop.isPublished) return;
+
+    const url = `${window.location.origin}/propiedades/${prop.slug}`;
+
+    try {
+      await navigator.clipboard.writeText(url);
+      // Feedback visual temporal en el mismo botón
+      setCopiedId(prop.id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (err) {
+      console.error('Error al copiar el enlace:', err);
+    }
+  };
 
   // Soft Delete (Mover a Papelera)
   const handleSoftDelete = async (id: number) => {
@@ -372,10 +411,11 @@ const togglePublishStatus = async (id: number, currentStatus: boolean) => {
                     <th className="p-3">Ubicación</th>
                     <th className="p-3">Precio</th>
                     <th className="p-3">Tipo</th>
+                    {activeTab === 'activas' && <th className="p-3 text-center">Destacada</th>}
                     <th className="p-3 text-center">Video</th>
                     <th className="p-3 text-center">PDF</th>
                     <th className="p-3 text-center">Estado</th>
-                    {activeTab === 'activas' && <th className="p-3 text-center">Destacada</th>}
+                    <th className="p-3 text-center">Visibilidad</th>
                     <th className="p-3 text-center min-w-25">Acciones</th>
                   </tr>
                 </thead>
@@ -407,7 +447,7 @@ const togglePublishStatus = async (id: number, currentStatus: boolean) => {
                               >
                                 {prop.titulo}
                                 <span className="font-extrabold text-[18px]">👆</span>
- 
+
                               </Link>
                             ) : (
                               <span className="text-slate-700 font-extrabold leading-tight block">{prop.titulo}</span>
@@ -426,6 +466,11 @@ const togglePublishStatus = async (id: number, currentStatus: boolean) => {
                               {prop.categoria}
                             </span>
                           </td>
+                          {activeTab === 'activas' && (
+                            <td className="px-4 py-3 text-center">
+                              <StarButton propiedadId={prop.id} initialIsFeatured={prop.isDestacada} />
+                            </td>
+                          )}
                           <td className="p-3 text-center">
                             {/* Verificación de Video Propio contra el default */}
                             {prop.videoUrl && prop.videoUrl !== links.videoIndustrialDefault ? '✔️' : '❌'}
@@ -433,25 +478,57 @@ const togglePublishStatus = async (id: number, currentStatus: boolean) => {
                           <td className="p-3 text-center">
                             {prop.pdfUrl ? '✔️' : '❌'}
                           </td>
+                          {/* 1. COLUMNA DE ESTADO (Publicada / Borrador) */}
                           <td className="p-3 text-center">
                             <button
                               onClick={() => togglePublishStatus(prop.id, prop.isPublished)}
                               disabled={activeTab === 'papelera'}
-                              className={`px-3 py-1 rounded-full text-[10px] font-bold font-spartan uppercase tracking-wider text-white transition-all disabled:opacity-50 ${prop.isPublished ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-amber-500 hover:bg-amber-600'}`}
+                              className={`px-3 py-1 rounded-full text-[10px] font-bold font-spartan uppercase tracking-wider text-white transition-all disabled:opacity-50 ${prop.isPublished
+                                ? 'bg-emerald-500 hover:bg-emerald-600'
+                                : 'bg-amber-500 hover:bg-amber-600'
+                                }`}
                             >
                               {prop.isPublished ? 'Publicada' : 'Borrador'}
                             </button>
                           </td>
 
-                          {activeTab === 'activas' && (
-                            <td className="px-4 py-3 text-center">
-                              <StarButton propiedadId={prop.id} initialIsFeatured={prop.isDestacada} />
-                            </td>
-                          )}
+                          {/* 2. NUEVA COLUMNA DE VISIBILIDAD / PRIVACIDAD CON CANDADOS */}
+                          <td className="p-3 text-center">
+                            <button
+                              onClick={() => toggleUnlistedStatus(prop.id, Boolean(prop.isUnlisted))}
+                              disabled={activeTab === 'papelera'}
+                              title={
+                                prop.isUnlisted
+                                  ? 'Propiedad Privada (Solo accesible por link)'
+                                  : 'Propiedad Pública (Visible en buscador y Google)'
+                              }
+                              className={`p-1.5 rounded-lg text-base transition-all border ${prop.isUnlisted
+                                ? 'bg-indigo-100 border-indigo-300 text-indigo-700 hover:bg-indigo-200' // Candado activo (Privada)
+                                : 'bg-slate-100 border-slate-200 text-slate-400 hover:bg-slate-200'
+                                }`}
+                            >
+                              {prop.isUnlisted ? '🔒' : '🌎'}
+                            </button>
+                          </td>
 
-                          <td className="p-3 text-right space-x-1 min-w-25">
+
+                          <td className="p-3 text-right space-x-1 min-w-35">
                             {activeTab === 'activas' ? (
                               <>
+                                <button
+                                  type="button"
+                                  onClick={(e) => copyToClipboard(e, prop)}
+                                  disabled={!prop.isPublished}
+                                  title={prop.isPublished ? 'Copiar enlace de la ficha' : 'Propiedad en Borrador (Link no disponible)'}
+                                  className={`px-2 py-1.5 text-[13px] font-bold rounded-lg transition-all inline-block ${prop.isPublished
+                                    ? copiedId === prop.id
+                                      ? 'bg-emerald-600 text-white' // Feedback al copiar
+                                      : 'bg-emerald-300 hover:bg-emerald-400 text-slate-800'
+                                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                                    }`}
+                                >
+                                  {copiedId === prop.id ? '✅' : prop.isPublished ? '🔗' : '🚫'}
+                                </button>
                                 <Link
                                   href={`/admin/${prop.id}/editar`}
                                   className="px-2 py-1.5 bg-cyan-300 hover:bg-cyan-500 text-slate-800 text-[15px] font-bold rounded-lg transition-colors inline-block"

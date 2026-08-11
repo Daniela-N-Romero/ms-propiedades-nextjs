@@ -45,6 +45,7 @@ export const propertyFormSchema = z.object({
 
   // Visibilidad y Notas
   isPublished: z.boolean().default(false),
+  isUnlisted: z.boolean().default(false),
   isDestacada: z.boolean().default(false),
   notasPrivadas: z.string().optional(),
 
