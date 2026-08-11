@@ -376,7 +376,7 @@ const togglePublishStatus = async (id: number, currentStatus: boolean) => {
                     <th className="p-3 text-center">PDF</th>
                     <th className="p-3 text-center">Estado</th>
                     {activeTab === 'activas' && <th className="p-3 text-center">Destacada</th>}
-                    <th className="p-3 text-center">Acciones</th>
+                    <th className="p-3 text-center min-w-25">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs">
@@ -449,7 +449,7 @@ const togglePublishStatus = async (id: number, currentStatus: boolean) => {
                             </td>
                           )}
 
-                          <td className="p-3 text-right space-x-1">
+                          <td className="p-3 text-right space-x-1 min-w-25">
                             {activeTab === 'activas' ? (
                               <>
                                 <Link
