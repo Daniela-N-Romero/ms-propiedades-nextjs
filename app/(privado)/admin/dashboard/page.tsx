@@ -116,6 +116,7 @@ const togglePublishStatus = async (id: number, currentStatus: boolean) => {
     alert('Error al cambiar el estado de publicación');
   }
 };
+
   // Soft Delete (Mover a Papelera)
   const handleSoftDelete = async (id: number) => {
     if (!confirm('¿Mover esta propiedad a la papelera de reciclaje?')) return;
