@@ -43,33 +43,22 @@ export async function POST(req: Request) {
       },
     });
 
-    // Helper para verificar video propio
     const tieneVideoPropio = (url?: string | null) => {
-      if (!url || url.trim() === '') return 'Sin video';
-      if (url === links.videoIndustrialDefault) {
-        return 'Video Generico';
-      }
-      return url;
-    };
-
-    // 🖼️ Helper para verificar si tiene fotos reales (diferentes al placeholder)
-    const tieneFotosReales = (imagenes?: { url: string }[]) => {
-      if (!imagenes || imagenes.length === 0) return false;
-      const mainUrl = imagenes[0].url || '';
-      if (
-        mainUrl.includes('placeholder') ||
-        mainUrl.trim() === '' ||
-        mainUrl === '/images/placeholder.jpg' ||
-        mainUrl === '/images/placeholder.png'
-      ) {
+      if (!url || url.trim() === '') return false;
+      if (url === links.videoIndustrialDefault || url.toLowerCase().includes('default')) {
         return false;
       }
       return true;
     };
 
+    const tieneFotosReales = (imagenes?: { url: string }[]) => {
+      if (!imagenes || imagenes.length === 0) return false;
+      const mainUrl = imagenes[0].url || '';
+      return !mainUrl.includes('placeholder') && mainUrl.trim() !== '';
+    };
+
     const filteredProps = propiedades.filter((p) => {
-      const videoStatus = tieneVideoPropio(p.videoUrl);
-      const isCustomVideo = videoStatus !== 'Sin video' && videoStatus !== 'Video Generico';
+      const isCustomVideo = tieneVideoPropio(p.videoUrl);
       const hasPdf = Boolean(p.pdfUrl && p.pdfUrl.trim() !== '');
       const hasRealImages = tieneFotosReales(p.imagenes);
 
@@ -89,7 +78,7 @@ export async function POST(req: Request) {
     // Mapeo de definición de columnas
     const columnDefinitions: { key: string; header: string; width: number }[] = [];
 
-    if (columns.includes('codigo')) columnDefinitions.push({ key: 'codigo', header: 'Código / Ref', width: 14 });
+    if (columns.includes('codigo')) columnDefinitions.push({ key: 'codigo', header: 'Código / Ref', width: 15 });
     if (columns.includes('titulo')) columnDefinitions.push({ key: 'titulo', header: 'Título Comercial', width: 35 });
     if (columns.includes('categoria')) columnDefinitions.push({ key: 'categoria', header: 'Operación', width: 14 });
     if (columns.includes('precio')) columnDefinitions.push({ key: 'precio', header: 'Precio', width: 16 });
@@ -104,19 +93,18 @@ export async function POST(req: Request) {
     if (columns.includes('destacada')) columnDefinitions.push({ key: 'destacada', header: '¿Es Destacada?', width: 16 });
     if (columns.includes('origen')) columnDefinitions.push({ key: 'origen', header: 'Origen Cartera', width: 16 });
     if (columns.includes('agente')) columnDefinitions.push({ key: 'agente', header: 'Agente Responsable', width: 22 });
-    if (columns.includes('hasImages')) columnDefinitions.push({ key: 'hasImages', header: '¿Tiene Fotos Propias?', width: 22 }); // 👈 DEFINICIÓN COLUMNA
+    if (columns.includes('hasImages')) columnDefinitions.push({ key: 'hasImages', header: '¿Tiene Fotos Propias?', width: 22 });
     if (columns.includes('hasVideo')) columnDefinitions.push({ key: 'hasVideo', header: '¿Tiene Video Propio?', width: 20 });
-    if (columns.includes('videoUrl')) columnDefinitions.push({ key: 'videoUrl', header: 'Link Video', width: 35 });
+    if (columns.includes('videoUrl')) columnDefinitions.push({ key: 'videoUrl', header: 'Link Video', width: 40 });
     if (columns.includes('hasPdf')) columnDefinitions.push({ key: 'hasPdf', header: '¿Tiene Ficha PDF?', width: 18 });
-    if (columns.includes('pdfUrl')) columnDefinitions.push({ key: 'pdfUrl', header: 'Link Ficha PDF', width: 35 });
+    if (columns.includes('pdfUrl')) columnDefinitions.push({ key: 'pdfUrl', header: 'Link Ficha PDF', width: 40 });
     if (columns.includes('updatedAt')) columnDefinitions.push({ key: 'updatedAt', header: 'Última Actualización', width: 20 });
 
     worksheet.columns = columnDefinitions;
 
-    // 2. AGREGAR FILAS DE DATOS
+    // 2. CARGAR FILAS CON TEXTOS LIMPIOS (Sintaxis ultra estable para Microsoft Excel)
     filteredProps.forEach((p) => {
-      const videoVal = tieneVideoPropio(p.videoUrl);
-      const isCustomVideo = videoVal !== 'Sin video' && videoVal !== 'Video Generico';
+      const isCustomVideo = tieneVideoPropio(p.videoUrl);
       const hasPdf = Boolean(p.pdfUrl && p.pdfUrl.trim() !== '');
       const hasRealImages = tieneFotosReales(p.imagenes);
 
@@ -126,8 +114,8 @@ export async function POST(req: Request) {
 
       const rowData: Record<string, any> = {};
 
-      if (columns.includes('codigo')) rowData.codigo = p.codigo;
-      if (columns.includes('titulo')) rowData.titulo = p.titulo;
+      if (columns.includes('codigo')) rowData.codigo = p.codigo || '';
+      if (columns.includes('titulo')) rowData.titulo = p.titulo || '';
       if (columns.includes('categoria')) rowData.categoria = p.categoria ? p.categoria.toUpperCase() : '-';
       if (columns.includes('precio')) rowData.precio = precioNum;
       if (columns.includes('moneda')) rowData.moneda = p.moneda || 'USD';
@@ -141,17 +129,17 @@ export async function POST(req: Request) {
       if (columns.includes('destacada')) rowData.destacada = p.isDestacada ? 'SÍ' : 'NO';
       if (columns.includes('origen')) rowData.origen = p.colegaId ? 'Colega' : 'Cartera Propia';
       if (columns.includes('agente')) rowData.agente = p.agente ? `${p.agente.nombre} ${p.agente.apellido}` : '-';
-      if (columns.includes('hasImages')) rowData.hasImages = hasRealImages ? 'SÍ' : 'NO (Placeholder)'; // 👈 DATO
+      if (columns.includes('hasImages')) rowData.hasImages = hasRealImages ? 'SÍ' : 'NO (Placeholder)';
       if (columns.includes('hasVideo')) rowData.hasVideo = isCustomVideo ? 'SÍ' : 'NO';
-      if (columns.includes('videoUrl')) rowData.videoUrl = videoVal;
+      if (columns.includes('videoUrl')) rowData.videoUrl = isCustomVideo && p.videoUrl ? p.videoUrl : 'Sin Video Propio';
       if (columns.includes('hasPdf')) rowData.hasPdf = hasPdf ? 'SÍ' : 'NO';
-      if (columns.includes('pdfUrl')) rowData.pdfUrl = hasPdf ? p.pdfUrl : 'Sin PDF';
+      if (columns.includes('pdfUrl')) rowData.pdfUrl = hasPdf && p.pdfUrl ? p.pdfUrl : 'Sin PDF';
       if (columns.includes('updatedAt')) rowData.updatedAt = new Date(p.updatedAt).toLocaleDateString('es-AR');
 
       worksheet.addRow(rowData);
     });
 
-    // 🎨 3. DAR ESTILOS A LA CABECERA (AZUL MARCA MS PROPIEDADES)
+    // 3. ESTILOS DE CABECERA (AZUL MARCA MS)
     const headerRow = worksheet.getRow(1);
     headerRow.height = 26;
     headerRow.eachCell((cell) => {
@@ -160,19 +148,13 @@ export async function POST(req: Request) {
         pattern: 'solid',
         fgColor: { argb: 'FF0F172A' },
       };
-      cell.font = {
-        name: 'Segoe UI',
-        size: 11,
-        bold: true,
-        color: { argb: 'FFFFFFFF' },
-      };
+      cell.font = { name: 'Segoe UI', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
       cell.alignment = { vertical: 'middle', horizontal: 'center' };
     });
 
-    // 🎨 4. FORMATO CONDICIONAL Y ESTILOS DE DATOS DE FILAS
+    // 4. FORMATO CONDICIONAL & CELDAS
     worksheet.eachRow((row, rowNumber) => {
       if (rowNumber === 1) return;
-
       row.height = 20;
 
       row.eachCell((cell, colNumber) => {
@@ -181,41 +163,30 @@ export async function POST(req: Request) {
         cell.alignment = { vertical: 'middle', horizontal: 'left' };
         cell.font = { name: 'Segoe UI', size: 10 };
 
-        // 💵 Formato Moneda
+        // Formatos Numéricos
         if (header === 'precio') {
           cell.numFmt = '"$"#,##0';
           cell.alignment = { vertical: 'middle', horizontal: 'right' };
         }
-
-        // 📐 Formato Superficies
         if (header === 'superficieTotal' || header === 'superficieCubierta') {
           cell.numFmt = '#,##0';
           cell.alignment = { vertical: 'middle', horizontal: 'right' };
         }
 
-        // 🟢🔴 FORMATO CONDICIONAL: FOTOS PROPIAS, VIDEO Y PDF
+        // Colores pastel para validaciones
         if (header === 'hasImages' || header === 'hasVideo' || header === 'hasPdf') {
           cell.alignment = { vertical: 'middle', horizontal: 'center' };
           cell.font = { name: 'Segoe UI', size: 10, bold: true };
 
-          if (cell.value === 'SÍ') {
-            cell.fill = {
-              type: 'pattern',
-              pattern: 'solid',
-              fgColor: { argb: 'FFDCFCE7' }, // Verde Suave
-            };
+          if (String(cell.value).startsWith('SÍ')) {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDCFCE7' } }; // Verde pastel
             cell.font.color = { argb: 'FF15803D' };
           } else {
-            cell.fill = {
-              type: 'pattern',
-              pattern: 'solid',
-              fgColor: { argb: 'FFFEE2E2' }, // Rojo Suave
-            };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEE2E2' } }; // Rojo pastel
             cell.font.color = { argb: 'FFB91C1C' };
           }
         }
 
-        // 🟡🟢 FORMATO CONDICIONAL: ESTADO PUBLICACIÓN
         if (header === 'estado') {
           cell.alignment = { vertical: 'middle', horizontal: 'center' };
           cell.font = { name: 'Segoe UI', size: 10, bold: true };
@@ -231,13 +202,13 @@ export async function POST(req: Request) {
       });
     });
 
-    // 🔍 5. BOTONES DE FILTRADO (AUTOFILTRO)
+    // 5. AUTOFILTRO
     worksheet.autoFilter = {
       from: { row: 1, column: 1 },
       to: { row: filteredProps.length + 1, column: columnDefinitions.length },
     };
 
-    // 6. BUFFER BINARIO Y DEVOLUCIÓN DEL ARCHIVO
+    // 6. DEVOLUCIÓN DE BUFFER BINARIO
     const buffer = await workbook.xlsx.writeBuffer();
 
     return new NextResponse(buffer, {

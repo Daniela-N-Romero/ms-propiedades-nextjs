@@ -36,6 +36,8 @@ export function ExportExcelModal({ isOpen, onClose, activeTab }: ExportExcelModa
   const [selectedColumns, setSelectedColumns] = useState<string[]>(
     OPCIONES_COLUMNAS.map((c) => c.id) // Todas seleccionadas por defecto
   );
+  const [userEmail, setUserEmail] = useState('');
+  const [sheetUrl, setSheetUrl] = useState<string | null>(null);
   const [sourceFilter, setSourceFilter] = useState<'all' | 'ms_propia' | 'colega'>('all');
   const [mediaFilter, setMediaFilter] = useState<'all' | 'has_video' | 'no_video' | 'has_pdf' | 'no_pdf'>('all');
   const [sortBy, setSortBy] = useState('updatedAt_desc');
@@ -60,14 +62,15 @@ export function ExportExcelModal({ isOpen, onClose, activeTab }: ExportExcelModa
   };
 
   // Disparar Descarga del Excel
-  const handleExport = async () => {
+const handleExport = async () => {
     if (selectedColumns.length === 0) {
-      alert('Por favor selecciona al menos una columna para incluir en el Excel.');
+      alert('Por favor selecciona al menos una columna.');
       return;
     }
 
     try {
       setLoading(true);
+
       const response = await fetch('/api/properties/export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -80,9 +83,9 @@ export function ExportExcelModal({ isOpen, onClose, activeTab }: ExportExcelModa
         }),
       });
 
-      if (!response.ok) throw new Error('Error al generar reporte');
+      if (!response.ok) throw new Error('Error al generar Excel');
 
-      // Descargar archivo automáticamente en el navegador
+      // Descarga binaria del archivo .xlsx
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -99,7 +102,7 @@ export function ExportExcelModal({ isOpen, onClose, activeTab }: ExportExcelModa
     } finally {
       setLoading(false);
     }
-  };
+    };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
@@ -198,12 +201,11 @@ export function ExportExcelModal({ isOpen, onClose, activeTab }: ExportExcelModa
                 return (
                   <label
                     key={col.id}
-                    className={`flex items-center gap-2 p-2.5 rounded-lg border transition-all cursor-pointer ${
-                      isSelected
+                    className={`flex items-center gap-2 p-2.5 rounded-lg border transition-all cursor-pointer ${isSelected
                       ? 'bg-white/60 border-brand-orange font-bold shadow-2xs'
                       : 'bg-white/60 border-slate-200 text-slate-600 hover:bg-white'
                       }`}
-                      >
+                  >
                     <input
                       type="checkbox"
                       checked={isSelected}
@@ -217,6 +219,7 @@ export function ExportExcelModal({ isOpen, onClose, activeTab }: ExportExcelModa
             </div>
           </div>
         </div>
+
 
         {/* FOOTER */}
         <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
