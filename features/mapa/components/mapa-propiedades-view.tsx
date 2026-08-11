@@ -13,7 +13,7 @@ export interface PropiedadMapaItem {
   slug: string;
   titulo: string;
   precio: number;
-  financiacion: string;
+  financiacion?: string;
   superficieTotal: number | null;
   superficieCubierta: number | null;
   moneda: string;

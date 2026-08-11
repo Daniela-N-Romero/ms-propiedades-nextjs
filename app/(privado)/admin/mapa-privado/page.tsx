@@ -12,6 +12,7 @@ interface MapaPrivadoAdminProps {
     subtipo?: string | string[];
     localidad?: string | string[];
     moneda?: string;
+    financiacion?: string;
     precioMin?: string;
     precioMax?: string;
     supMin?: string;
@@ -62,6 +63,7 @@ export default async function MapaPrivadoAdminPage({ searchParams }: MapaPrivado
       superficieTotal: p.superficieTotal ? Number(p.superficieTotal) : null,
       superficieCubierta: p.superficieCubierta ? Number(p.superficieCubierta) : null,
       moneda: p.moneda,
+      financiacion: p.financiacion,
       latitud: Number(p.latitud),
       longitud: Number(p.longitud),
       imagenPortada: p.imagenes?.[0]?.url || '/images/placeholder.png',
