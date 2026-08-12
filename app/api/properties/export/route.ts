@@ -1,3 +1,4 @@
+// app/api/properties/export/route.ts
 import { NextResponse } from 'next/server';
 import { prisma } from '@/backend/db';
 import { links } from '@/config/contact-info';
@@ -10,6 +11,8 @@ export async function POST(req: Request) {
       columns = [],
       source = 'all',
       missingMedia = 'all',
+      publishState = 'all',
+      tipoInmuebleId = 'all',
       sortBy = 'updatedAt_desc',
       tab = 'activas',
     } = body;
@@ -18,10 +21,38 @@ export async function POST(req: Request) {
       deletedAt: tab === 'papelera' ? { not: null } : null,
     };
 
+    // Filtro Origen
     if (source === 'ms_propia') {
       where.colegaId = null;
     } else if (source === 'colega') {
       where.colegaId = { not: null };
+    }
+
+    // Filtro Estado de Publicación
+    if (publishState === 'published') {
+      where.isPublished = true;
+    } else if (publishState === 'draft') {
+      where.isPublished = false;
+    }
+
+    // Filtro Tipo de Inmueble (Busca tanto si es el subtipo o si el padre es este ID)
+    if (tipoInmuebleId && tipoInmuebleId !== 'all') {
+      const numericId = Number(tipoInmuebleId);
+
+      if (!isNaN(numericId) && numericId > 0) {
+        // Si viene un ID numérico
+        where.OR = [
+          { tipoInmuebleId: numericId },
+          { tipoInmueble: { padreId: numericId } },
+        ];
+      } else {
+        // Si viene un Slug/Texto (ej: 'industrial', 'comercial')
+        const slugQuery = String(tipoInmuebleId).toLowerCase();
+        where.OR = [
+          { tipoInmueble: { slug: slugQuery } },
+          { tipoInmueble: { padre: { slug: slugQuery } } },
+        ];
+      }
     }
 
     const [sortField, sortDir] = sortBy.split('_');
@@ -39,7 +70,7 @@ export async function POST(req: Request) {
         agente: true,
         propietario: true,
         colega: true,
-        imagenes: { take: 1, orderBy: { orden: 'asc' } },
+        imagenes: { take: 1, orderBy: { orden: 'asc' } }, // Tomamos la de portada
       },
     });
 
@@ -78,8 +109,10 @@ export async function POST(req: Request) {
     // Mapeo de definición de columnas
     const columnDefinitions: { key: string; header: string; width: number }[] = [];
 
+    // 👈 NUEVAS COLUMNAS AGREGADAS
     if (columns.includes('codigo')) columnDefinitions.push({ key: 'codigo', header: 'Código / Ref', width: 15 });
     if (columns.includes('titulo')) columnDefinitions.push({ key: 'titulo', header: 'Título Comercial', width: 35 });
+    if (columns.includes('linkPropiedad')) columnDefinitions.push({ key: 'linkPropiedad', header: 'Enlace Público Ficha', width: 45 }); // NUEVO
     if (columns.includes('categoria')) columnDefinitions.push({ key: 'categoria', header: 'Operación', width: 14 });
     if (columns.includes('precio')) columnDefinitions.push({ key: 'precio', header: 'Precio', width: 16 });
     if (columns.includes('moneda')) columnDefinitions.push({ key: 'moneda', header: 'Moneda', width: 10 });
@@ -90,9 +123,11 @@ export async function POST(req: Request) {
     if (columns.includes('localidad')) columnDefinitions.push({ key: 'localidad', header: 'Localidad / Zona', width: 22 });
     if (columns.includes('direccion')) columnDefinitions.push({ key: 'direccion', header: 'Dirección Textual', width: 28 });
     if (columns.includes('estado')) columnDefinitions.push({ key: 'estado', header: 'Estado Publicación', width: 20 });
+    if (columns.includes('visibilidad')) columnDefinitions.push({ key: 'visibilidad', header: 'Visibilidad', width: 20 }); // NUEVO
     if (columns.includes('destacada')) columnDefinitions.push({ key: 'destacada', header: '¿Es Destacada?', width: 16 });
     if (columns.includes('origen')) columnDefinitions.push({ key: 'origen', header: 'Origen Cartera', width: 16 });
     if (columns.includes('agente')) columnDefinitions.push({ key: 'agente', header: 'Agente Responsable', width: 22 });
+    if (columns.includes('imagenPortada')) columnDefinitions.push({ key: 'imagenPortada', header: 'Imagen Portada URL', width: 40 }); // NUEVO
     if (columns.includes('hasImages')) columnDefinitions.push({ key: 'hasImages', header: '¿Tiene Fotos Propias?', width: 22 });
     if (columns.includes('hasVideo')) columnDefinitions.push({ key: 'hasVideo', header: '¿Tiene Video Propio?', width: 20 });
     if (columns.includes('videoUrl')) columnDefinitions.push({ key: 'videoUrl', header: 'Link Video', width: 40 });
@@ -102,7 +137,12 @@ export async function POST(req: Request) {
 
     worksheet.columns = columnDefinitions;
 
-    // 2. CARGAR FILAS CON TEXTOS LIMPIOS (Sintaxis ultra estable para Microsoft Excel)
+    // Generar Base URL dinámica basada en el header (para el enlace público)
+    const host = req.headers.get('host') || 'mspropiedades.com';
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    const baseUrl = `${protocol}://${host}`;
+
+    // 2. CARGAR FILAS
     filteredProps.forEach((p) => {
       const isCustomVideo = tieneVideoPropio(p.videoUrl);
       const hasPdf = Boolean(p.pdfUrl && p.pdfUrl.trim() !== '');
@@ -112,10 +152,14 @@ export async function POST(req: Request) {
       const supTotalNum = typeof p.superficieTotal === 'number' ? p.superficieTotal : Number(p.superficieTotal) || 0;
       const supCubiertaNum = typeof p.superficieCubierta === 'number' ? p.superficieCubierta : Number(p.superficieCubierta) || 0;
 
+      const imagenPortadaUrl = p.imagenes?.[0]?.url ? `${baseUrl}${p.imagenes[0].url}` : 'Sin Imagen';
+      const linkFicha = p.isPublished ? `${baseUrl}/propiedades/${p.slug}` : 'No disponible (Borrador)';
+
       const rowData: Record<string, any> = {};
 
       if (columns.includes('codigo')) rowData.codigo = p.codigo || '';
       if (columns.includes('titulo')) rowData.titulo = p.titulo || '';
+      if (columns.includes('linkPropiedad')) rowData.linkPropiedad = linkFicha; // 👈 NUEVO
       if (columns.includes('categoria')) rowData.categoria = p.categoria ? p.categoria.toUpperCase() : '-';
       if (columns.includes('precio')) rowData.precio = precioNum;
       if (columns.includes('moneda')) rowData.moneda = p.moneda || 'USD';
@@ -126,9 +170,11 @@ export async function POST(req: Request) {
       if (columns.includes('localidad')) rowData.localidad = p.zona?.nombre || 'Sin Zona';
       if (columns.includes('direccion')) rowData.direccion = p.direccionPersonalizada || '-';
       if (columns.includes('estado')) rowData.estado = p.isPublished ? 'Publicada' : 'Borrador';
+      if (columns.includes('visibilidad')) rowData.visibilidad = p.isUnlisted ? 'Privada (Oculta)' : 'Pública'; // 👈 NUEVO
       if (columns.includes('destacada')) rowData.destacada = p.isDestacada ? 'SÍ' : 'NO';
       if (columns.includes('origen')) rowData.origen = p.colegaId ? 'Colega' : 'Cartera Propia';
       if (columns.includes('agente')) rowData.agente = p.agente ? `${p.agente.nombre} ${p.agente.apellido}` : '-';
+      if (columns.includes('imagenPortada')) rowData.imagenPortada = imagenPortadaUrl; // 👈 NUEVO
       if (columns.includes('hasImages')) rowData.hasImages = hasRealImages ? 'SÍ' : 'NO (Placeholder)';
       if (columns.includes('hasVideo')) rowData.hasVideo = isCustomVideo ? 'SÍ' : 'NO';
       if (columns.includes('videoUrl')) rowData.videoUrl = isCustomVideo && p.videoUrl ? p.videoUrl : 'Sin Video Propio';
@@ -173,6 +219,15 @@ export async function POST(req: Request) {
           cell.alignment = { vertical: 'middle', horizontal: 'right' };
         }
 
+        // 👈 Formato como Hyperlink clickeable en Excel para URLs
+        if ((header === 'linkPropiedad' || header === 'imagenPortada' || header === 'videoUrl' || header === 'pdfUrl') && typeof cell.value === 'string' && cell.value.startsWith('http')) {
+          cell.value = {
+            text: cell.value,
+            hyperlink: cell.value
+          };
+          cell.font = { name: 'Segoe UI', size: 10, color: { argb: 'FF0563C1' }, underline: true }; // Azul clásico de link
+        }
+
         // Colores pastel para validaciones
         if (header === 'hasImages' || header === 'hasVideo' || header === 'hasPdf') {
           cell.alignment = { vertical: 'middle', horizontal: 'center' };
@@ -197,6 +252,17 @@ export async function POST(req: Request) {
           } else {
             cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } };
             cell.font.color = { argb: 'FFB45309' };
+          }
+        }
+
+        // Formato para Privada/Pública
+        if (header === 'visibilidad') {
+          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          cell.font = { name: 'Segoe UI', size: 10, bold: true };
+          if (cell.value === 'Pública') {
+            cell.font.color = { argb: 'FF334155' };
+          } else {
+            cell.font.color = { argb: 'FF4338CA' }; // Índigo para privadas
           }
         }
       });

@@ -297,6 +297,32 @@ export default function DashboardPage() {
     }, {} as Record<string, PropiedadAdmin[]>);
   }, [filteredAndSorted, groupBy]);
 
+const mercadosDisponibles = useMemo(() => {
+  const map = new Map<string, { id: string | number; nombre: string }>();
+
+  propiedades.forEach((prop) => {
+    // Si la propiedad tiene un mercado padre (ej: Industrial, Comercial)
+    const padre = prop.tipoInmueble?.padre;
+    if (padre) {
+      const nombre = padre.slug.toUpperCase(); // O el nombre si lo tenés
+      if (!map.has(nombre)) {
+        map.set(nombre, {
+          id: padre.slug, // Usamos el slug como ID único
+          nombre: padre.slug.charAt(0).toUpperCase() + padre.slug.slice(1),
+        });
+      }
+    } else if (prop.tipoInmueble?.nombre) {
+      // Fallback con el tipo directo
+      const nombre = prop.tipoInmueble.nombre;
+      if (!map.has(nombre)) {
+        map.set(nombre, { id: nombre, nombre });
+      }
+    }
+  });
+
+  return Array.from(map.values());
+}, [propiedades]);
+
   return (
     <div className="min-h-screen bg-slate-100 pb-12">
       {/* HEADER SUPERIOR */}
@@ -611,6 +637,7 @@ export default function DashboardPage() {
         isOpen={isExcelModalOpen}
         onClose={() => setIsExcelModalOpen(false)}
         activeTab={activeTab}
+        mercados={mercadosDisponibles}
       />
 
       <AlertModal
