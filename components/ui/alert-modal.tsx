@@ -48,20 +48,17 @@ export function AlertModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-fade-in">
       <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-md w-full overflow-hidden transform transition-all p-6 space-y-4">
-        
+
         {/* ENCABEZADO */}
-        <div className="flex items-start gap-3">
-          <span className="text-2xl p-2 rounded-xl bg-slate-50 border border-slate-100 shrink-0">
-            {config.icon}
-          </span>
-          <div className="flex-1 pt-1">
-            <h3 className="font-spartan font-bold text-base text-slate-900 uppercase tracking-wider">
-              {title || config.defaultTitle}
+        <div className="bg-slate-300 text-center ">
+            <h3 className=" font-spartan font-bold text-base uppercase tracking-wider mb-3">
+              {config.icon} {title || config.defaultTitle}
             </h3>
-            <p className="text-xs text-slate-600 mt-1 leading-relaxed whitespace-pre-line">
-              {message}
-            </p>
-          </div>
+        </div>
+        <div>
+          <p className="text-sm text-slate-800 mt-1 leading-relaxed whitespace-pre-line">
+            {message}
+          </p>
         </div>
 
         {/* FOOTER / BOTÓN */}

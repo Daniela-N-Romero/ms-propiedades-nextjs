@@ -10,6 +10,7 @@ import { ExportExcelModal } from '@/features/admin/form/components/export-excel-
 import { useAlertModal } from '@/components/hooks/use-alert-modal';
 import { useConfirmModal } from '@/components/hooks/use-confirm-modal';
 import { ConfirmModal } from '@/components/ui/confirm-modal';
+import { AlertModal } from '@/components/ui/alert-modal';
 
 interface ZonaNodo {
   id: number;
@@ -113,17 +114,25 @@ export default function DashboardPage() {
       const data = await res.json();
 
       if (res.ok) {
+        // Actualizamos el estado local para reflejar el cambio en el switch/botón
         setPropiedades((prev) =>
           prev.map((p) => (p.id === id ? { ...p, isPublished: !currentStatus } : p))
         );
       } else {
-        showAlert(data.error || 'No se pudo cambiar el estado.', {
-          title: 'Propiedad Incompleta',
-          type: 'error',
-        });
+        // 🚨 Muestra la modal explicativa si el backend rechaza la publicación (Status 400)
+        showAlert(
+          data.error || 'No se pudo cambiar el estado de la propiedad.',
+          {
+            title: 'Propiedad Incompleta',
+            type: 'error',
+          }
+        );
       }
     } catch (err) {
-      showAlert('Error de conexión al intentar actualizar.', { type: 'error' });
+      showAlert('Error de conexión al intentar actualizar el estado.', {
+        title: 'Error de Red',
+        type: 'error',
+      });
     }
   };
 
@@ -164,18 +173,28 @@ export default function DashboardPage() {
     }
   };
 
+  const { confirmState, showConfirm, closeConfirm, handleConfirm } = useConfirmModal();
   // Soft Delete (Mover a Papelera)
-  const handleSoftDelete = async (id: number) => {
-    if (!confirm('¿Mover esta propiedad a la papelera de reciclaje?')) return;
-
-    try {
-      const res = await fetch(`/api/properties/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        setPropiedades((prev) => prev.filter((p) => p.id !== id));
-      }
-    } catch (err) {
-      showAlert('Error al mover a la papelera.', { type: 'error' });
-    }
+  const handleSoftDelete = (id: number) => {
+    showConfirm({
+      title: '🗑️ Mover a la papelera',
+      message: '¿Está seguro de que desea mover esta propiedad a la papelera de reciclaje?',
+      confirmText: 'Mover a papelera',
+      cancelText: 'Cancelar',
+      type: 'warning',
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`/api/properties/${id}`, { method: 'DELETE' });
+          if (res.ok) {
+            setPropiedades((prev) => prev.filter((p) => p.id !== id));
+          } else {
+            showAlert('Error al mover a la papelera.', { type: 'error' });
+          }
+        } catch (err) {
+          showAlert('Error de conexión al mover a la papelera.', { type: 'error' });
+        }
+      },
+    });
   };
 
   // Restaurar desde Papelera
@@ -192,7 +211,6 @@ export default function DashboardPage() {
   };
 
   // Borrado Definitivo
-  const { confirmState, showConfirm, closeConfirm, handleConfirm } = useConfirmModal();
 
   const handleDeleteProperty = (id: number, titulo: string) => {
     showConfirm({
@@ -574,18 +592,7 @@ export default function DashboardPage() {
                                 >
                                   ❌
                                 </button>
-                                {/* COMPONENTE MODAL DE CONFIRMACIÓN */}
-                                <ConfirmModal
-                                  isOpen={confirmState.isOpen}
-                                  onClose={closeConfirm}
-                                  onConfirm={handleConfirm}
-                                  title={confirmState.title}
-                                  message={confirmState.message}
-                                  confirmText={confirmState.confirmText}
-                                  cancelText={confirmState.cancelText}
-                                  type={confirmState.type}
-                                  isLoading={confirmState.isLoading}
-                                />
+
                               </>
                             )}
                           </td>
@@ -604,6 +611,27 @@ export default function DashboardPage() {
         isOpen={isExcelModalOpen}
         onClose={() => setIsExcelModalOpen(false)}
         activeTab={activeTab}
+      />
+
+      <AlertModal
+        isOpen={alertState.isOpen}
+        onClose={closeAlert}
+        title={alertState.title}
+        message={alertState.message}
+        type={alertState.type}
+      />
+
+      {/* COMPONENTE MODAL DE CONFIRMACIÓN */}
+      <ConfirmModal
+        isOpen={confirmState.isOpen}
+        onClose={closeConfirm}
+        onConfirm={handleConfirm}
+        title={confirmState.title}
+        message={confirmState.message}
+        confirmText={confirmState.confirmText}
+        cancelText={confirmState.cancelText}
+        type={confirmState.type}
+        isLoading={confirmState.isLoading}
       />
     </div>
   );

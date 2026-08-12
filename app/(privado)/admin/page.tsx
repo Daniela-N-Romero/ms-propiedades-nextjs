@@ -1,5 +1,7 @@
 'use client';
 import { useAlertModal } from '@/components/hooks/use-alert-modal';
+import { AlertModal } from '@/components/ui/alert-modal';
+import { ConfirmModal } from '@/components/ui/confirm-modal';
 //TO DO: SEPARAR ESTILOS? 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -22,9 +24,9 @@ export default function AdminHomePage() {
       setLoadingLogout(false);
     }
   };
-const { alertState, showAlert, closeAlert } = useAlertModal();
+  const { alertState, showAlert, closeAlert } = useAlertModal();
   return (
-      <>
+    <>
       {/* 1. NAVBAR DE ADMINISTRACIÓN */}
       <nav className="bg-slate-900 text-white mb-8 shadow-md">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex justify-between items-center">
@@ -69,7 +71,7 @@ const { alertState, showAlert, closeAlert } = useAlertModal();
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          
+
           {/* TARJETA 1: PROPIEDADES (La principal) */}
           <Link
             href="/admin/dashboard"
@@ -109,7 +111,7 @@ const { alertState, showAlert, closeAlert } = useAlertModal();
             <div className="mt-6">
               <button
                 type="button"
-                onClick={() => showAlert('Módulo de Propietarios en desarrollo', {type: 'info'})}
+                onClick={() => showAlert('Módulo de Propietarios en desarrollo', { type: 'info' })}
                 className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-spartan font-bold text-xs uppercase tracking-wider rounded-xl transition-colors"
               >
                 Gestionar Propietarios
@@ -179,7 +181,7 @@ const { alertState, showAlert, closeAlert } = useAlertModal();
             <div className="mt-6">
               <button
                 type="button"
-                onClick={() => showAlert('Módulo de Configuración en desarrollo', {type: 'info'})}
+                onClick={() => showAlert('Módulo de Configuración en desarrollo', { type: 'info' })}
                 className="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-spartan font-bold text-xs uppercase tracking-wider rounded-xl transition-colors"
               >
                 Ajustes Generales
@@ -203,7 +205,7 @@ const { alertState, showAlert, closeAlert } = useAlertModal();
             <div className="mt-6">
               <button
                 type="button"
-                onClick={() => showAlert('Módulo de Blog en desarrollo', {type: 'info'})}
+                onClick={() => showAlert('Módulo de Blog en desarrollo', { type: 'info' })}
                 className="w-full py-2.5 bg-red-500 hover:bg-slate-900 text-white font-spartan font-bold text-xs uppercase tracking-wider rounded-xl transition-colors"
               >
                 Gestionar Posts
@@ -214,6 +216,14 @@ const { alertState, showAlert, closeAlert } = useAlertModal();
 
         </div>
       </div>
+      <AlertModal
+        isOpen={alertState.isOpen}
+        onClose={closeAlert}
+        title={alertState.title}
+        message={alertState.message}
+        type={alertState.type}
+      />
+
     </>
   );
 }

@@ -26,25 +26,48 @@ export async function PUT(
         );
       }
 
-      // Estructuramos el objeto para validarlo con el schema de publicación
+      // 🔑 ARMAS EL OBJETO LIMPIO COMPATIBLE CON ZOD
       const datosAValidar = {
-        ...propiedad,
-        precio: Number(propiedad.precio),
-        superficieTotal: propiedad.superficieTotal ? Number(propiedad.superficieTotal) : null,
-        superficieCubierta: propiedad.superficieCubierta ? Number(propiedad.superficieCubierta) : null,
-        latitud: Number(propiedad.latitud),
-        longitud: Number(propiedad.longitud),
-        imagenes: propiedad.imagenes.map((img) => img.url),
+        titulo: propiedad.titulo ?? '',
+        categoria: propiedad.categoria ?? '',
+        origen: propiedad.origen ?? '',
+        precio: propiedad.precio ? Number(propiedad.precio) : 0,
+        moneda: propiedad.moneda ?? '',
+        financiacion: propiedad.financiacion ?? null,
+        descripcion: propiedad.descripcion ?? '',
+        zonaId: propiedad.zonaId ? Number(propiedad.zonaId) : 0,
+        direccionPersonalizada: propiedad.direccionPersonalizada ?? '',
+        latitud: propiedad.latitud ? Number(propiedad.latitud) : -34.78,
+        longitud: propiedad.longitud ? Number(propiedad.longitud) : -58.28,
+        
+        // 📍 Asumimos mapa confirmado si tiene coordenadas válidas o zona
+        isMapConfirmed: Boolean(propiedad.zonaId && propiedad.zonaId > 0),
+
+        superficieTotal: propiedad.superficieTotal ? Number(propiedad.superficieTotal) : 0,
+        superficieCubierta: propiedad.superficieCubierta ? Number(propiedad.superficieCubierta) : 0,
+        tipoInmuebleId: propiedad.tipoInmuebleId ? Number(propiedad.tipoInmuebleId) : 0,
+        agenteId: propiedad.agenteId ? Number(propiedad.agenteId) : 0,
+        propietarioId: propiedad.propietarioId ? Number(propiedad.propietarioId) : null,
+        colegaId: propiedad.colegaId ? Number(propiedad.colegaId) : null,
+        videoUrl: propiedad.videoUrl ?? '',
+        pdfUrl: propiedad.pdfUrl ?? '',
+        isPublished: true,
+        isUnlisted: propiedad.isUnlisted ?? false,
+        isDestacada: propiedad.isDestacada ?? false,
+        notasPrivadas: propiedad.notasPrivadas ?? '',
+        caracteristicas: (propiedad.caracteristicas as Record<string, any>) ?? {},
+        imagenes: propiedad.imagenes.length > 0 
+          ? propiedad.imagenes.map((img) => img.url) 
+          : ['/images/placeholder.png'],
       };
 
       const result = publishPropertySchema.safeParse(datosAValidar);
 
       if (!result.success) {
-        // Retornamos error con la lista de datos faltantes
         const faltantes = Object.keys(result.error.flatten().fieldErrors).join(', ');
         return NextResponse.json(
           {
-            error: `No se puede publicar: la propiedad está incompleta. Campos faltantes u observados: [${faltantes}]. Por favor, edítela para completarla.`,
+            error: `No se puede publicar: la propiedad está incompleta. Campos observados: [${faltantes}]. Por favor, edítela para completarla.`,
           },
           { status: 400 }
         );

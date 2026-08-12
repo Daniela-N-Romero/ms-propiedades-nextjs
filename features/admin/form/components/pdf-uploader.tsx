@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { uploadPdfClean } from '@/lib/supabase/upload-pdf';
 import { useAlertModal } from '@/components/hooks/use-alert-modal';
+import { AlertModal } from '@/components/ui/alert-modal';
 
 interface PdfUploaderProps {
   pdfUrl?: string | null;
@@ -140,6 +141,15 @@ export function PdfUploader({ pdfUrl, onChange }: PdfUploaderProps) {
           Si adjuntás un PDF personalizado (Canva/Diseño), acordate de que <strong>no se actualizará automáticamente</strong> si modificás el precio, las superficies o la descripción más adelante. Si dejás este campo vacío, la web generará un PDF automático siempre actualizado con los datos del sitio.
         </p>
       </div>
+
+<AlertModal
+        isOpen={alertState.isOpen}
+        onClose={closeAlert}
+        title={alertState.title}
+        message={alertState.message}
+        type={alertState.type}
+      />
+
 
     </div>
   );
