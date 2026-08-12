@@ -19,7 +19,7 @@ const leagueSpartan = League_Spartan({
 });
 
 export const metadata: Metadata = {
-  title: "MS Propiedades",
+  title: "MS Propiedades Industrial",
   description: "Inmobliaria especializada en inmuebles industriales y comerciales",
 };
 

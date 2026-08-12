@@ -7,6 +7,9 @@ import { Fragment } from 'react';
 import StarButton from '@/features/admin/form/components/star-button';
 import { useContactLinks } from '@/providers/config-provider';
 import { ExportExcelModal } from '@/features/admin/form/components/export-excel-modal';
+import { useAlertModal } from '@/components/hooks/use-alert-modal';
+import { useConfirmModal } from '@/components/hooks/use-confirm-modal';
+import { ConfirmModal } from '@/components/ui/confirm-modal';
 
 interface ZonaNodo {
   id: number;
@@ -98,6 +101,7 @@ export default function DashboardPage() {
   };
 
   // Cambiar estado de publicación (Borrador / Publicada)
+  const { alertState, showAlert, closeAlert } = useAlertModal();
   const togglePublishStatus = async (id: number, currentStatus: boolean) => {
     try {
       const res = await fetch(`/api/properties/${id}/toggle-published`, {
@@ -105,17 +109,21 @@ export default function DashboardPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isPublished: !currentStatus }),
       });
+
+      const data = await res.json();
+
       if (res.ok) {
         setPropiedades((prev) =>
-          prev.map((p) =>
-            p.id === id
-              ? { ...p, isPublished: !currentStatus }
-              : p
-          )
+          prev.map((p) => (p.id === id ? { ...p, isPublished: !currentStatus } : p))
         );
+      } else {
+        showAlert(data.error || 'No se pudo cambiar el estado.', {
+          title: 'Propiedad Incompleta',
+          type: 'error',
+        });
       }
     } catch (err) {
-      alert('Error al cambiar el estado de publicación');
+      showAlert('Error de conexión al intentar actualizar.', { type: 'error' });
     }
   };
 
@@ -133,7 +141,7 @@ export default function DashboardPage() {
         );
       }
     } catch (err) {
-      alert('Error al cambiar la privacidad');
+      showAlert('Error al cambiar la privacidad.', { type: 'error' });
     }
   };
 
@@ -166,7 +174,7 @@ export default function DashboardPage() {
         setPropiedades((prev) => prev.filter((p) => p.id !== id));
       }
     } catch (err) {
-      alert('Error al mover a la papelera');
+      showAlert('Error al mover a la papelera.', { type: 'error' });
     }
   };
 
@@ -176,25 +184,32 @@ export default function DashboardPage() {
       const res = await fetch(`/api/properties/${id}`, { method: 'PATCH' });
       if (res.ok) {
         setPropiedades((prev) => prev.filter((p) => p.id !== id));
-        alert('Propiedad restaurada exitosamente.');
+        showAlert('Propiedad restaurada exitosamente.', { type: 'success' });
       }
     } catch (err) {
-      alert('Error al restaurar la propiedad');
+      showAlert('Error al restaurar la propiedad.', { type: 'error' });
     }
   };
 
   // Borrado Definitivo
-  const handleHardDelete = async (id: number) => {
-    if (!confirm('⚠️ ¿ELIMINAR DEFINITIVAMENTE? Esta acción NO se podrá deshacer.')) return;
+  const { confirmState, showConfirm, closeConfirm, handleConfirm } = useConfirmModal();
 
-    try {
-      const res = await fetch(`/api/properties/${id}?force=true`, { method: 'DELETE' });
-      if (res.ok) {
-        setPropiedades((prev) => prev.filter((p) => p.id !== id));
-      }
-    } catch (err) {
-      alert('Error al eliminar definitivamente');
-    }
+  const handleDeleteProperty = (id: number, titulo: string) => {
+    showConfirm({
+      title: '¿Eliminar definitivamente?',
+      message: `Vas a eliminar "${titulo}". Esta acción NO se podrá deshacer y quitará la propiedad del sitio web.`,
+      confirmText: 'Sí, eliminar',
+      cancelText: 'Cancelar',
+      type: 'danger',
+      onConfirm: async () => {
+        const res = await fetch(`/api/properties/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          setPropiedades((prev) => prev.filter((p) => p.id !== id));
+        } else {
+          showAlert('Error al borrar la propiedad', { type: 'error' })
+        }
+      },
+    });
   };
 
   // Lógica unificada de filtrado, faltantes y ordenamiento en el cliente
@@ -553,12 +568,24 @@ export default function DashboardPage() {
                                   ♻️
                                 </button>
                                 <button
-                                  onClick={() => handleHardDelete(prop.id)}
+                                  onClick={() => handleDeleteProperty(prop.id, prop.titulo)}
                                   title="Eliminar Definitivamente"
                                   className="px-2 py-1.5 bg-red-400 hover:bg-red-600 text-white text-[15px] font-bold rounded-lg transition-colors inline-block"
                                 >
                                   ❌
                                 </button>
+                                {/* COMPONENTE MODAL DE CONFIRMACIÓN */}
+                                <ConfirmModal
+                                  isOpen={confirmState.isOpen}
+                                  onClose={closeConfirm}
+                                  onConfirm={handleConfirm}
+                                  title={confirmState.title}
+                                  message={confirmState.message}
+                                  confirmText={confirmState.confirmText}
+                                  cancelText={confirmState.cancelText}
+                                  type={confirmState.type}
+                                  isLoading={confirmState.isLoading}
+                                />
                               </>
                             )}
                           </td>

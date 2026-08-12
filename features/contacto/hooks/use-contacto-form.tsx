@@ -1,5 +1,6 @@
 'use client';
 
+import { useAlertModal } from '@/components/hooks/use-alert-modal';
 import { useState, useId } from 'react';
 
 interface ContactoFormProps {
@@ -16,8 +17,9 @@ export function useContactoForm({ motivoInicial = 'Quiero vender / alquilar mi p
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-
+  
   const motivoSelectId = useId();
+  const { alertState, showAlert, closeAlert } = useAlertModal();
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
@@ -43,11 +45,11 @@ export function useContactoForm({ motivoInicial = 'Quiero vender / alquilar mi p
           (window as any).fbq('track', 'Lead', { motivo });
         }
       } else {
-        alert('Ocurrió un error al enviar el formulario.');
+        showAlert('Ocurrió un error al enviar el formulario.', {type: 'error'});
       }
     } catch (error) {
       console.error(error);
-      alert('Error de conexión.');
+      showAlert('Error de conexión.', {type: 'error'});
     } finally {
       setIsSubmitting(false);
     }

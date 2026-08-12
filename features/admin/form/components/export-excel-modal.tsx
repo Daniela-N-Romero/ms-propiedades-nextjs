@@ -1,5 +1,6 @@
 'use client';
 
+import { useAlertModal } from '@/components/hooks/use-alert-modal';
 import { useState } from 'react';
 
 interface ExportExcelModalProps {
@@ -7,6 +8,7 @@ interface ExportExcelModalProps {
   onClose: () => void;
   activeTab: 'activas' | 'papelera';
 }
+
 
 const OPCIONES_COLUMNAS = [
   { id: 'codigo', label: 'Código / Referencia' },
@@ -42,7 +44,8 @@ export function ExportExcelModal({ isOpen, onClose, activeTab }: ExportExcelModa
   const [mediaFilter, setMediaFilter] = useState<'all' | 'has_video' | 'no_video' | 'has_pdf' | 'no_pdf'>('all');
   const [sortBy, setSortBy] = useState('updatedAt_desc');
   const [loading, setLoading] = useState(false);
-
+  const { alertState, showAlert, closeAlert } = useAlertModal();
+  
   if (!isOpen) return null;
 
   // Alternar selección individual
@@ -64,7 +67,7 @@ export function ExportExcelModal({ isOpen, onClose, activeTab }: ExportExcelModa
   // Disparar Descarga del Excel
 const handleExport = async () => {
     if (selectedColumns.length === 0) {
-      alert('Por favor selecciona al menos una columna.');
+      showAlert('Por favor selecciona al menos una columna.', {type:'warning'});
       return;
     }
 
@@ -98,7 +101,7 @@ const handleExport = async () => {
 
       onClose();
     } catch (err) {
-      alert('Ocurrió un error al descargar el reporte Excel.');
+      showAlert('Ocurrió un error al descargar el reporte Excel.', {type:'error'});
     } finally {
       setLoading(false);
     }

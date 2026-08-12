@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { toggleDestacadaAction } from '../actions/toggle-destacada';
+import { useAlertModal } from '@/components/hooks/use-alert-modal';
 
 interface StarButtonProps {
   propiedadId: number;
@@ -11,6 +12,7 @@ interface StarButtonProps {
 export default function StarButton({ propiedadId, initialIsFeatured }: StarButtonProps) {
   const [isFeatured, setIsFeatured] = useState(initialIsFeatured);
   const [isPending, startTransition] = useTransition();
+  const { alertState, showAlert, closeAlert } = useAlertModal();
 
   const handleToggle = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Evita que se dispare el click de la fila si es un enlace
@@ -24,7 +26,7 @@ export default function StarButton({ propiedadId, initialIsFeatured }: StarButto
       if (!res.success) {
         // Si falló en la BD, revertimos el cambio visual
         setIsFeatured(isFeatured);
-        alert('Hubo un error al guardar el cambio.');
+        showAlert('Hubo un error al guardar el cambio.', {type: 'error'});
       }
     });
   };

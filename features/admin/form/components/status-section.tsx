@@ -1,14 +1,12 @@
 'use client';
 
-import { UseFormReturn } from 'react-hook-form';
+import { useFormContext } from 'react-hook-form';
 import type { PropertyFormValues } from '../schemas/property-schema';
 
-interface StatusSectionProps {
-  form: UseFormReturn<PropertyFormValues>;
-}
+interface StatusSectionProps {}
 
-export function StatusSection({ form }: StatusSectionProps) {
-  const { register, watch, formState: { errors } } = form;
+export function StatusSection({}: StatusSectionProps) {
+  const { register, watch, formState: { errors } } = useFormContext<PropertyFormValues>();
 
   const isPublished = watch('isPublished');
   const isDestacada = watch('isDestacada');
@@ -24,7 +22,7 @@ export function StatusSection({ form }: StatusSectionProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         
         {/* SWITCH: PUBLICADA (Ahora es un <label>) */}
-        <label
+        {/* <label
           className={`cursor-pointer p-4 rounded-xl border transition-all flex items-center justify-between ${
             isPublished
               ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
@@ -46,7 +44,7 @@ export function StatusSection({ form }: StatusSectionProps) {
             {...register('isPublished')}
             className="w-5 h-5 accent-emerald-600 rounded cursor-pointer"
           />
-        </label>
+        </label> */}
 
         {/* SWITCH: FICHA PRIVADA / UNLISTED (NUEVO) */}
         <label

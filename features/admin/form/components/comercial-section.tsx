@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { UseFormReturn, Controller, useWatch } from 'react-hook-form';
+import { useFormContext } from 'react-hook-form';
 import { PropertyFormValues } from '@/features/admin/form/schemas/property-schema';
 import { formatNumberWithDots, parseRawNumber } from '@/lib/utils-formatting';
 import { getInputClass, getSelectClass } from '../utils/form-utils';
@@ -11,7 +12,6 @@ import type { TipoInmueble, Agente, Propietario, Colega } from '@prisma-client';
 import { DynamicFeaturesSection } from './dynamic-features-section';
 
 interface ComercialSectionProps {
-  form: UseFormReturn<PropertyFormValues>;
   mercados: TipoInmueble[];
   subtiposDisponibles: TipoInmueble[];
   selectedMercadoId: number;
@@ -23,7 +23,6 @@ interface ComercialSectionProps {
 }
 
 export function ComercialSection({
-  form,
   mercados,
   subtiposDisponibles,
   selectedMercadoId,
@@ -33,7 +32,7 @@ export function ComercialSection({
   colegas,
   isPending,
 }: ComercialSectionProps) {
-  const { register, control, setValue, formState: { errors } } = form;
+  const { register, control, setValue, clearErrors, formState: { errors } } = useFormContext<PropertyFormValues>();
 
   const origen = useWatch({
     control,
@@ -99,18 +98,38 @@ export function ComercialSection({
             Categoría Específica <span className="text-red-500">*</span>
           </label>
           <select
-            {...register('tipoInmuebleId', { valueAsNumber: true })}
             disabled={!selectedMercadoId || isPending}
             className={getSelectClass(!!errors.tipoInmuebleId)}
+            onChange={(e) => {
+              const selectedId = Number(e.target.value);
+
+              // 1. Asignamos el valor numérico explícito en React Hook Form
+              setValue('tipoInmuebleId', selectedId, {
+                shouldValidate: true,
+                shouldDirty: true,
+              });
+
+              // 2. Si eligió un tipo válido (> 0), forzamos la limpieza del error
+              if (selectedId > 0) {
+                clearErrors('tipoInmuebleId');
+              }
+            }}
           >
             <option value={0}>
               {!selectedMercadoId ? '👈 Elija primero un Mercado' : isPending ? 'Cargando...' : 'Seleccionar Subtipo...'}
             </option>
-            {subtiposDisponibles.map((st) => (
-              <option key={st.id} value={st.id}>{st.nombre}</option>
+            {subtiposDisponibles.map((sub) => (
+              <option key={sub.id} value={sub.id}>
+                {sub.nombre}
+              </option>
             ))}
           </select>
-          {errors.tipoInmuebleId && <span className="text-xs font-semibold text-red-500 mt-1 block">❌ {errors.tipoInmuebleId.message}</span>}
+
+          {errors.tipoInmuebleId && (
+            <span className="text-xs font-semibold text-red-500 mt-1 block">
+              ❌ {errors.tipoInmuebleId.message as string}
+            </span>
+          )}
         </div>
       </div>
 
@@ -147,8 +166,11 @@ export function ComercialSection({
               <input
                 type="text"
                 placeholder="$ 0"
-                value={formatNumberWithDots(value)}
-                onChange={(e) => onChange(parseRawNumber(e.target.value))}
+                value={value ? formatNumberWithDots(value) : ''}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  onChange(val !== '' ? parseRawNumber(val) : undefined);
+                }}
                 onBlur={onBlur}
                 className={getInputClass(!!errors.precio)}
               />
@@ -174,7 +196,7 @@ export function ComercialSection({
 
         <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-slate-800">
-            Superficie Total (m²)
+            Superficie Total (m²)<span className="text-red-500">*</span>
           </label>
           <Controller
             name="superficieTotal"
@@ -184,19 +206,26 @@ export function ComercialSection({
                 type="text"
                 placeholder="Ej: 5.000"
                 value={value ? formatNumberWithDots(value) : ''}
-                onChange={(e) => onChange(e.target.value ? parseRawNumber(e.target.value) : null)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  onChange(val !== '' ? parseRawNumber(val) : undefined);
+                }}
                 onBlur={onBlur}
                 className={getInputClass(!!errors.superficieTotal)}
               />
             )}
           />
-          {errors.superficieTotal && <span className="text-xs font-semibold text-red-500 mt-1 block">❌ {errors.superficieTotal.message}</span>}
+          {errors.superficieTotal && (
+            <span className="text-xs font-semibold text-red-500 mt-1 block">
+              ❌ {errors.superficieTotal.message as string}
+            </span>
+          )}
         </div>
 
         {/* SUPERFICIE CUBIERTA */}
         <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-slate-800">
-            Sup. Cubierta (m²)
+            Sup. Cubierta (m²) <span className="text-red-500">*</span>
           </label>
           <Controller
             name="superficieCubierta"
@@ -206,54 +235,61 @@ export function ComercialSection({
                 type="text"
                 placeholder="Ej: 2.800"
                 value={value ? formatNumberWithDots(value) : ''}
-                onChange={(e) => onChange(e.target.value ? parseRawNumber(e.target.value) : null)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  onChange(val !== '' ? parseRawNumber(val) : undefined);
+                }}
                 onBlur={onBlur}
                 className={getInputClass(!!errors.superficieCubierta)}
               />
             )}
           />
-          {errors.superficieCubierta && <span className="text-xs font-semibold text-red-500 mt-1 block">❌ {errors.superficieCubierta.message}</span>}
+          {errors.superficieCubierta && (
+            <span className="text-xs font-semibold text-red-500 mt-1 block">
+              ❌ {errors.superficieCubierta.message as string}
+            </span>
+          )}
         </div>
 
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-800">
-              Agente Responsable<span className="text-red-500">*</span>
-            </label>
-            <select {...register('agenteId', { valueAsNumber: true })} className={getSelectClass(!!errors.agenteId)}>
-              {agentes.map((a) => (
-                <option key={a.id} value={a.id}>{a.nombre} {a.apellido}</option>
-              ))}
-            </select>
-          </div>
-          <div className="col-span-2">
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-800">
-              Origen de la Cartera <span className="text-red-500">*</span>
-            </label>
-            <Controller
-              name="origen"
-              control={control}
-              render={({ field }) => (
-                <select
-                  value={field.value}
-                  onChange={(e) => {
-                    const nuevoOrigen = e.target.value as 'own' | 'fromColleague';
-                    field.onChange(nuevoOrigen);
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-800">
+            Agente Responsable<span className="text-red-500">*</span>
+          </label>
+          <select {...register('agenteId', { valueAsNumber: true })} className={getSelectClass(!!errors.agenteId)}>
+            {agentes.map((a) => (
+              <option key={a.id} value={a.id}>{a.nombre} {a.apellido}</option>
+            ))}
+          </select>
+        </div>
+        <div className="col-span-2">
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-800">
+            Origen de la Cartera <span className="text-red-500">*</span>
+          </label>
+          <Controller
+            name="origen"
+            control={control}
+            render={({ field }) => (
+              <select
+                value={field.value}
+                onChange={(e) => {
+                  const nuevoOrigen = e.target.value as 'own' | 'fromColleague';
+                  field.onChange(nuevoOrigen);
 
-                    // Reseteamos de manera limpia el campo contrario para no ensuciar Zod
-                    if (nuevoOrigen === 'own') {
-                      setValue('colegaId', null);
-                    } else {
-                      setValue('propietarioId', null);
-                    }
-                  }}
-                  className={getSelectClass(!!errors.origen)}
-                >
-                  <option value="own">Cartera Propia</option>
-                  <option value="fromColleague">De Colega</option>
-                </select>
-              )}
-            />
-          </div>
+                  // Reseteamos de manera limpia el campo contrario para no ensuciar Zod
+                  if (nuevoOrigen === 'own') {
+                    setValue('colegaId', null);
+                  } else {
+                    setValue('propietarioId', null);
+                  }
+                }}
+                className={getSelectClass(!!errors.origen)}
+              >
+                <option value="own">Cartera Propia</option>
+                <option value="fromColleague">De Colega</option>
+              </select>
+            )}
+          />
+        </div>
       </div>
 
       {/* ORIGEN DE CARTERA Y ASIGNACIÓN (PROPIETARIO / COLEGA) */}
@@ -356,14 +392,14 @@ export function ComercialSection({
           Descripción de la Publicación <span className="text-red-500">*</span>
         </label>
         <textarea
-          {...form.register('descripcion')}
+          {...register('descripcion')}
           rows={9}
           placeholder="Redactá una descripción detallada de la propiedad, accesos, ventajas industriales, estado de los techos, etc..."
-          className="w-full text-sm p-3 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-orange outline-none transition"
+          className={getInputClass(!!errors.descripcion)}
         />
-        {form.formState.errors.descripcion && (
+        {errors.descripcion && (
           <p className="text-xs text-red-500 mt-1 font-semibold">
-            {form.formState.errors.descripcion.message as string}
+            ❌ {errors.descripcion.message as string}
           </p>
         )}
       </div>
@@ -371,7 +407,6 @@ export function ComercialSection({
       {/* ESPECIFICACIONES TÉCNICAS / CARACTERÍSTICAS DINÁMICAS */}
       {mercadoSlugActual && (
         <DynamicFeaturesSection
-          form={form}
           mercadoSlugActual={mercadoSlugActual}
         />
       )}

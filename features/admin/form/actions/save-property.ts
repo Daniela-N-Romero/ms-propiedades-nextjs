@@ -1,7 +1,7 @@
 'use server';
 
 import { prisma } from '@/backend/db';
-import { propertyFormSchema, PropertyFormValues } from '../schemas/property-schema';
+import { PropertyFormValues } from '../schemas/property-schema';
 import { generarCodigoRef, slugify } from '@/lib/utils-formatting';
 import { revalidatePath } from 'next/cache';
 
@@ -9,30 +9,15 @@ export async function savePropertyAction(
   data: PropertyFormValues,
   propertyId?: number
 ) {
-  const validated = propertyFormSchema.safeParse(data);
-
-  if (!validated.success) {
-    return {
-      success: false,
-      errors: validated.error.flatten().fieldErrors,
-    };
-  }
-
-  const values = validated.data;
+  const values = data;
 
   try {
-
-    const zona = await prisma.zona.findUnique({
-      where: { id: values.zonaId },
-    });
-
-    // Obtenemos el tipo de inmueble para saber si es industrial, comercial, etc.
+    const zona = await prisma.zona.findUnique({ where: { id: values.zonaId } });
     const tipoInmueble = await prisma.tipoInmueble.findUnique({
       where: { id: values.tipoInmuebleId },
       include: { padre: true },
     });
 
-    // Determinar la categoría principal para la nomenclatura
     const tipoCategoria = tipoInmueble?.padre?.slug || tipoInmueble?.slug || 'industrial';
 
     if (propertyId) {
@@ -46,48 +31,52 @@ export async function savePropertyAction(
       }
 
       await prisma.$transaction(async (tx) => {
-        // 1. Actualizar datos principales
         await tx.propiedad.update({
           where: { id: propertyId },
           data: {
             titulo: values.titulo,
-            categoria: values.categoria,
-            origen: values.origen,
-            precio: values.precio,
-            moneda: values.moneda,
-            financiacion: values.financiacion,
-            descripcion: values.descripcion,
-            direccionPersonalizada: values.direccionPersonalizada,
-            latitud: values.latitud,
-            longitud: values.longitud,
-            superficieTotal: values.superficieTotal,
-            superficieCubierta: values.superficieCubierta,
+            categoria: (values.categoria as any) || 'venta',
+            origen: (values.origen as any) || 'own',
+            precio: values.precio || 0,
+            moneda: (values.moneda as any) || 'USD',
+            financiacion: values.financiacion || null,
+            descripcion: values.descripcion || '',
+            direccionPersonalizada: values.direccionPersonalizada || null,
+            latitud: values.latitud || -34.78,
+            longitud: values.longitud || -58.28,
+            superficieTotal: values.superficieTotal || null,
+            superficieCubierta: values.superficieCubierta || null,
+
+            // Relaciones obligatorias aseguradas
             tipoInmuebleId: values.tipoInmuebleId,
             zonaId: values.zonaId,
             agenteId: values.agenteId,
-            propietarioId: values.propietarioId || null,
-            colegaId: values.colegaId || null,
-            videoUrl: values.videoUrl,
-            pdfUrl: values.pdfUrl,
-            isPublished: values.isPublished,
-            isUnlisted: values.isUnlisted,
-            isDestacada: values.isDestacada,
-            notasPrivadas: values.notasPrivadas,
+
+            propietarioId: values.propietarioId && values.propietarioId > 0 ? values.propietarioId : null,
+            colegaId: values.colegaId && values.colegaId > 0 ? values.colegaId : null,
+
+            videoUrl: values.videoUrl || null,
+            pdfUrl: values.pdfUrl || null,
+            isPublished: Boolean(values.isPublished),
+            isUnlisted: Boolean(values.isUnlisted),
+            isDestacada: Boolean(values.isDestacada),
+            notasPrivadas: values.notasPrivadas || null,
             caracteristicas: values.caracteristicas || {},
             updatedAt: new Date(),
           },
         });
 
-        // 2. Reemplazar galería de imágenes
         await tx.imagen.deleteMany({ where: { propiedadId: propertyId } });
 
-        await tx.imagen.createMany({
-          data: values.imagenes.map((url, index) => ({
-            url,
-            orden: index,
-            propiedadId: propertyId,
-          })),
-        });
+        if (values.imagenes && values.imagenes.length > 0) {
+          await tx.imagen.createMany({
+            data: values.imagenes.map((url, index) => ({
+              url,
+              orden: index,
+              propiedadId: propertyId,
+            })),
+          });
+        }
       });
 
       revalidatePath('/admin/dashboard');
@@ -99,11 +88,9 @@ export async function savePropertyAction(
 
     } else {
       // MODO CREACIÓN
-
       const totalCount = await prisma.propiedad.count();
       const nuevoIdSimulado = totalCount + 100;
 
-      // Generar el código unificado con helper
       const codigoRef = generarCodigoRef({
         id: nuevoIdSimulado,
         type: tipoCategoria,
@@ -118,42 +105,49 @@ export async function savePropertyAction(
           codigo: codigoRef,
           titulo: values.titulo,
           slug: slugRef,
-          categoria: values.categoria,
-          origen: values.origen,
-          precio: values.precio,
-          moneda: values.moneda,
-          financiacion: values.financiacion,
-          descripcion: values.descripcion,
-          direccionPersonalizada: values.direccionPersonalizada,
-          latitud: values.latitud,
-          longitud: values.longitud,
-          superficieTotal: values.superficieTotal,
-          superficieCubierta: values.superficieCubierta,
+          categoria: (values.categoria as any) || 'venta',
+          origen: (values.origen as any) || 'own',
+          precio: values.precio || 0,
+          moneda: (values.moneda as any) || 'USD',
+          financiacion: values.financiacion || null,
+          descripcion: values.descripcion || '',
+          direccionPersonalizada: values.direccionPersonalizada || null,
+          latitud: values.latitud || -34.78,
+          longitud: values.longitud || -58.28,
+          superficieTotal: values.superficieTotal || null,
+          superficieCubierta: values.superficieCubierta || null,
+
+          // Relaciones obligatorias aseguradas
           tipoInmuebleId: values.tipoInmuebleId,
           zonaId: values.zonaId,
           agenteId: values.agenteId,
-          propietarioId: values.propietarioId || null,
-          colegaId: values.colegaId || null,
-          videoUrl: values.videoUrl,
-          pdfUrl: values.pdfUrl,
-          isPublished: values.isPublished,
-          isUnlisted: values.isUnlisted,
-          isDestacada: values.isDestacada,
-          notasPrivadas: values.notasPrivadas,
+
+          propietarioId: values.propietarioId && values.propietarioId > 0 ? values.propietarioId : null,
+          colegaId: values.colegaId && values.colegaId > 0 ? values.colegaId : null,
+
+          videoUrl: values.videoUrl || null,
+          pdfUrl: values.pdfUrl || null,
+          isPublished: Boolean(values.isPublished),
+          isUnlisted: Boolean(values.isUnlisted),
+          isDestacada: Boolean(values.isDestacada),
+          notasPrivadas: values.notasPrivadas || null,
           caracteristicas: values.caracteristicas || {},
 
-          imagenes: {
-            create: values.imagenes.map((url, index) => ({
-              url,
-              orden: index,
-            })),
-          },
+          imagenes: values.imagenes && values.imagenes.length > 0
+            ? {
+                create: values.imagenes.map((url, index) => ({
+                  url,
+                  orden: index,
+                })),
+              }
+            : undefined,
         },
       });
 
       revalidatePath('/admin/dashboard');
       revalidatePath('/');
       revalidatePath('/propiedades');
+
       return { success: true, propertyId: nuevaPropiedad.id };
     }
   } catch (error) {

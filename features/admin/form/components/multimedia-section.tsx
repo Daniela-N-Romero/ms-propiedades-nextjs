@@ -1,17 +1,15 @@
 'use client';
 
-import { UseFormReturn, Controller } from 'react-hook-form';
+import { useFormContext, Controller } from 'react-hook-form';
 import { PropertyFormValues } from '@/features/admin/form/schemas/property-schema';
 import { getInputClass } from '../utils/form-utils';
 import { ImageUploader } from './image-uploader';
 import { PdfUploader } from './pdf-uploader';
 
-interface MultimediaSectionProps {
-  form: UseFormReturn<PropertyFormValues>;
-}
+interface MultimediaSectionProps {}
 
-export function MultimediaSection({ form }: MultimediaSectionProps) {
-  const { register, control, formState: { errors } } = form;
+export function MultimediaSection({}: MultimediaSectionProps) {
+  const { register, control, formState: { errors } } = useFormContext<PropertyFormValues>();
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-5">
@@ -24,6 +22,9 @@ export function MultimediaSection({ form }: MultimediaSectionProps) {
 
       {/* GALERÍA SUPABASE */}
       <div>
+        <label className="block text-xs font-bold uppercase tracking-wider text-slate-800 mb-2">
+          Galería de Imágenes <span className="text-red-500">*</span>
+        </label>
         <Controller
           name="imagenes"
           control={control}

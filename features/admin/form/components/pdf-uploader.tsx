@@ -3,21 +3,25 @@
 
 import { useState } from 'react';
 import { uploadPdfClean } from '@/lib/supabase/upload-pdf';
+import { useAlertModal } from '@/components/hooks/use-alert-modal';
 
 interface PdfUploaderProps {
   pdfUrl?: string | null;
   onChange: (url: string) => void;
 }
 
+
+
 export function PdfUploader({ pdfUrl, onChange }: PdfUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-
+  const { alertState, showAlert, closeAlert } = useAlertModal();
+  
   const processPdfFile = async (file: File) => {
     if (!file) return;
 
     if (file.type !== 'application/pdf') {
-      alert('Por favor selecciona un archivo en formato PDF válido.');
+      showAlert('Por favor selecciona un archivo en formato PDF válido.', {type:'warning'});
       return;
     }
 

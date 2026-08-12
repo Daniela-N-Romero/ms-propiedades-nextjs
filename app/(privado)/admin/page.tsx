@@ -1,4 +1,5 @@
 'use client';
+import { useAlertModal } from '@/components/hooks/use-alert-modal';
 //TO DO: SEPARAR ESTILOS? 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -21,7 +22,7 @@ export default function AdminHomePage() {
       setLoadingLogout(false);
     }
   };
-
+const { alertState, showAlert, closeAlert } = useAlertModal();
   return (
       <>
       {/* 1. NAVBAR DE ADMINISTRACIÓN */}
@@ -108,7 +109,7 @@ export default function AdminHomePage() {
             <div className="mt-6">
               <button
                 type="button"
-                onClick={() => alert('Módulo de Propietarios en desarrollo')}
+                onClick={() => showAlert('Módulo de Propietarios en desarrollo', {type: 'info'})}
                 className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-spartan font-bold text-xs uppercase tracking-wider rounded-xl transition-colors"
               >
                 Gestionar Propietarios
@@ -178,7 +179,7 @@ export default function AdminHomePage() {
             <div className="mt-6">
               <button
                 type="button"
-                onClick={() => alert('Módulo de Configuración en desarrollo')}
+                onClick={() => showAlert('Módulo de Configuración en desarrollo', {type: 'info'})}
                 className="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-spartan font-bold text-xs uppercase tracking-wider rounded-xl transition-colors"
               >
                 Ajustes Generales
@@ -202,7 +203,7 @@ export default function AdminHomePage() {
             <div className="mt-6">
               <button
                 type="button"
-                onClick={() => alert('Módulo de Blog en desarrollo')}
+                onClick={() => showAlert('Módulo de Blog en desarrollo', {type: 'info'})}
                 className="w-full py-2.5 bg-red-500 hover:bg-slate-900 text-white font-spartan font-bold text-xs uppercase tracking-wider rounded-xl transition-colors"
               >
                 Gestionar Posts

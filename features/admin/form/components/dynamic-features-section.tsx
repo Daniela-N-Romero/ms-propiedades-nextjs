@@ -1,17 +1,22 @@
 'use client';
 
-import { UseFormReturn, useWatch } from 'react-hook-form';
+import { useFormContext, UseFormReturn, useWatch } from 'react-hook-form';
 import { CARACTERISTICAS_CATALOGO } from '@/types/caracteristicas';
 import type { PropertyFormValues } from '../schemas/property-schema';
 
 interface DynamicFeaturesSectionProps {
-  form: UseFormReturn<PropertyFormValues>;
   mercadoSlugActual: string; // ej: 'industrial', 'residencial', 'comercial', 'terrenos'
 }
 
-export function DynamicFeaturesSection({ form, mercadoSlugActual }: DynamicFeaturesSectionProps) {
-const caracteristicas = useWatch({
-    control: form.control,
+export function DynamicFeaturesSection({ mercadoSlugActual }: DynamicFeaturesSectionProps) {
+
+  const {
+    getValues,
+    setValue,
+    formState: { errors },
+  } = useFormContext<PropertyFormValues>();
+  
+const caracteristicas = useWatch<PropertyFormValues>({
     name: 'caracteristicas',
   }) || {};
 
@@ -24,7 +29,7 @@ const caracteristicasFiltradas = CARACTERISTICAS_CATALOGO.filter((item) =>
     e.stopPropagation();
 
     // Leemos directo con getValues
-    const current = { ...(form.getValues('caracteristicas') || {}) };
+    const current = { ...(getValues('caracteristicas') || {}) };
 
     if (current[key]) {
       delete current[key];
@@ -33,7 +38,7 @@ const caracteristicasFiltradas = CARACTERISTICAS_CATALOGO.filter((item) =>
     }
 
     // Actualizamos el estado global del form
-    form.setValue('caracteristicas', current, {
+    setValue('caracteristicas', current, {
       shouldDirty: true,
       shouldTouch: true,
       shouldValidate: true,
@@ -41,13 +46,13 @@ const caracteristicasFiltradas = CARACTERISTICAS_CATALOGO.filter((item) =>
   };
 
   const handleValueChange = (key: string, val: string | number) => {
-    const current = { ...(form.getValues('caracteristicas') || {}) };
+    const current = { ...(getValues('caracteristicas') || {}) };
     if (val === '' || val === null) {
       delete current[key];
     } else {
       current[key] = val;
     }
-    form.setValue('caracteristicas', current, { shouldDirty: true });
+    setValue('caracteristicas', current, { shouldDirty: true });
   };
 
   if (caracteristicasFiltradas.length === 0) return null;
