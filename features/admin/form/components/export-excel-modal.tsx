@@ -113,6 +113,43 @@ export function ExportExcelModal({ isOpen, onClose, activeTab, mercados = [] }: 
     }
   };
 
+  const handleExportMetaCatalog = async () => {
+  try {
+    setLoading(true);
+
+    const response = await fetch('/api/properties/export', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        isMetaCatalog: true, // 👈 Le avisamos al backend que prepare la plantilla de Meta
+        source: sourceFilter,
+        publishState: publishStateFilter,
+        tipoInmuebleId: tipoInmuebleFilter,
+        tab: activeTab,
+      }),
+    });
+
+    if (!response.ok) throw new Error('Error al generar Catálogo Meta');
+
+    // Descarga del archivo binario
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Catalogo_Meta_MS_${new Date().toISOString().split('T')[0]}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+
+    onClose();
+  } catch (err) {
+    showAlert('Ocurrió un error al descargar el catálogo para Meta.', { type: 'error' });
+  } finally {
+    setLoading(false);
+  }
+};
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
       <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-3xl w-full overflow-hidden flex flex-col max-h-[90vh]">
@@ -279,6 +316,14 @@ export function ExportExcelModal({ isOpen, onClose, activeTab, mercados = [] }: 
             className="px-5 py-2.5 rounded-xl font-bold border border-slate-300 text-slate-700 hover:bg-slate-100 transition"
           >
             Cancelar
+          </button>
+          <button
+            type="button"
+            disabled={loading}
+            onClick={() => handleExportMetaCatalog()}
+            className="px-4 py-2.5 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-md transition flex items-center gap-2"
+          >
+            {loading ? 'Generando...' : '🌐 Descargar Catálogo Meta'}
           </button>
           <button
             type="button"

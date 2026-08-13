@@ -7,6 +7,7 @@ import ExcelJS from 'exceljs';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+    const { isMetaCatalog = false } = body;
     const {
       columns = [],
       source = 'all',
@@ -109,7 +110,6 @@ export async function POST(req: Request) {
     // Mapeo de definición de columnas
     const columnDefinitions: { key: string; header: string; width: number }[] = [];
 
-    // 👈 NUEVAS COLUMNAS AGREGADAS
     if (columns.includes('codigo')) columnDefinitions.push({ key: 'codigo', header: 'Código / Ref', width: 15 });
     if (columns.includes('titulo')) columnDefinitions.push({ key: 'titulo', header: 'Título Comercial', width: 35 });
     if (columns.includes('linkPropiedad')) columnDefinitions.push({ key: 'linkPropiedad', header: 'Enlace Público Ficha', width: 45 }); // NUEVO
@@ -142,6 +142,48 @@ export async function POST(req: Request) {
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const baseUrl = `${protocol}://${host}`;
 
+    if (isMetaCatalog) {
+      // ----------------------------------------------------
+      // FORMATO OFICIAL META BUSINESS SUITE (REAL ESTATE)
+      // ----------------------------------------------------
+      worksheet.columns = [
+        { key: 'home_listing_id', header: 'home_listing_id', width: 20 },
+        { key: 'name', header: 'name', width: 35 },
+        { key: 'description', header: 'description', width: 50 },
+        { key: 'address', header: 'address', width: 30 },
+        { key: 'price', header: 'price', width: 18 },
+        { key: 'url', header: 'url', width: 45 },
+        { key: 'image', header: 'image', width: 45 },
+        { key: 'availability', header: 'availability', width: 15 },
+        { key: 'property_type', header: 'property_type', width: 18 },
+      ];
+
+      filteredProps.forEach((p) => {
+        // En Meta el precio debe ir como "250000 USD" o "15000000 ARS"
+        const precioFormateado = `${p.precio || 0} ${p.moneda || 'USD'}`;
+        
+        // Determinar si es Venta o Alquiler para Meta (for_sale / for_rent)
+        const availability = p.isPublished ? 'in stock' : 'out of stock';
+
+        // URL de la imagen principal
+        const mainImage = p.imagenes?.[0]?.url 
+          ? (p.imagenes[0].url.startsWith('http') ? p.imagenes[0].url : `${baseUrl}${p.imagenes[0].url}`)
+          : `${baseUrl}/images/placeholder.png`;
+
+        worksheet.addRow({
+          home_listing_id: p.codigo || `PROP-${p.id}`,
+          name: p.titulo || 'Propiedad sin título',
+          description: p.descripcion || p.titulo || 'Consulte para más detalles.',
+          address: p.direccionPersonalizada || p.zona?.nombre || 'Buenos Aires',
+          price: precioFormateado,
+          url: `${baseUrl}/propiedades/${p.slug}`,
+          image: mainImage,
+          availability: availability,
+          property_type: p.tipoInmueble?.nombre || 'other',
+        });
+      });
+
+    } else {
     // 2. CARGAR FILAS
     filteredProps.forEach((p) => {
       const isCustomVideo = tieneVideoPropio(p.videoUrl);
@@ -267,7 +309,7 @@ export async function POST(req: Request) {
         }
       });
     });
-
+  }
     // 5. AUTOFILTRO
     worksheet.autoFilter = {
       from: { row: 1, column: 1 },
