@@ -31,7 +31,7 @@ interface PropiedadAdmin {
   isDestacada: boolean;
   videoUrl?: string | null;
   pdfUrl?: string | null;
-  propertySource?: string | null;
+  origen?: string | null;
   colegaId?: number | null;
   updatedAt: string;
   deletedAt?: string | null;
@@ -235,8 +235,7 @@ export default function DashboardPage() {
     return propiedades
       .filter((prop) => {
         // 1. Origen (Cartera Propia vs Colega)
-        const isColega = prop.propertySource === 'colega' || Boolean(prop.colegaId);
-
+        const isColega = prop.origen === 'fromColleague' || Boolean(prop.colegaId);
         if (currentSourceFilter === 'colega' && !isColega) return false;
         if (currentSourceFilter === 'ms_propia' && isColega) return false;
 
@@ -297,31 +296,31 @@ export default function DashboardPage() {
     }, {} as Record<string, PropiedadAdmin[]>);
   }, [filteredAndSorted, groupBy]);
 
-const mercadosDisponibles = useMemo(() => {
-  const map = new Map<string, { id: string | number; nombre: string }>();
+  const mercadosDisponibles = useMemo(() => {
+    const map = new Map<string, { id: string | number; nombre: string }>();
 
-  propiedades.forEach((prop) => {
-    // Si la propiedad tiene un mercado padre (ej: Industrial, Comercial)
-    const padre = prop.tipoInmueble?.padre;
-    if (padre) {
-      const nombre = padre.slug.toUpperCase(); // O el nombre si lo tenés
-      if (!map.has(nombre)) {
-        map.set(nombre, {
-          id: padre.slug, // Usamos el slug como ID único
-          nombre: padre.slug.charAt(0).toUpperCase() + padre.slug.slice(1),
-        });
+    propiedades.forEach((prop) => {
+      // Si la propiedad tiene un mercado padre (ej: Industrial, Comercial)
+      const padre = prop.tipoInmueble?.padre;
+      if (padre) {
+        const nombre = padre.slug.toUpperCase(); // O el nombre si lo tenés
+        if (!map.has(nombre)) {
+          map.set(nombre, {
+            id: padre.slug, // Usamos el slug como ID único
+            nombre: padre.slug.charAt(0).toUpperCase() + padre.slug.slice(1),
+          });
+        }
+      } else if (prop.tipoInmueble?.nombre) {
+        // Fallback con el tipo directo
+        const nombre = prop.tipoInmueble.nombre;
+        if (!map.has(nombre)) {
+          map.set(nombre, { id: nombre, nombre });
+        }
       }
-    } else if (prop.tipoInmueble?.nombre) {
-      // Fallback con el tipo directo
-      const nombre = prop.tipoInmueble.nombre;
-      if (!map.has(nombre)) {
-        map.set(nombre, { id: nombre, nombre });
-      }
-    }
-  });
+    });
 
-  return Array.from(map.values());
-}, [propiedades]);
+    return Array.from(map.values());
+  }, [propiedades]);
 
   return (
     <div className="min-h-screen bg-slate-100 pb-12">
