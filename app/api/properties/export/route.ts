@@ -154,16 +154,16 @@ export async function POST(req: Request) {
       // ----------------------------------------------------
       worksheet.columns = [
         { key: 'home_listing_id', header: 'home_listing_id', width: 20 },
-        { key: 'name', header: 'name', width: 35 },
+        { key: 'name', header: 'name', width: 40 },
         { key: 'description', header: 'description', width: 50 },
-        { key: 'address', header: 'address', width: 30 },
+        { key: 'availability', header: 'availability', width: 15 }, // 'for_sale' o 'for_rent'
+        { key: 'property_type', header: 'property_type', width: 18 }, // 'land', 'other', etc.
         { key: 'price', header: 'price', width: 18 },
         { key: 'url', header: 'url', width: 45 },
         { key: 'image_link', header: 'image_link', width: 45 },
-        { key: 'additional_image_link', header: 'additional_image_link', width: 45 },
-        { key: 'image', header: 'image', width: 45 },
-        { key: 'availability', header: 'availability', width: 15 },
-        { key: 'property_type', header: 'property_type', width: 18 },
+        { key: 'additional_image_link', header: 'additional_image_link', width: 60 },
+        { key: 'address', header: 'address', width: 35 },
+        { key: 'custom_label_0', header: 'custom_label_0', width: 25 },
       ];
 
       filteredProps.forEach((p) => {
@@ -171,7 +171,22 @@ export async function POST(req: Request) {
         const precioFormateado = `${p.precio || 0} ${p.moneda || 'USD'}`;
 
         // Determinar si es Venta o Alquiler para Meta (for_sale / for_rent)
-        const availability = p.isPublished ? 'in stock' : 'out of stock';
+        const availability = p.categoria === 'alquiler' ? 'for_rent' : 'for_sale';
+
+        // Meta acepta: 'house', 'apartment', 'land', 'other'
+        let propertyType = 'other';
+        const tipoNombre = (p.tipoInmueble?.nombre || '').toLowerCase();
+        const mercadoNombre = (p.tipoInmueble?.padre?.nombre || '').toLowerCase();
+
+        if (tipoNombre.includes('terreno') || tipoNombre.includes('lote') || mercadoNombre.includes('terreno')) {
+          propertyType = 'land';
+        } else if (tipoNombre.includes('casa')) {
+          propertyType = 'house';
+        } else if (tipoNombre.includes('depto') || tipoNombre.includes('departamento')) {
+          propertyType = 'apartment';
+        } else {
+          propertyType = 'other'; // Para Naves, Galpones, Locales, etc.
+        }
 
         // 1. URL Imagen Principal (Portada)
         const mainImage = p.imagenes?.[0]?.url
@@ -184,18 +199,25 @@ export async function POST(req: Request) {
           .map((img) => (img.url.startsWith('http') ? img.url.trim() : `${baseUrl}${img.url.trim()}`))
           .join(','); // 🔑 Meta exige que estén separadas por comas
 
+
+        const fichaUrl = `${baseUrl}/propiedades/${p.slug.trim()}`;
+        const direccionText = (p.direccionPersonalizada || p.zona?.nombre || 'Buenos Aires, Argentina').trim();
+
+        // 🔑 6. CUSTOM LABEL 0 (Mercado / Subtipo)
+        const customLabel = p.tipoInmueble?.nombre || p.tipoInmueble?.padre?.nombre || 'Inmueble';
+
         worksheet.addRow({
-          home_listing_id: p.codigo || `PROP-${p.id}`,
-          name: p.titulo || 'Propiedad sin título',
-          description: p.descripcion || p.titulo || 'Consulte para más detalles.',
-          address: p.direccionPersonalizada || p.zona?.nombre || 'Buenos Aires',
-          price: precioFormateado,
-          url: `${baseUrl}/propiedades/${p.slug}`,
+          home_listing_id: p.codigo ? p.codigo.trim() : `PROP-${p.id}`,
+          name: (p.titulo || 'Propiedad sin título').trim(),
+          description: (p.descripcion || p.titulo || 'Consulte para más detalles.').trim(),
+          availability: availability, // 'for_sale' / 'for_rent'
+          property_type: propertyType, // 'land' / 'other' / 'house' / 'apartment'
+          price: precioFormateado, // '110 USD'
+          url: fichaUrl,
           image_link: mainImage,
-          image: mainImage,
           additional_image_link: additionalImages,
-          availability: availability,
-          property_type: p.tipoInmueble?.nombre || 'other',
+          address: direccionText,
+          custom_label_0: customLabel,
         });
       });
 
