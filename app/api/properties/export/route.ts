@@ -22,18 +22,23 @@ export async function POST(req: Request) {
       deletedAt: tab === 'papelera' ? { not: null } : null,
     };
 
-    // Filtro Origen
-    if (source === 'ms_propia') {
-      where.colegaId = null;
-    } else if (source === 'colega') {
-      where.colegaId = { not: null };
-    }
+    if (isMetaCatalog) {
+      where.colegaId = null;     // Excluye automáticamente cualquier propiedad de colegas
+      where.isPublished = true;  // Solo toma propiedades activas/publicadas
+    } else {
+      // Filtro Origen normal para el Excel interno del dashboard
+      if (source === 'ms_propia') {
+        where.colegaId = null;
+      } else if (source === 'colega') {
+        where.colegaId = { not: null };
+      }
 
-    // Filtro Estado de Publicación
-    if (publishState === 'published') {
-      where.isPublished = true;
-    } else if (publishState === 'draft') {
-      where.isPublished = false;
+      // Filtro Estado normal
+      if (publishState === 'published') {
+        where.isPublished = true;
+      } else if (publishState === 'draft') {
+        where.isPublished = false;
+      }
     }
 
     // Filtro Tipo de Inmueble (Busca tanto si es el subtipo o si el padre es este ID)
@@ -212,7 +217,7 @@ export async function POST(req: Request) {
 
         if (columns.includes('codigo')) rowData.codigo = p.codigo || '';
         if (columns.includes('titulo')) rowData.titulo = p.titulo || '';
-        if (columns.includes('linkPropiedad')) rowData.linkPropiedad = linkFicha; 
+        if (columns.includes('linkPropiedad')) rowData.linkPropiedad = linkFicha;
         if (columns.includes('categoria')) rowData.categoria = p.categoria ? p.categoria.toUpperCase() : '-';
         if (columns.includes('precio')) rowData.precio = precioNum;
         if (columns.includes('moneda')) rowData.moneda = p.moneda || 'USD';
@@ -223,16 +228,16 @@ export async function POST(req: Request) {
         if (columns.includes('localidad')) rowData.localidad = p.zona?.nombre || 'Sin Zona';
         if (columns.includes('direccion')) rowData.direccion = p.direccionPersonalizada || '-';
         if (columns.includes('estado')) rowData.estado = p.isPublished ? 'Publicada' : 'Borrador';
-        if (columns.includes('visibilidad')) rowData.visibilidad = p.isUnlisted ? 'Privada (Oculta)' : 'Pública'; 
+        if (columns.includes('visibilidad')) rowData.visibilidad = p.isUnlisted ? 'Privada (Oculta)' : 'Pública';
         if (columns.includes('destacada')) rowData.destacada = p.isDestacada ? 'SÍ' : 'NO';
         if (columns.includes('origen')) rowData.origen = p.colegaId ? 'Colega' : 'Cartera Propia';
         if (columns.includes('agente')) rowData.agente = p.agente ? `${p.agente.nombre} ${p.agente.apellido}` : '-';
         if (columns.includes('hasImages')) rowData.hasImages = hasRealImages ? 'SÍ' : 'NO (Placeholder)';
         if (columns.includes('imagenPortada')) rowData.imagenPortada = imagenPortadaUrl;
         if (columns.includes('imagenesAdicionales')) rowData.imagenesAdicionales = (p.imagenes || [])
-           .slice(1)
-           .map((img) => (img.url.startsWith('http') ? img.url.trim() : `${baseUrl}${img.url.trim()}`))
-           .join(', ');
+          .slice(1)
+          .map((img) => (img.url.startsWith('http') ? img.url.trim() : `${baseUrl}${img.url.trim()}`))
+          .join(', ');
         if (columns.includes('hasVideo')) rowData.hasVideo = isCustomVideo ? 'SÍ' : 'NO';
         if (columns.includes('videoUrl')) rowData.videoUrl = isCustomVideo && p.videoUrl ? p.videoUrl : 'Sin Video Propio';
         if (columns.includes('hasPdf')) rowData.hasPdf = hasPdf ? 'SÍ' : 'NO';
