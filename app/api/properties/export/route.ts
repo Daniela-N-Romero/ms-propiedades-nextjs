@@ -127,8 +127,9 @@ export async function POST(req: Request) {
     if (columns.includes('destacada')) columnDefinitions.push({ key: 'destacada', header: '¿Es Destacada?', width: 16 });
     if (columns.includes('origen')) columnDefinitions.push({ key: 'origen', header: 'Origen Cartera', width: 16 });
     if (columns.includes('agente')) columnDefinitions.push({ key: 'agente', header: 'Agente Responsable', width: 22 });
-    if (columns.includes('imagenPortada')) columnDefinitions.push({ key: 'imagenPortada', header: 'Imagen Portada URL', width: 40 }); // NUEVO
     if (columns.includes('hasImages')) columnDefinitions.push({ key: 'hasImages', header: '¿Tiene Fotos Propias?', width: 22 });
+    if (columns.includes('imagenPortada')) columnDefinitions.push({ key: 'imagenPortada', header: 'Imagen Portada URL', width: 40 });
+    if (columns.includes('imagenesAdicionales')) columnDefinitions.push({ key: 'imagenesAdicionales', header: 'Galería de Fotos (URLs)', width: 50 });
     if (columns.includes('hasVideo')) columnDefinitions.push({ key: 'hasVideo', header: '¿Tiene Video Propio?', width: 20 });
     if (columns.includes('videoUrl')) columnDefinitions.push({ key: 'videoUrl', header: 'Link Video', width: 40 });
     if (columns.includes('hasPdf')) columnDefinitions.push({ key: 'hasPdf', header: '¿Tiene Ficha PDF?', width: 18 });
@@ -154,6 +155,7 @@ export async function POST(req: Request) {
         { key: 'price', header: 'price', width: 18 },
         { key: 'url', header: 'url', width: 45 },
         { key: 'image_link', header: 'image_link', width: 45 },
+        { key: 'additional_image_link', header: 'additional_image_link', width: 45 },
         { key: 'image', header: 'image', width: 45 },
         { key: 'availability', header: 'availability', width: 15 },
         { key: 'property_type', header: 'property_type', width: 18 },
@@ -210,7 +212,7 @@ export async function POST(req: Request) {
 
         if (columns.includes('codigo')) rowData.codigo = p.codigo || '';
         if (columns.includes('titulo')) rowData.titulo = p.titulo || '';
-        if (columns.includes('linkPropiedad')) rowData.linkPropiedad = linkFicha; // 👈 NUEVO
+        if (columns.includes('linkPropiedad')) rowData.linkPropiedad = linkFicha; 
         if (columns.includes('categoria')) rowData.categoria = p.categoria ? p.categoria.toUpperCase() : '-';
         if (columns.includes('precio')) rowData.precio = precioNum;
         if (columns.includes('moneda')) rowData.moneda = p.moneda || 'USD';
@@ -221,12 +223,16 @@ export async function POST(req: Request) {
         if (columns.includes('localidad')) rowData.localidad = p.zona?.nombre || 'Sin Zona';
         if (columns.includes('direccion')) rowData.direccion = p.direccionPersonalizada || '-';
         if (columns.includes('estado')) rowData.estado = p.isPublished ? 'Publicada' : 'Borrador';
-        if (columns.includes('visibilidad')) rowData.visibilidad = p.isUnlisted ? 'Privada (Oculta)' : 'Pública'; // 👈 NUEVO
+        if (columns.includes('visibilidad')) rowData.visibilidad = p.isUnlisted ? 'Privada (Oculta)' : 'Pública'; 
         if (columns.includes('destacada')) rowData.destacada = p.isDestacada ? 'SÍ' : 'NO';
         if (columns.includes('origen')) rowData.origen = p.colegaId ? 'Colega' : 'Cartera Propia';
         if (columns.includes('agente')) rowData.agente = p.agente ? `${p.agente.nombre} ${p.agente.apellido}` : '-';
-        if (columns.includes('imagenPortada')) rowData.imagenPortada = imagenPortadaUrl; // 👈 NUEVO
         if (columns.includes('hasImages')) rowData.hasImages = hasRealImages ? 'SÍ' : 'NO (Placeholder)';
+        if (columns.includes('imagenPortada')) rowData.imagenPortada = imagenPortadaUrl;
+        if (columns.includes('imagenesAdicionales')) rowData.imagenesAdicionales = (p.imagenes || [])
+           .slice(1)
+           .map((img) => (img.url.startsWith('http') ? img.url.trim() : `${baseUrl}${img.url.trim()}`))
+           .join(', ');
         if (columns.includes('hasVideo')) rowData.hasVideo = isCustomVideo ? 'SÍ' : 'NO';
         if (columns.includes('videoUrl')) rowData.videoUrl = isCustomVideo && p.videoUrl ? p.videoUrl : 'Sin Video Propio';
         if (columns.includes('hasPdf')) rowData.hasPdf = hasPdf ? 'SÍ' : 'NO';

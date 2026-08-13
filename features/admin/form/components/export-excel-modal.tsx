@@ -31,6 +31,7 @@ const OPCIONES_COLUMNAS = [
   { id: 'origen', label: 'Origen (Propia / Colega)' },
   { id: 'agente', label: 'Agente Responsable' },
   { id: 'imagenPortada', label: 'Link de Imagen de Portada' },
+  { id: 'imagenesAdicionales', label: 'Links de Imágenes Adicionales (Galería)' },
   { id: 'hasImages', label: '¿Tiene Fotos Propias?' },
   { id: 'hasVideo', label: 'Tiene Video (SÍ/NO)' },
   { id: 'hasPdf', label: 'Tiene PDF (SÍ/NO)' },

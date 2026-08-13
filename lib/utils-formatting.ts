@@ -33,6 +33,7 @@ export function generarCodigoRef(prop: any): string {
 
   // Obtenemos iniciales de la localidad (ej: Berazategui -> BER)
   const loc = slugify(prop.locality || prop.neighbourhood || 'GBA')
+    .replace(/-/g, '')
     .substring(0, 3)
     .toUpperCase();
 
