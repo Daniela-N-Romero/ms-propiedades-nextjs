@@ -149,78 +149,90 @@ export async function POST(req: Request) {
     const baseUrl = `${protocol}://${host}`;
 
     if (isMetaCatalog) {
+
+      where.colegaId = null;
+      where.isPublished = true;
       // ----------------------------------------------------
       // FORMATO OFICIAL META BUSINESS SUITE (REAL ESTATE)
       // ----------------------------------------------------
       worksheet.columns = [
         { key: 'home_listing_id', header: 'home_listing_id', width: 20 },
-        { key: 'name', header: 'name', width: 40 },
+        { key: 'name', header: 'name', width: 35 },
         { key: 'description', header: 'description', width: 50 },
-        { key: 'availability', header: 'availability', width: 15 }, // 'for_sale' o 'for_rent'
-        { key: 'property_type', header: 'property_type', width: 18 }, // 'land', 'other', etc.
+        { key: 'availability', header: 'availability', width: 15 },
         { key: 'price', header: 'price', width: 18 },
         { key: 'url', header: 'url', width: 45 },
-        { key: 'image_link', header: 'image_link', width: 45 },
-        { key: 'additional_image_link', header: 'additional_image_link', width: 60 },
-        { key: 'address', header: 'address', width: 35 },
-        { key: 'custom_label_0', header: 'custom_label_0', width: 25 },
+
+        // IMAGEN PRINCIPAL (Sintaxis oficial de la plantilla Meta)
+        { key: 'image_0_url', header: 'image[0].url', width: 45 },
+        { key: 'image_0_tag', header: 'image[0].tag[0]', width: 15 },
+
+        // DESGLOSE DE DIRECCIÓN Y UBICACIÓN (Obligatorios en la plantilla)
+        { key: 'address_addr1', header: 'address.addr1', width: 30 },
+        { key: 'address_city', header: 'address.city', width: 20 },
+        { key: 'address_region', header: 'address.region', width: 20 },
+        { key: 'address_country', header: 'address.country', width: 15 },
+        { key: 'latitude', header: 'latitude', width: 15 },
+        { key: 'longitude', header: 'longitude', width: 15 },
+        { key: 'neighborhood', header: 'neighborhood[0]', width: 20 },
+
+        // CAMPOS OPCIONALES ÚTILES
+        { key: 'property_type', header: 'property_type', width: 18 },
+        { key: 'custom_label_0', header: 'custom_label_0', width: 22 },
       ];
 
       filteredProps.forEach((p) => {
-        // En Meta el precio debe ir como "250000 USD" o "15000000 ARS"
-        const precioFormateado = `${p.precio || 0} ${p.moneda || 'USD'}`;
+        // 1. Precio ISO
+        const rawPrecio = typeof p.precio === 'number' ? p.precio : Number(p.precio) || 0;
+        const monedaClean = (p.moneda || 'USD').trim().toUpperCase();
+        const precioMeta = `${Math.round(rawPrecio)} ${monedaClean}`;
 
-        // Determinar si es Venta o Alquiler para Meta (for_sale / for_rent)
+        // 2. Disponibilidad
         const availability = p.categoria === 'alquiler' ? 'for_rent' : 'for_sale';
 
-        // Meta acepta: 'house', 'apartment', 'land', 'other'
-        let propertyType = 'other';
-        const tipoNombre = (p.tipoInmueble?.nombre || '').toLowerCase();
-        const mercadoNombre = (p.tipoInmueble?.padre?.nombre || '').toLowerCase();
-
-        if (tipoNombre.includes('terreno') || tipoNombre.includes('lote') || mercadoNombre.includes('terreno')) {
-          propertyType = 'land';
-        } else if (tipoNombre.includes('casa')) {
-          propertyType = 'house';
-        } else if (tipoNombre.includes('depto') || tipoNombre.includes('departamento')) {
-          propertyType = 'apartment';
-        } else {
-          propertyType = 'other'; // Para Naves, Galpones, Locales, etc.
-        }
-
-        // 1. URL Imagen Principal (Portada)
+        // 3. Imagen de Portada
         const mainImage = p.imagenes?.[0]?.url
           ? (p.imagenes[0].url.startsWith('http') ? p.imagenes[0].url.trim() : `${baseUrl}${p.imagenes[0].url.trim()}`)
           : `${baseUrl}/images/placeholder.png`;
 
-        // 2. URL Galería de Imágenes Adicionales (Todas las fotos extras desde el índice 1 en adelante)
-        const additionalImages = (p.imagenes || [])
-          .slice(1) // Omitimos la primera foto (que es la portada)
-          .map((img) => (img.url.startsWith('http') ? img.url.trim() : `${baseUrl}${img.url.trim()}`))
-          .join(','); // 🔑 Meta exige que estén separadas por comas
+        // 4. Ubicación y Georeferenciación
+        const calleDireccion = (p.direccionPersonalizada || p.zona?.nombre || 'Buenos Aires').trim();
+        const ciudad = (p.zona?.nombre || 'Buenos Aires').trim();
+        const provincia = (p.zona?.padre?.nombre || 'Buenos Aires').trim();
+        const barrio = (p.zona?.nombre || 'Buenos Aires').trim();
+        const lat = p.latitud ? Number(p.latitud) : -34.78;
+        const lng = p.longitud ? Number(p.longitud) : -58.28;
 
-
-        const fichaUrl = `${baseUrl}/propiedades/${p.slug.trim()}`;
-        const direccionText = (p.direccionPersonalizada || p.zona?.nombre || 'Buenos Aires, Argentina').trim();
-
-        // 🔑 6. CUSTOM LABEL 0 (Mercado / Subtipo)
-        const customLabel = p.tipoInmueble?.nombre || p.tipoInmueble?.padre?.nombre || 'Inmueble';
+        // 5. Tipo de Propiedad
+        let propertyType = 'other';
+        const tipoNombre = (p.tipoInmueble?.nombre || '').toLowerCase();
+        if (tipoNombre.includes('terreno') || tipoNombre.includes('lote')) propertyType = 'land';
+        else if (tipoNombre.includes('casa')) propertyType = 'house';
+        else if (tipoNombre.includes('depto')) propertyType = 'apartment';
 
         worksheet.addRow({
           home_listing_id: p.codigo ? p.codigo.trim() : `PROP-${p.id}`,
-          name: (p.titulo || 'Propiedad sin título').trim(),
-          description: (p.descripcion || p.titulo || 'Consulte para más detalles.').trim(),
-          availability: availability, // 'for_sale' / 'for_rent'
-          property_type: propertyType, // 'land' / 'other' / 'house' / 'apartment'
-          price: precioFormateado, // '110 USD'
-          url: fichaUrl,
-          image_link: mainImage,
-          additional_image_link: additionalImages,
-          address: direccionText,
-          custom_label_0: customLabel,
+          name: (p.titulo || 'Propiedad').trim(),
+          description: (p.descripcion || p.titulo || 'Consulte detalles.').trim(),
+          availability: availability,
+          price: precioMeta,
+          url: `${baseUrl}/propiedades/${p.slug.trim()}`,
+
+          image_0_url: mainImage,
+          image_0_tag: 'Principal',
+
+          address_addr1: calleDireccion,
+          address_city: ciudad,
+          address_region: provincia,
+          address_country: 'Argentina',
+          latitude: lat,
+          longitude: lng,
+          neighborhood: barrio,
+
+          property_type: propertyType,
+          custom_label_0: p.tipoInmueble?.nombre || 'Inmueble',
         });
       });
-
     } else {
       // 2. CARGAR FILAS
       filteredProps.forEach((p) => {
