@@ -71,7 +71,7 @@ export async function POST(req: Request) {
         agente: true,
         propietario: true,
         colega: true,
-        imagenes: { take: 1, orderBy: { orden: 'asc' } }, // Tomamos la de portada
+        imagenes: { orderBy: { orden: 'asc' } },
       },
     });
 
@@ -153,6 +153,7 @@ export async function POST(req: Request) {
         { key: 'address', header: 'address', width: 30 },
         { key: 'price', header: 'price', width: 18 },
         { key: 'url', header: 'url', width: 45 },
+        { key: 'image_link', header: 'image_link', width: 45 },
         { key: 'image', header: 'image', width: 45 },
         { key: 'availability', header: 'availability', width: 15 },
         { key: 'property_type', header: 'property_type', width: 18 },
@@ -161,14 +162,20 @@ export async function POST(req: Request) {
       filteredProps.forEach((p) => {
         // En Meta el precio debe ir como "250000 USD" o "15000000 ARS"
         const precioFormateado = `${p.precio || 0} ${p.moneda || 'USD'}`;
-        
+
         // Determinar si es Venta o Alquiler para Meta (for_sale / for_rent)
         const availability = p.isPublished ? 'in stock' : 'out of stock';
 
-        // URL de la imagen principal
-        const mainImage = p.imagenes?.[0]?.url 
-          ? (p.imagenes[0].url.startsWith('http') ? p.imagenes[0].url : `${baseUrl}${p.imagenes[0].url}`)
+        // 1. URL Imagen Principal (Portada)
+        const mainImage = p.imagenes?.[0]?.url
+          ? (p.imagenes[0].url.startsWith('http') ? p.imagenes[0].url.trim() : `${baseUrl}${p.imagenes[0].url.trim()}`)
           : `${baseUrl}/images/placeholder.png`;
+
+        // 2. URL Galería de Imágenes Adicionales (Todas las fotos extras desde el índice 1 en adelante)
+        const additionalImages = (p.imagenes || [])
+          .slice(1) // Omitimos la primera foto (que es la portada)
+          .map((img) => (img.url.startsWith('http') ? img.url.trim() : `${baseUrl}${img.url.trim()}`))
+          .join(','); // 🔑 Meta exige que estén separadas por comas
 
         worksheet.addRow({
           home_listing_id: p.codigo || `PROP-${p.id}`,
@@ -177,139 +184,141 @@ export async function POST(req: Request) {
           address: p.direccionPersonalizada || p.zona?.nombre || 'Buenos Aires',
           price: precioFormateado,
           url: `${baseUrl}/propiedades/${p.slug}`,
+          image_link: mainImage,
           image: mainImage,
+          additional_image_link: additionalImages,
           availability: availability,
           property_type: p.tipoInmueble?.nombre || 'other',
         });
       });
 
     } else {
-    // 2. CARGAR FILAS
-    filteredProps.forEach((p) => {
-      const isCustomVideo = tieneVideoPropio(p.videoUrl);
-      const hasPdf = Boolean(p.pdfUrl && p.pdfUrl.trim() !== '');
-      const hasRealImages = tieneFotosReales(p.imagenes);
+      // 2. CARGAR FILAS
+      filteredProps.forEach((p) => {
+        const isCustomVideo = tieneVideoPropio(p.videoUrl);
+        const hasPdf = Boolean(p.pdfUrl && p.pdfUrl.trim() !== '');
+        const hasRealImages = tieneFotosReales(p.imagenes);
 
-      const precioNum = typeof p.precio === 'number' ? p.precio : Number(p.precio) || 0;
-      const supTotalNum = typeof p.superficieTotal === 'number' ? p.superficieTotal : Number(p.superficieTotal) || 0;
-      const supCubiertaNum = typeof p.superficieCubierta === 'number' ? p.superficieCubierta : Number(p.superficieCubierta) || 0;
+        const precioNum = typeof p.precio === 'number' ? p.precio : Number(p.precio) || 0;
+        const supTotalNum = typeof p.superficieTotal === 'number' ? p.superficieTotal : Number(p.superficieTotal) || 0;
+        const supCubiertaNum = typeof p.superficieCubierta === 'number' ? p.superficieCubierta : Number(p.superficieCubierta) || 0;
 
-      const imagenPortadaUrl = p.imagenes?.[0]?.url ? `${baseUrl}${p.imagenes[0].url}` : 'Sin Imagen';
-      const linkFicha = p.isPublished ? `${baseUrl}/propiedades/${p.slug}` : 'No disponible (Borrador)';
+        const imagenPortadaUrl = p.imagenes?.[0]?.url ? `${baseUrl}${p.imagenes[0].url}` : 'Sin Imagen';
+        const linkFicha = p.isPublished ? `${baseUrl}/propiedades/${p.slug}` : 'No disponible (Borrador)';
 
-      const rowData: Record<string, any> = {};
+        const rowData: Record<string, any> = {};
 
-      if (columns.includes('codigo')) rowData.codigo = p.codigo || '';
-      if (columns.includes('titulo')) rowData.titulo = p.titulo || '';
-      if (columns.includes('linkPropiedad')) rowData.linkPropiedad = linkFicha; // 👈 NUEVO
-      if (columns.includes('categoria')) rowData.categoria = p.categoria ? p.categoria.toUpperCase() : '-';
-      if (columns.includes('precio')) rowData.precio = precioNum;
-      if (columns.includes('moneda')) rowData.moneda = p.moneda || 'USD';
-      if (columns.includes('superficieTotal')) rowData.superficieTotal = supTotalNum;
-      if (columns.includes('superficieCubierta')) rowData.superficieCubierta = supCubiertaNum;
-      if (columns.includes('mercado')) rowData.mercado = p.tipoInmueble?.padre?.nombre || 'General';
-      if (columns.includes('subtipo')) rowData.subtipo = p.tipoInmueble?.nombre || '-';
-      if (columns.includes('localidad')) rowData.localidad = p.zona?.nombre || 'Sin Zona';
-      if (columns.includes('direccion')) rowData.direccion = p.direccionPersonalizada || '-';
-      if (columns.includes('estado')) rowData.estado = p.isPublished ? 'Publicada' : 'Borrador';
-      if (columns.includes('visibilidad')) rowData.visibilidad = p.isUnlisted ? 'Privada (Oculta)' : 'Pública'; // 👈 NUEVO
-      if (columns.includes('destacada')) rowData.destacada = p.isDestacada ? 'SÍ' : 'NO';
-      if (columns.includes('origen')) rowData.origen = p.colegaId ? 'Colega' : 'Cartera Propia';
-      if (columns.includes('agente')) rowData.agente = p.agente ? `${p.agente.nombre} ${p.agente.apellido}` : '-';
-      if (columns.includes('imagenPortada')) rowData.imagenPortada = imagenPortadaUrl; // 👈 NUEVO
-      if (columns.includes('hasImages')) rowData.hasImages = hasRealImages ? 'SÍ' : 'NO (Placeholder)';
-      if (columns.includes('hasVideo')) rowData.hasVideo = isCustomVideo ? 'SÍ' : 'NO';
-      if (columns.includes('videoUrl')) rowData.videoUrl = isCustomVideo && p.videoUrl ? p.videoUrl : 'Sin Video Propio';
-      if (columns.includes('hasPdf')) rowData.hasPdf = hasPdf ? 'SÍ' : 'NO';
-      if (columns.includes('pdfUrl')) rowData.pdfUrl = hasPdf && p.pdfUrl ? p.pdfUrl : 'Sin PDF';
-      if (columns.includes('updatedAt')) rowData.updatedAt = new Date(p.updatedAt).toLocaleDateString('es-AR');
+        if (columns.includes('codigo')) rowData.codigo = p.codigo || '';
+        if (columns.includes('titulo')) rowData.titulo = p.titulo || '';
+        if (columns.includes('linkPropiedad')) rowData.linkPropiedad = linkFicha; // 👈 NUEVO
+        if (columns.includes('categoria')) rowData.categoria = p.categoria ? p.categoria.toUpperCase() : '-';
+        if (columns.includes('precio')) rowData.precio = precioNum;
+        if (columns.includes('moneda')) rowData.moneda = p.moneda || 'USD';
+        if (columns.includes('superficieTotal')) rowData.superficieTotal = supTotalNum;
+        if (columns.includes('superficieCubierta')) rowData.superficieCubierta = supCubiertaNum;
+        if (columns.includes('mercado')) rowData.mercado = p.tipoInmueble?.padre?.nombre || 'General';
+        if (columns.includes('subtipo')) rowData.subtipo = p.tipoInmueble?.nombre || '-';
+        if (columns.includes('localidad')) rowData.localidad = p.zona?.nombre || 'Sin Zona';
+        if (columns.includes('direccion')) rowData.direccion = p.direccionPersonalizada || '-';
+        if (columns.includes('estado')) rowData.estado = p.isPublished ? 'Publicada' : 'Borrador';
+        if (columns.includes('visibilidad')) rowData.visibilidad = p.isUnlisted ? 'Privada (Oculta)' : 'Pública'; // 👈 NUEVO
+        if (columns.includes('destacada')) rowData.destacada = p.isDestacada ? 'SÍ' : 'NO';
+        if (columns.includes('origen')) rowData.origen = p.colegaId ? 'Colega' : 'Cartera Propia';
+        if (columns.includes('agente')) rowData.agente = p.agente ? `${p.agente.nombre} ${p.agente.apellido}` : '-';
+        if (columns.includes('imagenPortada')) rowData.imagenPortada = imagenPortadaUrl; // 👈 NUEVO
+        if (columns.includes('hasImages')) rowData.hasImages = hasRealImages ? 'SÍ' : 'NO (Placeholder)';
+        if (columns.includes('hasVideo')) rowData.hasVideo = isCustomVideo ? 'SÍ' : 'NO';
+        if (columns.includes('videoUrl')) rowData.videoUrl = isCustomVideo && p.videoUrl ? p.videoUrl : 'Sin Video Propio';
+        if (columns.includes('hasPdf')) rowData.hasPdf = hasPdf ? 'SÍ' : 'NO';
+        if (columns.includes('pdfUrl')) rowData.pdfUrl = hasPdf && p.pdfUrl ? p.pdfUrl : 'Sin PDF';
+        if (columns.includes('updatedAt')) rowData.updatedAt = new Date(p.updatedAt).toLocaleDateString('es-AR');
 
-      worksheet.addRow(rowData);
-    });
-
-    // 3. ESTILOS DE CABECERA (AZUL MARCA MS)
-    const headerRow = worksheet.getRow(1);
-    headerRow.height = 26;
-    headerRow.eachCell((cell) => {
-      cell.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FF0F172A' },
-      };
-      cell.font = { name: 'Segoe UI', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
-      cell.alignment = { vertical: 'middle', horizontal: 'center' };
-    });
-
-    // 4. FORMATO CONDICIONAL & CELDAS
-    worksheet.eachRow((row, rowNumber) => {
-      if (rowNumber === 1) return;
-      row.height = 20;
-
-      row.eachCell((cell, colNumber) => {
-        const header = columnDefinitions[colNumber - 1]?.key;
-
-        cell.alignment = { vertical: 'middle', horizontal: 'left' };
-        cell.font = { name: 'Segoe UI', size: 10 };
-
-        // Formatos Numéricos
-        if (header === 'precio') {
-          cell.numFmt = '"$"#,##0';
-          cell.alignment = { vertical: 'middle', horizontal: 'right' };
-        }
-        if (header === 'superficieTotal' || header === 'superficieCubierta') {
-          cell.numFmt = '#,##0';
-          cell.alignment = { vertical: 'middle', horizontal: 'right' };
-        }
-
-        // 👈 Formato como Hyperlink clickeable en Excel para URLs
-        if ((header === 'linkPropiedad' || header === 'imagenPortada' || header === 'videoUrl' || header === 'pdfUrl') && typeof cell.value === 'string' && cell.value.startsWith('http')) {
-          cell.value = {
-            text: cell.value,
-            hyperlink: cell.value
-          };
-          cell.font = { name: 'Segoe UI', size: 10, color: { argb: 'FF0563C1' }, underline: true }; // Azul clásico de link
-        }
-
-        // Colores pastel para validaciones
-        if (header === 'hasImages' || header === 'hasVideo' || header === 'hasPdf') {
-          cell.alignment = { vertical: 'middle', horizontal: 'center' };
-          cell.font = { name: 'Segoe UI', size: 10, bold: true };
-
-          if (String(cell.value).startsWith('SÍ')) {
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDCFCE7' } }; // Verde pastel
-            cell.font.color = { argb: 'FF15803D' };
-          } else {
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEE2E2' } }; // Rojo pastel
-            cell.font.color = { argb: 'FFB91C1C' };
-          }
-        }
-
-        if (header === 'estado') {
-          cell.alignment = { vertical: 'middle', horizontal: 'center' };
-          cell.font = { name: 'Segoe UI', size: 10, bold: true };
-
-          if (cell.value === 'Publicada') {
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDCFCE7' } };
-            cell.font.color = { argb: 'FF15803D' };
-          } else {
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } };
-            cell.font.color = { argb: 'FFB45309' };
-          }
-        }
-
-        // Formato para Privada/Pública
-        if (header === 'visibilidad') {
-          cell.alignment = { vertical: 'middle', horizontal: 'center' };
-          cell.font = { name: 'Segoe UI', size: 10, bold: true };
-          if (cell.value === 'Pública') {
-            cell.font.color = { argb: 'FF334155' };
-          } else {
-            cell.font.color = { argb: 'FF4338CA' }; // Índigo para privadas
-          }
-        }
+        worksheet.addRow(rowData);
       });
-    });
-  }
+
+      // 3. ESTILOS DE CABECERA (AZUL MARCA MS)
+      const headerRow = worksheet.getRow(1);
+      headerRow.height = 26;
+      headerRow.eachCell((cell) => {
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF0F172A' },
+        };
+        cell.font = { name: 'Segoe UI', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+      });
+
+      // 4. FORMATO CONDICIONAL & CELDAS
+      worksheet.eachRow((row, rowNumber) => {
+        if (rowNumber === 1) return;
+        row.height = 20;
+
+        row.eachCell((cell, colNumber) => {
+          const header = columnDefinitions[colNumber - 1]?.key;
+
+          cell.alignment = { vertical: 'middle', horizontal: 'left' };
+          cell.font = { name: 'Segoe UI', size: 10 };
+
+          // Formatos Numéricos
+          if (header === 'precio') {
+            cell.numFmt = '"$"#,##0';
+            cell.alignment = { vertical: 'middle', horizontal: 'right' };
+          }
+          if (header === 'superficieTotal' || header === 'superficieCubierta') {
+            cell.numFmt = '#,##0';
+            cell.alignment = { vertical: 'middle', horizontal: 'right' };
+          }
+
+          // 👈 Formato como Hyperlink clickeable en Excel para URLs
+          if ((header === 'linkPropiedad' || header === 'imagenPortada' || header === 'videoUrl' || header === 'pdfUrl') && typeof cell.value === 'string' && cell.value.startsWith('http')) {
+            cell.value = {
+              text: cell.value,
+              hyperlink: cell.value
+            };
+            cell.font = { name: 'Segoe UI', size: 10, color: { argb: 'FF0563C1' }, underline: true }; // Azul clásico de link
+          }
+
+          // Colores pastel para validaciones
+          if (header === 'hasImages' || header === 'hasVideo' || header === 'hasPdf') {
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+            cell.font = { name: 'Segoe UI', size: 10, bold: true };
+
+            if (String(cell.value).startsWith('SÍ')) {
+              cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDCFCE7' } }; // Verde pastel
+              cell.font.color = { argb: 'FF15803D' };
+            } else {
+              cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEE2E2' } }; // Rojo pastel
+              cell.font.color = { argb: 'FFB91C1C' };
+            }
+          }
+
+          if (header === 'estado') {
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+            cell.font = { name: 'Segoe UI', size: 10, bold: true };
+
+            if (cell.value === 'Publicada') {
+              cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDCFCE7' } };
+              cell.font.color = { argb: 'FF15803D' };
+            } else {
+              cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } };
+              cell.font.color = { argb: 'FFB45309' };
+            }
+          }
+
+          // Formato para Privada/Pública
+          if (header === 'visibilidad') {
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+            cell.font = { name: 'Segoe UI', size: 10, bold: true };
+            if (cell.value === 'Pública') {
+              cell.font.color = { argb: 'FF334155' };
+            } else {
+              cell.font.color = { argb: 'FF4338CA' }; // Índigo para privadas
+            }
+          }
+        });
+      });
+    }
     // 5. AUTOFILTRO
     worksheet.autoFilter = {
       from: { row: 1, column: 1 },
