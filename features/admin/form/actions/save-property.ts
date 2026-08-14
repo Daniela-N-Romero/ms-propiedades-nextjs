@@ -20,6 +20,12 @@ export async function savePropertyAction(
 
     const tipoCategoria = tipoInmueble?.padre?.slug || tipoInmueble?.slug || 'industrial';
 
+    // Regla inteligente de permitMetaAd si no viniera definida
+    const permitMetaCalculado = values.permitMetaAd !== undefined
+      ? Boolean(values.permitMetaAd)
+      : values.origen === 'own';
+
+
     if (propertyId) {
       // MODO EDICIÓN
       const propiedadExistente = await prisma.propiedad.findUnique({
@@ -60,6 +66,8 @@ export async function savePropertyAction(
             isPublished: Boolean(values.isPublished),
             isUnlisted: Boolean(values.isUnlisted),
             isDestacada: Boolean(values.isDestacada),
+            permitMetaAd: permitMetaCalculado, 
+            imagenMetaUrl: values.imagenMetaUrl || null,
             notasPrivadas: values.notasPrivadas || null,
             caracteristicas: values.caracteristicas || {},
             updatedAt: new Date(),
@@ -130,6 +138,8 @@ export async function savePropertyAction(
           isPublished: Boolean(values.isPublished),
           isUnlisted: Boolean(values.isUnlisted),
           isDestacada: Boolean(values.isDestacada),
+          permitMetaAd: permitMetaCalculado, 
+          imagenMetaUrl: values.imagenMetaUrl || null,
           notasPrivadas: values.notasPrivadas || null,
           caracteristicas: values.caracteristicas || {},
 
@@ -143,6 +153,7 @@ export async function savePropertyAction(
             : undefined,
         },
       });
+      
 
       revalidatePath('/admin/dashboard');
       revalidatePath('/');

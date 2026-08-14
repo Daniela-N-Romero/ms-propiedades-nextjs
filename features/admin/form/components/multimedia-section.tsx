@@ -5,10 +5,11 @@ import { PropertyFormValues } from '@/features/admin/form/schemas/property-schem
 import { getInputClass } from '../utils/form-utils';
 import { ImageUploader } from './image-uploader';
 import { PdfUploader } from './pdf-uploader';
+import { MetaImageUploader } from './meta-image-uploader';
 
-interface MultimediaSectionProps {}
+interface MultimediaSectionProps { }
 
-export function MultimediaSection({}: MultimediaSectionProps) {
+export function MultimediaSection({ }: MultimediaSectionProps) {
   const { register, control, formState: { errors } } = useFormContext<PropertyFormValues>();
 
   return (
@@ -43,7 +44,17 @@ export function MultimediaSection({}: MultimediaSectionProps) {
         )}
       </div>
 
-
+      <Controller
+        name="imagenMetaUrl"
+        control={control}
+        render={({ field }) => (
+          <MetaImageUploader
+            value={field.value}
+            onChange={field.onChange}
+          />
+        )}
+      />
+      
       <div>
         <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
           Video de YouTube (URL)

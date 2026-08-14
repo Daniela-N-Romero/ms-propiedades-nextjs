@@ -7,6 +7,12 @@ const coerceOptionalNumber = () =>
     z.number().nullable().optional()
   );
 
+  const coerceNullableNumber = () =>
+  z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? null : Number(val)),
+    z.number().nullable()
+  );
+
 const coerceNumber = (msg: string) =>
   z.preprocess(
     (val) => (val === '' || val === null || val === undefined ? undefined : Number(val)),
@@ -18,7 +24,7 @@ const coerceNumber = (msg: string) =>
 // ----------------------------------------------------
 export const draftPropertySchema = z.object({
   titulo: z.string().min(3, 'Escriba un título de al menos 3 caracteres'),
-  
+
   // Relaciones mínimas de base de datos
   tipoInmuebleId: coerceNumber('Debe seleccionar un tipo de inmueble').refine((val) => val >= 1, 'Debe seleccionar un tipo de inmueble'),
   agenteId: coerceNumber('Debe asignar un agente responsable').refine((val) => val >= 1, 'Debe asignar un agente responsable'),
@@ -47,12 +53,14 @@ export const draftPropertySchema = z.object({
   notasPrivadas: z.string().optional(),
   caracteristicas: z.record(z.string(), z.any()).optional(),
   imagenes: z.array(z.string()).default([]),
+  permitMetaAd: z.boolean().default(true),
+  imagenMetaUrl: z.string().optional().nullable(),
 });
 
 // ----------------------------------------------------
 // 2. SCHEMA PARA PUBLICACIÓN (Validación estricta al 100%)
 // ----------------------------------------------------
-export const publishPropertySchema = z.object({
+export const basePublishPropertySchema = z.object({
   titulo: z.string().min(5, 'El título debe tener al menos 5 caracteres'),
   categoria: z.enum(['venta', 'alquiler'], {
     message: 'Debe seleccionar una operación (Venta o Alquiler)',
@@ -83,22 +91,47 @@ export const publishPropertySchema = z.object({
   tipoInmuebleId: coerceNumber('Debe seleccionar un tipo de inmueble').refine((val) => val >= 1, 'Debe seleccionar un tipo de inmueble'),
   agenteId: coerceNumber('Debe asignar un agente responsable').refine((val) => val >= 1, 'Debe asignar un agente responsable'),
 
-  propietarioId: coerceOptionalNumber(),
-  colegaId: coerceOptionalNumber(),
+  propietarioId: coerceNullableNumber(),
+  colegaId: coerceNullableNumber(),
 
   videoUrl: z.string().optional(),
   pdfUrl: z.string().optional(),
 
-  isPublished: z.boolean().default(true), // 👈 Fuerza Publicación
+  isPublished: z.boolean().default(true),
   isUnlisted: z.boolean().default(false),
   isDestacada: z.boolean().default(false),
   notasPrivadas: z.string().optional(),
 
   caracteristicas: z.record(z.string(), z.any()).optional(),
 
+  permitMetaAd: z.boolean().default(true),
+  imagenMetaUrl: z.string().optional().nullable(),
   imagenes: z
     .array(z.string())
     .min(1, 'Debe incluir al menos una imagen o la imagen por defecto'),
-});
+})
 
-export type PropertyFormValues = z.infer<typeof publishPropertySchema>;
+// Inferimos el tipo ANTES de aplicar .superRefine() para evitar la referencia circular
+export type PropertyFormValues = z.infer<typeof basePublishPropertySchema>;
+
+// Refinamos el esquema y lo exportamos
+export const publishPropertySchema = basePublishPropertySchema.superRefine((data, ctx) => {
+
+  // Si es De Colega y no seleccionó un ID válido (> 0)
+  if (data.origen === 'fromColleague' && (!data.colegaId || data.colegaId <= 0)) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['colegaId'],
+      message: 'Debe seleccionar la Inmobiliaria Colega de origen.',
+    });
+  }
+
+  // Si es Cartera Propia y no seleccionó Propietario (> 0)
+  if (data.origen === 'own' && (!data.propietarioId || data.propietarioId <= 0)) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['propietarioId'],
+      message: 'Debe seleccionar el Propietario asignado.',
+    });
+  }
+});

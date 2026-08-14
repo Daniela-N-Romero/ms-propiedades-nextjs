@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { UseFormReturn, Controller, useWatch } from 'react-hook-form';
+import { Controller, useWatch } from 'react-hook-form';
 import { useFormContext } from 'react-hook-form';
 import { PropertyFormValues } from '@/features/admin/form/schemas/property-schema';
 import { formatNumberWithDots, parseRawNumber } from '@/lib/utils-formatting';
@@ -32,7 +32,7 @@ export function ComercialSection({
   colegas,
   isPending,
 }: ComercialSectionProps) {
-  const { register, control, setValue, clearErrors, formState: { errors } } = useFormContext<PropertyFormValues>();
+  const { register, control, trigger, setValue, clearErrors, formState: { errors } } = useFormContext<PropertyFormValues>();
 
   const origen = useWatch({
     control,
@@ -255,10 +255,14 @@ export function ComercialSection({
           <label className="block text-xs font-bold uppercase tracking-wider text-slate-800">
             Agente Responsable<span className="text-red-500">*</span>
           </label>
-          <select {...register('agenteId', { valueAsNumber: true })} className={getSelectClass(!!errors.agenteId)}>
-            {agentes.map((a) => (
-              <option key={a.id} value={a.id}>{a.nombre} {a.apellido}</option>
-            ))}
+          <select {
+            ...register('agenteId', { valueAsNumber: true })}
+            className={getSelectClass(!!errors.agenteId)}>
+            {agentes
+              .filter(a => a.nombre != 'Admin')
+              .map((a) => (
+                <option key={a.id} value={a.id}>{a.nombre} {a.apellido}</option>
+              ))}
           </select>
         </div>
         <div className="col-span-2">
@@ -271,19 +275,23 @@ export function ComercialSection({
             render={({ field }) => (
               <select
                 value={field.value}
-                onChange={(e) => {
-                  const nuevoOrigen = e.target.value as 'own' | 'fromColleague';
+                onChange={async (e) => {
+                  const nuevoOrigen = e.target.value as 'own' | 'fromColleague' | '';
                   field.onChange(nuevoOrigen);
 
-                  // Reseteamos de manera limpia el campo contrario para no ensuciar Zod
                   if (nuevoOrigen === 'own') {
                     setValue('colegaId', null);
-                  } else {
+                    clearErrors('colegaId');
+                    await trigger('propietarioId'); // Valida Propietario al instante
+                  } else if (nuevoOrigen === 'fromColleague') {
                     setValue('propietarioId', null);
+                    clearErrors('propietarioId');
+                    await trigger('colegaId'); // Valida Colega al instante
                   }
                 }}
                 className={getSelectClass(!!errors.origen)}
               >
+                <option value="" disabled></option>
                 <option value="own">Cartera Propia</option>
                 <option value="fromColleague">De Colega</option>
               </select>
@@ -316,8 +324,13 @@ export function ComercialSection({
               control={control}
               render={({ field }) => (
                 <select
+                  ref={field.ref}
                   value={field.value ?? ''}
-                  onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
+                  onChange={(e) => {
+                    const val = e.target.value ? Number(e.target.value) : null;
+                    field.onChange(val);
+                    if (val) clearErrors('propietarioId');
+                  }}
                   className={getSelectClass(!!errors.propietarioId)}
                 >
                   <option value="">Seleccionar Propietario...</option>
@@ -332,7 +345,10 @@ export function ComercialSection({
 
         {/* INMOBILIARIA COLEGA */}
         {origen === 'fromColleague' && (
-          <div className="space-y-1 bg-blue-50/40 p-4 rounded-xl border border-blue-100">
+          <div className={`space-y-1 p-4 rounded-xl border transition-colors ${errors.colegaId
+            ? 'bg-red-50/60 border-red-300 ring-1 ring-red-300'
+            : 'bg-blue-50/40 border-blue-100'
+            }`}>
             <div className="flex justify-between items-center mb-1">
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
                 Inmobiliaria Colega / Contacto
@@ -351,8 +367,13 @@ export function ComercialSection({
               control={control}
               render={({ field }) => (
                 <select
+                  ref={field.ref}
                   value={field.value ?? ''}
-                  onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
+                  onChange={(e) => {
+                    const val = e.target.value ? Number(e.target.value) : null;
+                    field.onChange(val);
+                    if (val) clearErrors('colegaId');
+                  }}
                   className={getSelectClass(!!errors.colegaId)}
                 >
                   <option value="">Seleccionar Colega...</option>
@@ -364,6 +385,12 @@ export function ComercialSection({
                 </select>
               )}
             />
+            {/* MENSAJE DE ERROR SI INTENTA GUARDAR SIN SELECCIONAR */}
+            {errors.colegaId && (
+              <span className="text-xs font-semibold text-red-500 mt-1 block">
+                ❌ {errors.colegaId.message as string}
+              </span>
+            )}
           </div>
         )}
       </div>

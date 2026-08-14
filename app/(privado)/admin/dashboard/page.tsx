@@ -67,7 +67,6 @@ export default function DashboardPage() {
       const res = await fetch(`/api/properties?tab=${activeTab}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
-        console.log('📦 Propiedades recibidas de la API:', data); // <--- Inspecciona las fechas aquí
         setPropiedades(data);
       }
     } catch (err) {

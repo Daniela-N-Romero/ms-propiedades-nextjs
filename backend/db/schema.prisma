@@ -144,6 +144,8 @@ model Propiedad {
   isDestacada           Boolean             @default(false) @map("is_destacada") 
   notasPrivadas         String?             @map("notas_privadas") @db.Text
   caracteristicas       Json?               @map("caracteristicas_especificas")
+  permitMetaAd          Boolean             @default(true) @map("permit_meta_ad")
+  imagenMetaUrl         String?             @map("imagen_meta_url") @db.VarChar(255)
   deletedAt             DateTime?           @map("deleted_at") @db.Timestamp
   createdAt             DateTime            @default(now()) @map("created_at") @db.Timestamp
   updatedAt             DateTime            @default(now()) @map("updated_at") @db.Timestamp

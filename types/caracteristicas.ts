@@ -25,6 +25,7 @@ export const CARACTERISTICAS_CATALOGO: CaracteristicaDefinicion[] = [
   // 🏡 RESIDENCIAL
   { key: 'dormitorios', label: 'Dormitorios', icon: '🛏️', mercados: ['residencial'], tipoInput: 'number' },
   { key: 'banos', label: 'Baños', icon: '🚽', mercados: ['residencial', 'comercial', 'industrial'], tipoInput: 'number' },
+  { key: 'bano', label: 'Baños', icon: '🚽', mercados: ['residencial', 'comercial', 'industrial'], tipoInput: 'number' },
   { key: 'cocheras', label: 'Cocheras', icon: '🚗', mercados: ['residencial', 'comercial'], tipoInput: 'number' },
   { key: 'barrioCerrado', label: 'Barrio Cerrado', icon: '🛡️', mercados: ['residencial', 'terrenos'] },
   { key: 'cercado', label: 'Perímetro Cercado', icon: '🧱', mercados: ['residencial', 'terrenos', 'industrial'] },
@@ -34,10 +35,11 @@ export const CARACTERISTICAS_CATALOGO: CaracteristicaDefinicion[] = [
   { key: 'quincho', label: 'Quincho / Parrilla', icon: '🍖', mercados: ['residencial'] },
 
   // 🏪 COMERCIAL
-  { key: 'cortinaElectrica', label: 'Cortina Eléctrica', icon: '🗝️', mercados: ['comercial'] },
-  { key: 'cortinaMetalica', label: 'Cortina Metálica', icon: '🗝️', mercados: ['comercial'] },
+  { key: 'cortinaElectrica', label: 'Cortina Eléctrica', icon: '🗝️', mercados: ['comercial', 'industrial'] },
+  { key: 'cortinaMetalica', label: 'Cortina Metálica', icon: '🗝️', mercados: ['comercial', 'industrial'] },
   { key: 'marquesina', label: 'Marquesina / Vidriera', icon: '🏬', mercados: ['comercial'] },
-
+  { key: 'trifasica', label: 'Trifásica', icon: '⚡', mercados: ['comercial'] },
+  
   // 🌐 SERVICIOS / AMBAS
   { key: 'seguridad24hs', label: 'Seguridad 24 hs', icon: '🛡️', mercados: ['industrial', 'residencial', 'comercial', 'terrenos'] },
   { key: 'cloacas', label: 'Cloacas / Tratamiento', icon: '💧', mercados: ['residencial', 'industrial'] },

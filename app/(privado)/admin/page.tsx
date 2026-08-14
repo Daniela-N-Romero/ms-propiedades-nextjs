@@ -213,6 +213,30 @@ export default function AdminHomePage() {
             </div>
           </div>
 
+          {/* TARJETA 6: PUBLICIDAD Y CATÁLOGO META (NUEVA) */}
+          <Link
+            href="/admin/meta"
+            className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between group text-center"
+          >
+            <div className="space-y-3">
+              <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto text-2xl group-hover:scale-105 transition-transform">
+                🌐
+              </div>
+              <h3 className="font-spartan font-bold text-lg text-slate-900 group-hover:text-blue-600 transition-colors">
+                Publicidad & Meta Feed
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Sincronización automática de catálogo con Facebook e Instagram Ads, enlace de Scheduled Feed y reglas de publicación.
+              </p>
+            </div>
+            <div className="mt-6">
+              <span className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-spartan font-bold text-xs uppercase tracking-wider block rounded-xl transition-colors shadow-sm"
+              >
+                Configurar Feed Meta
+              </span>
+            </div>
+          </Link>
+
 
         </div>
       </div>
