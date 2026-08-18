@@ -481,7 +481,7 @@ export default function DashboardPage() {
                     <Fragment key={groupName}>
                       {groupBy !== 'none' && (
                         <tr className="bg-slate-100/70 border-y border-slate-200">
-                          <td colSpan={10} className="p-2.5 px-4 font-spartan font-bold text-slate-700 uppercase tracking-wider text-[13px]">
+                          <td colSpan={11} className="p-2.5 px-4 font-spartan font-bold text-slate-700 uppercase tracking-wider text-[13px]">
                             {groupName} ({props.length})
                           </td>
                         </tr>
