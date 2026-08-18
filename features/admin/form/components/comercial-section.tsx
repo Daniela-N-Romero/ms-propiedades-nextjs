@@ -97,33 +97,38 @@ export function ComercialSection({
           <label className="block text-xs font-bold uppercase tracking-wider text-slate-800">
             Categoría Específica <span className="text-red-500">*</span>
           </label>
-          <select
-            disabled={!selectedMercadoId || isPending}
-            className={getSelectClass(!!errors.tipoInmuebleId)}
-            onChange={(e) => {
-              const selectedId = Number(e.target.value);
+          <Controller
+            name="tipoInmuebleId"
+            control={control}
+            render={({ field }) => (
+              <select
+                disabled={!selectedMercadoId || isPending}
+                value={field.value ?? 0} // 👈 Enlazamos el estado dinámico de React Hook Form
+                className={getSelectClass(!!errors.tipoInmuebleId)}
+                onChange={(e) => {
+                  const selectedId = Number(e.target.value);
+                  field.onChange(selectedId); // Notificamos a React Hook Form
 
-              // 1. Asignamos el valor numérico explícito en React Hook Form
-              setValue('tipoInmuebleId', selectedId, {
-                shouldValidate: true,
-                shouldDirty: true,
-              });
-
-              // 2. Si eligió un tipo válido (> 0), forzamos la limpieza del error
-              if (selectedId > 0) {
-                clearErrors('tipoInmuebleId');
-              }
-            }}
-          >
-            <option value={0}>
-              {!selectedMercadoId ? '👈 Elija primero un Mercado' : isPending ? 'Cargando...' : 'Seleccionar Subtipo...'}
-            </option>
-            {subtiposDisponibles.map((sub) => (
-              <option key={sub.id} value={sub.id}>
-                {sub.nombre}
-              </option>
-            ))}
-          </select>
+                  if (selectedId > 0) {
+                    clearErrors('tipoInmuebleId');
+                  }
+                }}
+              >
+                <option value={0}>
+                  {!selectedMercadoId
+                    ? '👈 Elija primero un Mercado'
+                    : isPending
+                      ? 'Cargando subtipos...'
+                      : 'Seleccionar Subtipo...'}
+                </option>
+                {subtiposDisponibles.map((sub) => (
+                  <option key={sub.id} value={sub.id}>
+                    {sub.nombre}
+                  </option>
+                ))}
+              </select>
+            )}
+          />
 
           {errors.tipoInmuebleId && (
             <span className="text-xs font-semibold text-red-500 mt-1 block">
@@ -271,7 +276,7 @@ export function ComercialSection({
                   const num = parseRawNumber(rawInput);
                   onChange(num);
                 }}
-                 onBlur={() => {
+                onBlur={() => {
                   // Si el usuario dejó algo como "546,", lo parseamos a número puro (546)
                   if (typeof value === 'string') {
                     onChange(parseRawNumber(value));

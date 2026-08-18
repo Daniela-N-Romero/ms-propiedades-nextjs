@@ -127,8 +127,8 @@ model Propiedad {
   titulo                String              @db.VarChar(255)
   slug                  String              @unique @db.VarChar(255)
   direccionPersonalizada String?            @map("direccion_personalizada") @db.VarChar(255)
-  superficieTotal       Decimal?            @map("superficie_total") @db.Decimal(8, 2)
-  superficieCubierta    Decimal?            @map("superficie_cubierta") @db.Decimal(8, 2)
+  superficieTotal       Decimal?            @map("superficie_total") @db.Decimal(12, 2)
+  superficieCubierta    Decimal?            @map("superficie_cubierta") @db.Decimal(12, 2)
   origen                OrigenPropiedadEnum @default(own)
   categoria             TipoOperacionEnum
   precio                Decimal             @db.Decimal(12, 2)

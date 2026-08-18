@@ -2,7 +2,7 @@
 
 import { prisma } from '@/backend/db';
 import { PropertyFormValues } from '../schemas/property-schema';
-import { generarCodigoRef, slugify } from '@/lib/utils-formatting';
+import { generarCodigoRef, parseRawNumber, slugify } from '@/lib/utils-formatting';
 import { revalidatePath } from 'next/cache';
 
 export async function savePropertyAction(
@@ -26,6 +26,49 @@ export async function savePropertyAction(
       : values.origen === 'own';
 
 
+    const precioPuro = typeof values.precio === 'string'
+      ? parseRawNumber(values.precio)
+      : Number(values.precio || 0);
+
+    const supTotalPura = typeof values.superficieTotal === 'string'
+      ? parseRawNumber(values.superficieTotal)
+      : Number(values.superficieTotal || 0);
+
+    const supCubiertaPura = typeof values.superficieCubierta === 'string'
+      ? parseRawNumber(values.superficieCubierta)
+      : Number(values.superficieCubierta || 0);
+
+
+    const parseCoordenada = (val: any): number | null => {
+      if (val === null || val === undefined || val === '' || val === 0) return null;
+
+      // 1. Convertimos a string y dejamos solo dígitos y signo menos
+      let str = String(val).replace(',', '.');
+      const isNegative = str.startsWith('-');
+      const cleanDigits = str.replace(/[^0-9]/g, '');
+
+      if (!cleanDigits) return null;
+
+      // 2. Si la cadena viene sin punto y es gigante (ej: "3488215091792249")
+      // Tomamos los primeros 2 dígitos para la parte entera y hasta 6 para los decimales
+      if (!str.includes('.')) {
+        const entera = cleanDigits.slice(0, 2);
+        const decimales = cleanDigits.slice(2, 8);
+        const num = parseFloat(`${isNegative ? '-' : ''}${entera}.${decimales}`);
+        return isNaN(num) ? null : num;
+      }
+
+      // 3. Si ya traía punto, aseguramos que la parte entera no tenga más de 3 dígitos
+      const parsed = parseFloat(str);
+      if (isNaN(parsed) || parsed === 0) return null;
+
+      // Limitamos a máximo 6 decimales para PostgreSQL Decimal(9,6)
+      return Number(parsed.toFixed(6));
+    };
+
+    const latPura = parseCoordenada(values.latitud);
+    const lngPura = parseCoordenada(values.longitud);
+
     if (propertyId) {
       // MODO EDICIÓN
       const propiedadExistente = await prisma.propiedad.findUnique({
@@ -36,6 +79,23 @@ export async function savePropertyAction(
         return { success: false, error: 'La propiedad no existe.' };
       }
 
+      console.log('📊 VALORES QUE SE VAN A GUARDAR EN PRISMA:', {
+        precio: values.precio,
+        superficieTotal: values.superficieTotal,
+        superficieCubierta: values.superficieCubierta,
+        latitud: values.latitud,
+        longitud: values.longitud,
+      });
+
+      console.log('📊 VALORES LUEGO DE CONVERSION:', {
+        precio: precioPuro,
+        superficieTotal: supTotalPura,
+        superficieCubierta: supCubiertaPura,
+        latitud: latPura,
+        longitud: lngPura
+      });
+
+
       await prisma.$transaction(async (tx) => {
         await tx.propiedad.update({
           where: { id: propertyId },
@@ -43,15 +103,15 @@ export async function savePropertyAction(
             titulo: values.titulo,
             categoria: (values.categoria as any) || 'venta',
             origen: (values.origen as any) || 'own',
-            precio: values.precio || 0,
+            precio: precioPuro,
             moneda: (values.moneda as any) || 'USD',
             financiacion: values.financiacion || null,
             descripcion: values.descripcion || '',
             direccionPersonalizada: values.direccionPersonalizada || null,
-            latitud: values.latitud || -34.78,
-            longitud: values.longitud || -58.28,
-            superficieTotal: values.superficieTotal || null,
-            superficieCubierta: values.superficieCubierta || null,
+            latitud: latPura || -34.78,
+            longitud: lngPura || -58.28,
+            superficieTotal: supTotalPura,
+            superficieCubierta: supCubiertaPura,
 
             // Relaciones obligatorias aseguradas
             tipoInmuebleId: values.tipoInmuebleId,
@@ -66,7 +126,7 @@ export async function savePropertyAction(
             isPublished: Boolean(values.isPublished),
             isUnlisted: Boolean(values.isUnlisted),
             isDestacada: Boolean(values.isDestacada),
-            permitMetaAd: permitMetaCalculado, 
+            permitMetaAd: permitMetaCalculado,
             imagenMetaUrl: values.imagenMetaUrl || null,
             notasPrivadas: values.notasPrivadas || null,
             caracteristicas: values.caracteristicas || {},
@@ -115,15 +175,15 @@ export async function savePropertyAction(
           slug: slugRef,
           categoria: (values.categoria as any) || 'venta',
           origen: (values.origen as any) || 'own',
-          precio: values.precio || 0,
+          precio: precioPuro,
           moneda: (values.moneda as any) || 'USD',
           financiacion: values.financiacion || null,
           descripcion: values.descripcion || '',
           direccionPersonalizada: values.direccionPersonalizada || null,
           latitud: values.latitud || -34.78,
           longitud: values.longitud || -58.28,
-          superficieTotal: values.superficieTotal || null,
-          superficieCubierta: values.superficieCubierta || null,
+          superficieTotal: supTotalPura,
+          superficieCubierta: supCubiertaPura,
 
           // Relaciones obligatorias aseguradas
           tipoInmuebleId: values.tipoInmuebleId,
@@ -138,22 +198,22 @@ export async function savePropertyAction(
           isPublished: Boolean(values.isPublished),
           isUnlisted: Boolean(values.isUnlisted),
           isDestacada: Boolean(values.isDestacada),
-          permitMetaAd: permitMetaCalculado, 
+          permitMetaAd: permitMetaCalculado,
           imagenMetaUrl: values.imagenMetaUrl || null,
           notasPrivadas: values.notasPrivadas || null,
           caracteristicas: values.caracteristicas || {},
 
           imagenes: values.imagenes && values.imagenes.length > 0
             ? {
-                create: values.imagenes.map((url, index) => ({
-                  url,
-                  orden: index,
-                })),
-              }
+              create: values.imagenes.map((url, index) => ({
+                url,
+                orden: index,
+              })),
+            }
             : undefined,
         },
       });
-      
+
 
       revalidatePath('/admin/dashboard');
       revalidatePath('/');
