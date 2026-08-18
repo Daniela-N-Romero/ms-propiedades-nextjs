@@ -205,12 +205,31 @@ export function ComercialSection({
               <input
                 type="text"
                 placeholder="Ej: 5.000"
-                value={value ? formatNumberWithDots(value) : ''}
+                value={value !== undefined && value !== null ? formatNumberWithDots(value) : ''}
                 onChange={(e) => {
-                  const val = e.target.value;
-                  onChange(val !== '' ? parseRawNumber(val) : undefined);
+                  const rawInput = e.target.value;
+
+                  /* Si borra todo el campo */
+                  if (rawInput === '') { onChange(0); return; }
+
+                  /* Permitimos que tipee coma o punto sin borrárlo al instante */
+                  if (rawInput.endsWith(',') || rawInput.endsWith('.')) {
+                    // Pasamos la cadena temporal para que el usuario pueda escribir los decimales
+                    onChange(rawInput as any);
+                    return;
+                  }
+
+                  /* Convertimos a número limpio de JS */
+                  const num = parseRawNumber(rawInput);
+                  onChange(num);
                 }}
-                onBlur={onBlur}
+                onBlur={() => {
+                  // Si el usuario dejó algo como "546,", lo parseamos a número puro (546)
+                  if (typeof value === 'string') {
+                    onChange(parseRawNumber(value));
+                  }
+                  onBlur(); // Mantiene el evento de validación nativo de React Hook Form
+                }}
                 className={getInputClass(!!errors.superficieTotal)}
               />
             )}
@@ -234,12 +253,31 @@ export function ComercialSection({
               <input
                 type="text"
                 placeholder="Ej: 2.800"
-                value={value ? formatNumberWithDots(value) : ''}
+                value={value !== undefined && value !== null ? formatNumberWithDots(value) : ''}
                 onChange={(e) => {
-                  const val = e.target.value;
-                  onChange(val !== '' ? parseRawNumber(val) : undefined);
+                  const rawInput = e.target.value;
+
+                  /* Si borra todo el campo */
+                  if (rawInput === '') { onChange(0); return; }
+
+                  /* Permitimos que tipee coma o punto sin borrárlo al instante */
+                  if (rawInput.endsWith(',') || rawInput.endsWith('.')) {
+                    // Pasamos la cadena temporal para que el usuario pueda escribir los decimales
+                    onChange(rawInput as any);
+                    return;
+                  }
+
+                  /* Convertimos a número limpio de JS */
+                  const num = parseRawNumber(rawInput);
+                  onChange(num);
                 }}
-                onBlur={onBlur}
+                 onBlur={() => {
+                  // Si el usuario dejó algo como "546,", lo parseamos a número puro (546)
+                  if (typeof value === 'string') {
+                    onChange(parseRawNumber(value));
+                  }
+                  onBlur(); // Mantiene el evento de validación nativo de React Hook Form
+                }}
                 className={getInputClass(!!errors.superficieCubierta)}
               />
             )}

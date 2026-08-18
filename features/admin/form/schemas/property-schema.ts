@@ -14,10 +14,12 @@ const coerceOptionalNumber = () =>
   );
 
 const coerceNumber = (msg: string) =>
-  z.preprocess(
-    (val) => (val === '' || val === null || val === undefined ? undefined : Number(val)),
-    z.number({ message: msg })
-  );
+z.preprocess((val) => {
+    if (val === '' || val === null || val === undefined) return undefined;
+    // Reemplaza comas por puntos para que Number() de JS lea decimales como 0.5
+    const clean = String(val).replace(/\./g, '').replace(',', '.');
+    return Number(clean);
+  }, z.number({ message: msg }));
 
 // ----------------------------------------------------
 // 1. SCHEMA PARA BORRADOR (Validación laxa/mínima)

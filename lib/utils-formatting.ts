@@ -1,15 +1,15 @@
-  // formatear precio
-  export const formatPrecio = (valor: any, currency:string) => {
-    return new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency: currency,
-      maximumFractionDigits: 0
-    }).format(Number(valor));
-  };
+// formatear precio
+export const formatPrecio = (valor: any, currency: string) => {
+  return new Intl.NumberFormat('es-AR', {
+    style: 'currency',
+    currency: currency,
+    maximumFractionDigits: 0
+  }).format(Number(valor));
+};
 
-  //HELPERS PARA MIGRACION DE DATOS DE LEGACY
+//HELPERS PARA MIGRACION DE DATOS DE LEGACY
 
-  // Helper para normalizar textos para Slugs SEO
+// Helper para normalizar textos para Slugs SEO
 export function slugify(text: string): string {
   return text
     .toString()
@@ -48,13 +48,30 @@ export function generarCodigoRef(prop: any): string {
 // Convierte un número a string formateado con puntos de miles
 export function formatNumberWithDots(val: number | string | undefined | null): string {
   if (val === undefined || val === null || val === '') return '';
-  const numStr = String(val).replace(/\D/g, ''); // Deja solo dígitos
-  if (!numStr) return '';
-  return new Intl.NumberFormat('es-AR').format(parseInt(numStr, 10));
+  // Convertimos a string y normalizamos puntos a comas para la vista
+  const str = String(val).replace('.', ',');
+
+  // Separamos parte entera de la parte decimal (ej: "2800,50" -> ["2800", "50"])
+  const [entero, decimal] = str.split(',');
+
+  // Limpiamos la parte entera dejando solo dígitos
+  const enteroLimpio = entero.replace(/\D/g, '');
+  if (!enteroLimpio && decimal === undefined) return '';
+
+  // Formateamos la parte entera con puntos de miles (es-AR)
+  const enteroFormateado = enteroLimpio
+    ? new Intl.NumberFormat('es-AR').format(parseInt(enteroLimpio, 10))
+    : '0';
+
+  // Si el usuario escribió una coma, se la devolvemos con sus decimales
+  return decimal !== undefined ? `${enteroFormateado},${decimal}` : enteroFormateado;
 }
 
 // Limpia los puntos de miles para guardar solo el número puro
 export function parseRawNumber(val: string): number {
-  const clean = val.replace(/\D/g, '');
-  return clean ? parseInt(clean, 10) : 0;
+  if (!val) return 0;
+  // Quitamos los puntos de miles y cambiamos la coma decimal por punto
+  const clean = val.replace(/\./g, '').replace(',', '.');
+  const parsed = parseFloat(clean);
+  return isNaN(parsed) ? 0 : parsed;
 }
