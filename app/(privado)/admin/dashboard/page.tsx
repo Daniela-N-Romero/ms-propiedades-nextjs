@@ -229,6 +229,35 @@ export default function DashboardPage() {
     });
   };
 
+  const handleDuplicate = async (id: number) => {
+    showConfirm({
+      title: 'Crear una copia',
+      message: '¿Deseas crear una copia exacta de esta propiedad?',
+      confirmText: 'Duplicar',
+      cancelText: 'Cancelar',
+      type: 'warning',
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`/api/properties/${id}/duplicate`, {
+            method: 'POST',
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            // Recargamos el listado para mostrar la nueva propiedad duplicada
+            fetchPropiedades();
+            // Opcional: redirigir directamente a editar la copia:
+            // router.push(`/admin/${data.duplicatedId}/editar`);
+          } else {
+            alert('Error al duplicar la propiedad');
+          }
+        } catch (err) {
+          console.error('Error duplicando:', err);
+        }
+      },
+    });
+  };
+
   // Lógica unificada de filtrado, faltantes y ordenamiento en el cliente
   const filteredAndSorted = useMemo(() => {
     return propiedades
@@ -473,7 +502,7 @@ export default function DashboardPage() {
                     <th className="p-3 text-center">PDF</th>
                     <th className="p-3 text-center">Estado</th>
                     <th className="p-3 text-center">Visibilidad</th>
-                    <th className="p-3 text-center min-w-25">Acciones</th>
+                    <th className="p-3 text-center min-w-45">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs">
@@ -577,10 +606,10 @@ export default function DashboardPage() {
                                   onClick={(e) => copyToClipboard(e, prop)}
                                   disabled={!prop.isPublished}
                                   title={prop.isPublished ? 'Copiar enlace de la ficha' : 'Propiedad en Borrador (Link no disponible)'}
-                                  className={`px-2 py-1.5 text-[13px] font-bold rounded-lg transition-all inline-block ${prop.isPublished
+                                  className={`px-1 py-1 text-[15px] font-bold rounded-lg transition-all inline-block ${prop.isPublished
                                     ? copiedId === prop.id
                                       ? 'bg-emerald-600 text-white' // Feedback al copiar
-                                      : 'bg-emerald-300 hover:bg-emerald-400 text-slate-800'
+                                      : 'bg-slate-200 hover:bg-blue-400'
                                     : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                                     }`}
                                 >
@@ -588,16 +617,23 @@ export default function DashboardPage() {
                                 </button>
                                 <Link
                                   href={`/admin/${prop.id}/editar`}
-                                  className="px-2 py-1.5 bg-cyan-300 hover:bg-cyan-500 text-slate-800 text-[15px] font-bold rounded-lg transition-colors inline-block"
+                                  className="px-1 border border-slate-300 bg-slate-200 hover:bg-blue-400 py-1 text-[15px] font-bold rounded-lg transition-colors inline-block"
                                 >
                                   ✏️
                                 </Link>
                                 <button
                                   onClick={() => handleSoftDelete(prop.id)}
                                   title="Mover a Papelera"
-                                  className="px-2 py-1.5 bg-amber-200 hover:bg-amber-400 text-amber-800 text-[15px] font-bold rounded-lg transition-colors inline-block"
+                                  className="px-1 border border-slate-300 bg-slate-200 hover:bg-blue-400 py-1 text-[15px] font-bold rounded-lg transition-colors inline-block"
                                 >
                                   🗑️
+                                </button>
+                                <button
+                                  onClick={() => handleDuplicate(prop.id)}
+                                  title="Duplicar Propiedad"
+                                  className="px-1 border border-slate-300 bg-slate-200 hover:bg-blue-400 py-1 text-[15px] font-bold rounded-lg transition-colors inline-block"
+                                >
+                                  📋
                                 </button>
                               </>
                             ) : (

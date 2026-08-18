@@ -79,23 +79,6 @@ export async function savePropertyAction(
         return { success: false, error: 'La propiedad no existe.' };
       }
 
-      console.log('📊 VALORES QUE SE VAN A GUARDAR EN PRISMA:', {
-        precio: values.precio,
-        superficieTotal: values.superficieTotal,
-        superficieCubierta: values.superficieCubierta,
-        latitud: values.latitud,
-        longitud: values.longitud,
-      });
-
-      console.log('📊 VALORES LUEGO DE CONVERSION:', {
-        precio: precioPuro,
-        superficieTotal: supTotalPura,
-        superficieCubierta: supCubiertaPura,
-        latitud: latPura,
-        longitud: lngPura
-      });
-
-
       await prisma.$transaction(async (tx) => {
         await tx.propiedad.update({
           where: { id: propertyId },
