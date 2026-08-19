@@ -58,7 +58,6 @@ export async function GET(request: NextRequest) {
         },
       });
     }
-
   } catch (error) {
     console.error('⚠️ Error al aplicar marca de agua, devolviendo imagen original:', error);
   }
