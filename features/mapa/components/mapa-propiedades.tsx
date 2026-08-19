@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import type { PropiedadMapaItem } from './mapa-propiedades-view';
-import type { Propietario, Colega } from '@prisma-client';
+import type { PropietarioMapaItem, ColegaMapaItem } from '@/app/(privado)/admin/mapa-privado/page.tsx';
 
 interface MapaPropiedadesProps {
   propiedades: PropiedadMapaItem[];
