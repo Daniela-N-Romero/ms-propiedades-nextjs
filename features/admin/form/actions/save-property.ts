@@ -159,8 +159,8 @@ export async function savePropertyAction(
           financiacion: values.financiacion || null,
           descripcion: values.descripcion || '',
           direccionPersonalizada: values.direccionPersonalizada || null,
-          latitud: values.latitud || -34.78,
-          longitud: values.longitud || -58.28,
+          latitud: latPura || -34.78,
+          longitud: lngPura || -58.28,
           superficieTotal: supTotalPura,
           superficieCubierta: supCubiertaPura,
 
