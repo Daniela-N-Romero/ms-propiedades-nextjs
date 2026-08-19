@@ -6,6 +6,8 @@ import { customBrandIcon, colleagueBrandIcon } from '../utils/leaflet-icon';
 import { formatPrecio } from '@/lib/utils-formatting';
 import Link from 'next/link';
 import { useEffect } from 'react';
+import type { PropietarioMapaItem, ColegaMapaItem } from '@/app/(privado)/admin/mapa-privado/page.tsx'
+
 
 export interface PropiedadMapaItem {
   id: number;
@@ -23,11 +25,8 @@ export interface PropiedadMapaItem {
   zonaNombre: string;
   // Campos opcionales para la vista del mapa privado
   origen?: string;
-  propietarioNombre?: string | null;
-  propietarioTel?: string | null;
-  colegaNombre?: string | null;
-  colegaInmobiliaria?: string | null;
-  colegaTel?: string | null;
+  propietarioId?: number | null;
+  colegaId?: number | null;
 }
 
 interface MapaPropiedadesViewProps {
@@ -36,7 +35,11 @@ interface MapaPropiedadesViewProps {
   zoomInicial?: number;
   alturaClass?: string;
   isPrivateAdmin?: boolean; // Para habilitar botón de edición y datos de contacto
+  propietarios?: PropietarioMapaItem[];
+  colegas?: ColegaMapaItem[];
+
 }
+
 
 function RecenterMap({ center, zoom }: { center?: [number, number]; zoom: number }) {
   const map = useMap();
@@ -66,6 +69,8 @@ export default function MapaPropiedadesView({
   zoomInicial = 11,
   alturaClass = 'h-full min-h-[300px]',
   isPrivateAdmin = false,
+  propietarios = [],
+  colegas = []
 }: MapaPropiedadesViewProps) {
   return (
     <div className={`w-full rounded-2xl overflow-hidden border border-slate-200 shadow-sm relative z-0 ${alturaClass}`}>
@@ -86,6 +91,8 @@ export default function MapaPropiedadesView({
         {propiedades.map((prop) => {
           const isOwn = prop.origen !== 'fromColleague';
           const iconToUse = isOwn ? customBrandIcon : colleagueBrandIcon;
+          const colega = colegas.find(c => c.id === prop.colegaId);
+          const propietario = propietarios.find(p => p.id === prop.propietarioId);
 
           return (
             <Marker
@@ -149,16 +156,16 @@ export default function MapaPropiedadesView({
                         <>
                           <span className="font-bold text-emerald-800 block">Propietario:</span>
                           <span className="text-slate-700 block truncate">
-                            {prop.propietarioNombre || 'Sin asignar'}
-                            {prop.propietarioTel ? ` (${prop.propietarioTel})` : ''}
+                            {propietario?.nombre || 'Sin asignar'}
+                            {propietario?.telefono ? ` (${propietario.telefono})` : ''}
                           </span>
                         </>
                       ) : (
                         <>
                           <span className="font-bold text-blue-800 block">Colega:</span>
                           <span className="text-slate-700 block truncate">
-                            {prop.colegaInmobiliaria || prop.colegaNombre || 'Sin asignar'}
-                            {prop.colegaTel ? ` (${prop.colegaTel})` : ''}
+                            {colega?.inmobiliaria || colega?.nombre || 'Sin asignar'}
+                            {colega?.telefono ? ` (${colega.telefono})` : ''}
                           </span>
                         </>
                       )}
@@ -168,7 +175,7 @@ export default function MapaPropiedadesView({
                   {/* LINK O BOTÓN */}
                   {isPrivateAdmin ? (
                     <Link
-                      href={`/admin/editar/${prop.id}`}
+                      href={`/admin/${prop.id}/editar/`}
                       className="block w-full text-center bg-brand-orange hover:bg-slate-200 font-bold text-[13px] uppercase py-2 rounded-lg transition-all text-white"
                     >
                       ✏️ Editar Propiedad

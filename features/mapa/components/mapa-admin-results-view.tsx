@@ -6,18 +6,24 @@ import { PanelFiltros, usePropertyFilters } from '@/features/filtrado';
 import MapaPropiedades from './mapa-propiedades';
 import type { TipoInmueble } from '@prisma-client';
 import type { PropiedadMapaItem } from './mapa-propiedades-view';
+import type { PropietarioMapaItem, ColegaMapaItem } from '@/app/(privado)/admin/mapa-privado/page.tsx'
+
 import { ZonaServer } from '@/types/server-data';
 
 interface MapaAdminResultsViewProps {
   propiedades: PropiedadMapaItem[];
   localidades: ZonaServer[];
   subtipos: TipoInmueble[];
+  propietarios?: PropietarioMapaItem[];
+  colegas?: ColegaMapaItem[];
 }
 
 export default function MapaAdminResultsView({
   propiedades,
   localidades,
   subtipos,
+  propietarios,
+  colegas
 }: MapaAdminResultsViewProps) {
   const { filters } = usePropertyFilters();
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
@@ -119,6 +125,8 @@ export default function MapaAdminResultsView({
             propiedades={propiedades}
             alturaClass="h-[calc(100vh-160px)] min-h-[500px]"
             isPrivateAdmin={true} 
+            propietarios={propietarios}
+            colegas={colegas}
           />
         </section>
       </div>

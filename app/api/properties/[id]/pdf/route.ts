@@ -21,7 +21,7 @@ export async function GET(
                 include: {
                     zona: true,
                     tipoInmueble: true,
-                    imagenes: { orderBy: { orden: 'asc' }, take: 5 },
+                    imagenes: { orderBy: { orden: 'asc' } },
                 },
             }),
             getContactLinks(),

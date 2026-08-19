@@ -4,10 +4,10 @@ import { prisma } from '@/backend/db';
 // DELETE: Mover a la papelera (Soft Delete) o con force eliminar definitivamente (Hard Delete)
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> } // 👈 1. Tipado como Promise
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: paramId } = await params; // 👈 2. 'await' obligatorio en Next 15+
+    const { id: paramId } = await params;
     const id = Number(paramId);
 
     const { searchParams } = new URL(request.url);
@@ -42,10 +42,10 @@ export async function DELETE(
 // PATCH: Restaurar desde la papelera
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> } // 👈 1. Tipado como Promise
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: paramId } = await params; // 👈 2. await obligatorio en Next 15
+    const { id: paramId } = await params;
     const id = Number(paramId);
 
     if (!id) {

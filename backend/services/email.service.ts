@@ -59,7 +59,6 @@ export async function sendLeadNotificationEmail(data: NotificationLeadParams) {
     try {
         // Si no hay API KEY configurada en dev, solo logueamos en consola
         if (!process.env.RESEND_API_KEY) {
-            console.log('📧 [DEV MOCK EMAIL SENT]:', { to: toEmail, subject: `Lead: ${data.leadNombre} ${data.leadApellido}`, propiedad: data.propiedadCodigo  });
             return { success: true, mock: true };
         }
 

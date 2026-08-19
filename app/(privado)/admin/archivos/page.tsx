@@ -37,7 +37,6 @@ export default async function ArchivosPage() {
   });
 
 const propiedades = propiedadesRaw.map((p) => sanearPropiedadCompleta(p));
-console.log('Propiedades sanadas:', propiedades); // Log the sanitized properties
 
   return <ArchivosClient propiedades={propiedades} />;
 }

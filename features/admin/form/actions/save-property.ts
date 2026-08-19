@@ -20,12 +20,8 @@ export async function savePropertyAction(
 
     const tipoCategoria = tipoInmueble?.padre?.slug || tipoInmueble?.slug || 'industrial';
 
-    // Regla inteligente de permitMetaAd si no viniera definida
-    const permitMetaCalculado = values.permitMetaAd !== undefined
-      ? Boolean(values.permitMetaAd)
-      : values.origen === 'own';
-
-
+    const permitMetaCalculado = Boolean(values.permitMetaAd);
+    
     const precioPuro = typeof values.precio === 'string'
       ? parseRawNumber(values.precio)
       : Number(values.precio || 0);

@@ -1,16 +1,17 @@
 'use client';
 
-import { useFormContext } from 'react-hook-form';
+import { Controller, useFormContext, useWatch } from 'react-hook-form';
 import type { PropertyFormValues } from '../schemas/property-schema';
 
-interface StatusSectionProps {}
+interface StatusSectionProps { }
 
-export function StatusSection({}: StatusSectionProps) {
-  const { register, watch, formState: { errors } } = useFormContext<PropertyFormValues>();
+export function StatusSection({ }: StatusSectionProps) {
+  const { register, control, formState: { errors } } = useFormContext<PropertyFormValues>();
 
-  const isPublished = watch('isPublished');
-  const isDestacada = watch('isDestacada');
-  const isUnlisted = watch('isUnlisted'); 
+  const isDestacada = useWatch({ control, name: 'isDestacada' });
+  const isUnlisted = useWatch({ control, name: 'isUnlisted' });
+  const permitMetaAd = useWatch({ control, name: 'permitMetaAd' });
+
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
@@ -20,7 +21,7 @@ export function StatusSection({}: StatusSectionProps) {
 
       {/* CONTROLES DE SWITCH / CHECKBOX */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        
+
         {/* SWITCH: PUBLICADA (Ahora es un <label>) */}
         {/* <label
           className={`cursor-pointer p-4 rounded-xl border transition-all flex items-center justify-between ${
@@ -48,11 +49,10 @@ export function StatusSection({}: StatusSectionProps) {
 
         {/* SWITCH: FICHA PRIVADA / UNLISTED (NUEVO) */}
         <label
-          className={`cursor-pointer p-4 rounded-xl border transition-all flex items-center justify-between ${
-            isUnlisted
-              ? 'bg-indigo-50 border-indigo-300 text-indigo-900'
+          className={`cursor-pointer p-4 rounded-xl border transition-all flex items-center justify-between ${isUnlisted
+              ? 'bg-indigo-50 border-indigo-600 text-indigo-900'
               : 'bg-slate-50 border-slate-200 text-slate-700'
-          }`}
+            }`}
         >
           <div>
             <h4 className="font-bold text-sm flex items-center gap-2">
@@ -71,11 +71,10 @@ export function StatusSection({}: StatusSectionProps) {
 
         {/* SWITCH: DESTACADA (Ahora es un <label>) */}
         <label
-          className={`cursor-pointer p-4 rounded-xl border transition-all flex items-center justify-between ${
-            isDestacada
+          className={`cursor-pointer p-4 rounded-xl border transition-all flex items-center justify-between ${isDestacada
               ? 'bg-amber-50 border-amber-300 text-amber-900'
               : 'bg-slate-50 border-slate-200 text-slate-700'
-          }`}
+            }`}
         >
           <div>
             <h4 className="font-bold text-sm flex items-center gap-2">
@@ -92,7 +91,28 @@ export function StatusSection({}: StatusSectionProps) {
           />
         </label>
       </div>
-      
+
+      {/* INCLUIR EN META ADS */}
+      <label
+        className={`cursor-pointer p-4 rounded-xl border transition-all flex items-center justify-between ${permitMetaAd
+            ? 'bg-blue-50 border-blue-300 text-blue-900'
+            : 'bg-slate-50 border-slate-200 text-slate-700'
+          }`}
+      >
+        <div>
+          <h4 className="font-bold text-sm flex items-center gap-2">
+            📢 Incluir en Meta Ads
+          </h4>
+          <p className="text-xs text-slate-500 mt-0.5 leading-tight">
+            Sincroniza este inmueble en los catálogos de publicidad automática de Facebook e Instagram.
+          </p>
+        </div>
+        <input
+          type="checkbox"
+          {...register('permitMetaAd')}
+          className="w-5 h-5 accent-blue-600 rounded cursor-pointer"
+        />
+      </label>
 
       {/* NOTAS PRIVADAS DE LA INMOBILIARIA */}
       <div>

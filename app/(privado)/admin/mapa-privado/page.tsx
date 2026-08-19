@@ -1,3 +1,4 @@
+import { getColegas, getPropietarios } from '@/backend/services/admin-catalogos.service';
 import { searchPropiedades, getSubtiposPorTipoMercado } from '@/backend/services/property.service';
 import { getLocalidadesActivasPorTipo } from '@/backend/services/zone.service';
 import MapaAdminResultsView from '@/features/mapa/components/mapa-admin-results-view';
@@ -20,6 +21,22 @@ interface MapaPrivadoAdminProps {
     supCubMin?: string;
     supCubMax?: string;
   }>;
+}
+export interface PropietarioMapaItem{
+  id: number;
+  nombre?: string;
+  apellido?: string;
+  telefono?: string;
+  email?: string;
+}
+
+export interface ColegaMapaItem{
+    id: number;
+    nombre?: string;
+    apellido?: string;
+    inmobiliaria?: string;
+    telefono?: string;
+    email?: string;
 }
 
 export default async function MapaPrivadoAdminPage({ searchParams }: MapaPrivadoAdminProps) {
@@ -69,12 +86,15 @@ export default async function MapaPrivadoAdminPage({ searchParams }: MapaPrivado
       imagenPortada: p.imagenes?.[0]?.url || '/images/placeholder.png',
       zonaNombre: p.direccionPersonalizada || p.zona?.nombre || 'Zona no especificada',
       origen: p.origen,
-      propietarioNombre: p.propietario?.nombre,
-      propietarioTel: p.propietario?.telefono,
-      colegaNombre: p.colega?.nombre,
+      propietarioId: p.propietarioId,
+      colegaId: p.colegaId,
       colegaInmobiliaria: p.colega?.inmobiliaria,
       colegaTel: p.colega?.telefono,
     }));
+
+    
+        const colegas = await getColegas();
+        const propietarios = await getPropietarios();
 
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-8 space-y-4">
@@ -91,6 +111,8 @@ export default async function MapaPrivadoAdminPage({ searchParams }: MapaPrivado
         propiedades={propiedadesMapa}
         localidades={todasLocalidades}
         subtipos={todosSubtipos}
+        colegas={colegas as ColegaMapaItem[]}
+        propietarios={propietarios as PropietarioMapaItem[]}
       />
     </div>
   );

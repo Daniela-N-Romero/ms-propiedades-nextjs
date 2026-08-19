@@ -55,7 +55,7 @@ export const draftPropertySchema = z.object({
   notasPrivadas: z.string().optional(),
   caracteristicas: z.record(z.string(), z.any()).optional(),
   imagenes: z.array(z.string()).default([]),
-  permitMetaAd: z.boolean().default(true),
+  permitMetaAd: z.boolean().default(false),
   imagenMetaUrl: z.string().optional().nullable(),
 });
 
@@ -106,7 +106,7 @@ export const basePublishPropertySchema = z.object({
 
   caracteristicas: z.record(z.string(), z.any()).optional(),
 
-  permitMetaAd: z.boolean().default(true),
+  permitMetaAd: z.boolean().default(false),
   imagenMetaUrl: z.string().optional().nullable(),
   imagenes: z
     .array(z.string())

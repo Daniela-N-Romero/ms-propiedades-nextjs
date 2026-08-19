@@ -8,7 +8,7 @@ export async function getContactLinks() {
     });
 
     if (!config) return defaultLinks;
-    console.log(`>>>>>>>>>>>config existe?: ${config}<<<<<<<<<<<<<<<<<`)
+
     return {
       instagram: config.instagram || defaultLinks.instagram,
       facebook: config.facebook || defaultLinks.facebook,

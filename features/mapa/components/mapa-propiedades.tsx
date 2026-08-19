@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import type { PropiedadMapaItem } from './mapa-propiedades-view';
+import type { Propietario, Colega } from '@prisma-client';
 
 interface MapaPropiedadesProps {
   propiedades: PropiedadMapaItem[];
@@ -9,6 +10,8 @@ interface MapaPropiedadesProps {
   zoomInicial?: number;
   alturaClass?: string;
   isPrivateAdmin?: boolean; // Para habilitar botón de edición y datos de contacto
+  propietarios?: PropietarioMapaItem[];
+  colegas?: ColegaMapaItem[];
 }
 
 // Carga dinámica sin SSR para evitar errores de 'window is not defined'

@@ -1,5 +1,4 @@
 'use client';
-import NextImage from 'next/image';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAlertModal } from '@/components/hooks/use-alert-modal';
@@ -26,7 +25,7 @@ export default function PublicidadAdminPage() {
   const [copied, setCopied] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid'); // 👈 Estado de vista (Grid/Lista)
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
 
   const [feedUrl, setFeedUrl] = useState('https://mspropiedadesindustrial.com.ar/api/meta/feed');
   const { alertState, showAlert, closeAlert } = useAlertModal();
@@ -97,7 +96,7 @@ export default function PublicidadAdminPage() {
       (p.codigo && p.codigo.toLowerCase().includes(q));
 
     const mercadoNombre = (p.tipoInmueble?.padre?.nombre || p.tipoInmueble?.nombre || '').toLowerCase();
-    
+
     let matchCategory = true;
     if (categoryFilter !== 'all') {
       matchCategory = mercadoNombre.includes(categoryFilter.toLowerCase());
@@ -179,7 +178,7 @@ export default function PublicidadAdminPage() {
         {/* BARRA DE HERRAMIENTAS: BÚSQUEDA Y CAMBIO DE VISTA */}
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
 
-{/* BUSCADOR Y FILTROS */}
+          {/* BUSCADOR Y FILTROS */}
           <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
             {/* BUSCADOR */}
             <div className="relative w-full sm:w-72">
@@ -224,21 +223,19 @@ export default function PublicidadAdminPage() {
             <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                  viewMode === 'grid'
-                    ? 'bg-white text-blue-600 shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800'
-                }`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${viewMode === 'grid'
+                  ? 'bg-white text-blue-600 shadow-xs'
+                  : 'text-slate-500 hover:text-slate-800'
+                  }`}
               >
                 <span>🔲</span> Grilla 1:1
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                  viewMode === 'list'
-                    ? 'bg-white text-blue-600 shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800'
-                }`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${viewMode === 'list'
+                  ? 'bg-white text-blue-600 shadow-xs'
+                  : 'text-slate-500 hover:text-slate-800'
+                  }`}
               >
                 <span>☰</span> Lista
               </button>
@@ -299,14 +296,13 @@ export default function PublicidadAdminPage() {
                       </div>
 
                       {/* BADGES INFERIORES DE ESTADO DE IMAGEN META */}
-                      <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between">
-                        {!hasCustomMetaImage && (
-                          <span className="bg-amber-700/80 backdrop-blur-xs text-amber-200 text-[9px] font-bold px-3 py-1 rounded-md flex items-center gap-1 shadow-sm">
-                            ⚠️ Falta Foto 1:1 Meta
-                          </span>
-                          )
-                         }
-                      </div>
+                      <Link
+                        href={`/admin/${prop.id}/editar#multimedia`}
+                        target="_blank"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-100 text-amber-800 hover:bg-amber-200 transition"
+                      >
+                        ⚠️ Falta Foto 1:1 ✏️
+                      </Link>
                     </div>
 
                     {/* CONTENIDO TARJETA */}
@@ -330,8 +326,8 @@ export default function PublicidadAdminPage() {
                     <button
                       onClick={() => toggleMetaAd(prop.id, prop.permitMetaAd)}
                       className={`w-full py-2 rounded-xl text-[11px] font-bold font-spartan uppercase transition-all shadow-2xs ${prop.permitMetaAd
-                          ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                          : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                        : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
                         }`}
                     >
                       {prop.permitMetaAd ? '✅ Incluida en Feed' : '🚫 Excluida de Feed'}
@@ -377,13 +373,16 @@ export default function PublicidadAdminPage() {
                         </Link>
                       </td>
                       <td className="p-3">
-                          {!prop.imagenMetaUrl &&(
-                            <span className="px-2 py-1 rounded-lg text-[10px] font-bold bg-amber-100 text-amber-800">
-                              ⚠️ Falta Foto 1:1
-                            </span>
-                            )
-                          }
-                        </td>
+                        {!prop.imagenMetaUrl && (
+                          <Link
+                            href={`/admin/${prop.id}/editar#multimedia`}
+                            target="_blank"
+                            className="px-2 py-1 rounded-lg text-[10px] font-bold bg-amber-100 text-amber-800">
+                            <span>⚠️ Falta Foto 1:1</span>
+                          </Link>
+                        )
+                        }
+                      </td>
                       <td className="p-3">
                         <span className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase ${prop.origen === 'own' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'
                           }`}>

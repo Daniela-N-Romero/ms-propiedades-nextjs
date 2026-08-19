@@ -10,10 +10,10 @@ import { MetaImageUploader } from './meta-image-uploader';
 interface MultimediaSectionProps { }
 
 export function MultimediaSection({ }: MultimediaSectionProps) {
-  const { register, control, formState: { errors } } = useFormContext<PropertyFormValues>();
+  const { register, control, watch, formState: { errors } } = useFormContext<PropertyFormValues>();
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-5">
+    <div id="multimedia" className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-5">
       <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
         <span className="flex items-center justify-center w-7 h-7 rounded-full bg-orange-100 text-brand-orange font-bold text-sm">
           3
@@ -51,10 +51,11 @@ export function MultimediaSection({ }: MultimediaSectionProps) {
           <MetaImageUploader
             value={field.value}
             onChange={field.onChange}
+            galleryImages={watch('imagenes') || []}
           />
         )}
       />
-      
+
       <div>
         <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
           Video de YouTube (URL)
