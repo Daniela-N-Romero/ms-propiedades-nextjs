@@ -1,6 +1,6 @@
 // features/propiedades/components/property-card.tsx
 import Link from 'next/link';
-import Image from 'next/image';
+import { CustomImage } from '@/components/ui/custom-image';
 import { styles } from './property-card.styles';
 import { formatPrecio } from '@/lib/utils-formatting';
 import { PropertyFullData } from '@/types/server-data';
@@ -40,7 +40,7 @@ export default function PropertyCard({ propiedad }: PropertyCardProps) {
           </span>
         )}
 
-        <Image
+        <CustomImage
           src={portadaUrl}
           alt={`Propiedad ${propiedad.titulo} en ${propiedad.zona?.nombre || ''}`}
           fill

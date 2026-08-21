@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import Image from 'next/image';
+import { CustomImage } from '@/components/ui/custom-image';
 import { styles } from './galeria.styles';
 import type { Imagen } from '@prisma-client';
 import { AccionesPropiedad } from './acciones-propiedad';
@@ -127,11 +127,11 @@ export default function GaleriaHero({
           className={styles.mainImageContainer}
           onClick={() => openLightboxAt(0)}
         >
-          <Image
+          <CustomImage
             src={getWatermarkUrl(fotosDisplay[0].url)}
             alt={titulo}
             fill
-            priority
+            preload={true}
             unoptimized
             sizes="(max-width: 768px) 100vw, 50vw"
             className="object-cover hover:scale-105 transition-transform duration-500"
@@ -146,7 +146,7 @@ export default function GaleriaHero({
               className={styles.smallImageContainer}
               onClick={() => openLightboxAt(idx + 1)}
             >
-              <Image
+              <CustomImage
                 src={getWatermarkUrl(img.url)}
                 alt={`${titulo} - foto ${idx + 2}`}
                 fill
@@ -195,7 +195,7 @@ export default function GaleriaHero({
             )}
 
             <div className="relative w-full h-full max-w-5xl max-h-[80vh]">
-              <Image
+              <CustomImage
                 src={getWatermarkUrl(fotosDisplay[currentIndex].url)}
                 alt={titulo}
                 fill
@@ -223,7 +223,7 @@ export default function GaleriaHero({
                 className={`relative w-16 h-12 rounded-lg overflow-hidden border-2 transition-all shrink-0 ${currentIndex === idx ? 'border-brand-orange scale-105' : 'border-transparent opacity-50 hover:opacity-100'
                   }`}
               >
-                <Image
+                <CustomImage
                   src={getWatermarkUrl(img.url)}
                   alt="thumb"
                   fill

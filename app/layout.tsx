@@ -1,6 +1,7 @@
 import { GoogleAnalytics } from '@next/third-parties/google';
 import { getContactLinks } from '@/backend/services/config.service';
 import { ConfigProvider } from '@/providers/config-provider';
+import NextTopLoader from 'nextjs-toploader';
 import MetaPixel from '@/components/analytics/meta-pixel';
 import type { Metadata } from "next";
 import { Montserrat, League_Spartan } from "next/font/google";
@@ -38,6 +39,16 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <ConfigProvider links={links}>
+          <NextTopLoader
+          color="#f97316" // Tu color naranja de marca (brand-orange)
+          initialPosition={0.08}
+          crawlSpeed={200}
+          height={3}
+          crawl={true}
+          showSpinner={false}
+          easing="ease"
+          speed={200}
+        />
           {children}
           <MetaPixel />
           {gaId && <GoogleAnalytics gaId={gaId} />}
