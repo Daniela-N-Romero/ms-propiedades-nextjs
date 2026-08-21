@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Jimp } from 'jimp';
+import { createCanvas, loadImage } from '@napi-rs/canvas';
 
 export const dynamic = 'force-dynamic';
 
