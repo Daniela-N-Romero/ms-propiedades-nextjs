@@ -2,7 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  serverExternalPackages: ['sharp'],
   images: {
+    unoptimized: true,
     remotePatterns: [
 {
         protocol: 'https',
