@@ -50,5 +50,8 @@
     "tailwind-scrollbar": "^4.0.2",
     "tailwindcss": "4",
     "typescript": "5"
+  },
+  "optionalDependencies": {
+    "@img/sharp-linux-x64": "^0.35.3"
   }
 }
