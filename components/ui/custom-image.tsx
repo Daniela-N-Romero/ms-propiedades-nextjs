@@ -7,7 +7,7 @@ export function CustomImage(props: ImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
 
   return (
-<div className="relative w-full h-full overflow-hidden bg-slate-100 flex items-center justify-center">
+<div className={`relative w-full h-full overflow-hidden flex items-center justify-center ${!isLoaded ? 'bg-slate-100' : ''} `}>
       {/* CAPA DE LOADING: SPINNER + ÍCONO */}
       {!isLoaded && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-200/80 animate-pulse gap-2">
