@@ -2,10 +2,6 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
-  serverExternalPackages: ['sharp'],
-  outputFileTracingIncludes: {
-    '/api/properties/imagenes/watermark': ['./node_modules/sharp/**/*'],
-  },
   images: {
     unoptimized: true,
     remotePatterns: [
