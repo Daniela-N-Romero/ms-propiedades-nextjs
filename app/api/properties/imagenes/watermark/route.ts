@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // 1. Descargamos la foto original de Supabase
+    // 1. Descargamos la imagen original (.webp, .png, .jpg) desde Supabase
     const imageRes = await fetch(imageUrl);
     if (!imageRes.ok) {
       return NextResponse.redirect(imageUrl, 302);
@@ -23,34 +23,42 @@ export async function GET(request: NextRequest) {
 
     const imageBuffer = Buffer.from(await imageRes.arrayBuffer());
 
-    // 2. Leemos la foto y el logo
-    const image = await Jimp.read(imageBuffer);
-    const logo = await Jimp.read(LOGO_BUFFER);
+    // 2. Cargamos ambas imágenes usando Canvas
+    const [image, logo] = await Promise.all([
+      loadImage(imageBuffer),
+      loadImage(LOGO_BUFFER),
+    ]);
 
-    // 3. Redimensionamos el logo al 30% del ancho
+    // 3. Creamos el Lienzo Canvas con las dimensiones exactas de la foto
+    const canvas = createCanvas(image.width, image.height);
+    const ctx = canvas.getContext('2d');
+
+    // 4. Dibujamos la foto de fondo
+    ctx.drawImage(image, 0, 0);
+
+    // 5. Calculamos proporciones para la marca de agua (30% del ancho)
     const watermarkWidth = Math.round(image.width * 0.3);
-    logo.resize({ w: watermarkWidth });
+    const watermarkHeight = Math.round((logo.height / logo.width) * watermarkWidth);
 
-    // 4. Calculamos posición centrada
-    const x = Math.round((image.width - logo.width) / 2);
-    const y = Math.round((image.height - logo.height) / 2);
+    const x = Math.round((image.width - watermarkWidth) / 2);
+    const y = Math.round((image.height - watermarkHeight) / 2);
 
-    // 5. Aplicamos la marca de agua
-    image.composite(logo, x, y);
+    // 6. Dibujamos la marca de agua centrada
+    ctx.drawImage(logo, x, y, watermarkWidth, watermarkHeight);
 
-    // 6. Generamos el buffer en PNG/JPEG estandard
-    const outputBuffer = await image.getBuffer('image/png');
+    // 7. Renderizamos la imagen final a buffer WebP/JPEG
+    const outputBuffer = await canvas.encode('webp', 85);
 
     return new NextResponse(new Uint8Array(outputBuffer), {
       headers: {
-        'Content-Type': 'image/png',
+        'Content-Type': 'image/webp',
         'Cache-Control': 'public, max-age=31536000, immutable',
       },
     });
 
   } catch (error) {
-    console.error('⚠️ Error en marca de agua Vercel (Jimp Fallback):', error);
-    // Fallback absoluto: ante cualquier inconveniente muestra la foto original de Supabase
+    console.error('⚠️ Error en marca de agua Vercel (Canvas Fallback):', error);
+    // Fallback de seguridad indestructible
     return NextResponse.redirect(imageUrl, 302);
   }
 }
