@@ -30,4 +30,10 @@ export type PropertyFullData = PropiedadServer & {
   imagenes: Imagen[];
 };
 
+//4. PROPIETARIO PARA SERVER = 
+
+export type PropietarioFullData = Propietario & {
+  propiedades: PropertyFullData[];
+}
+
 

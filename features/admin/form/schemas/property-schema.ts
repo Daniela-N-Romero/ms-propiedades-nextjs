@@ -26,7 +26,7 @@ z.preprocess((val) => {
 // ----------------------------------------------------
 export const draftPropertySchema = z.object({
   titulo: z.string().min(3, 'Escriba un título de al menos 3 caracteres'),
-
+  slug: z.string().optional(),
   // Relaciones mínimas de base de datos
   tipoInmuebleId: coerceNumber('Debe seleccionar un tipo de inmueble').refine((val) => val >= 1, 'Debe seleccionar un tipo de inmueble'),
   agenteId: coerceNumber('Debe asignar un agente responsable').refine((val) => val >= 1, 'Debe asignar un agente responsable'),
@@ -64,6 +64,7 @@ export const draftPropertySchema = z.object({
 // ----------------------------------------------------
 export const basePublishPropertySchema = z.object({
   titulo: z.string().min(5, 'El título debe tener al menos 5 caracteres'),
+  slug: z.string().optional(),
   categoria: z.enum(['venta', 'alquiler'], {
     message: 'Debe seleccionar una operación (Venta o Alquiler)',
   }),

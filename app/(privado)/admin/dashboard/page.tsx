@@ -32,7 +32,10 @@ interface PropiedadAdmin {
   videoUrl?: string | null;
   pdfUrl?: string | null;
   origen?: string | null;
+  propietarioId?: number | null;
   colegaId?: number | null;
+  propietario?: { id: number; nombre: string; apellido?: string | null } | null;
+  colega?: { id: number; inmobiliaria: string; nombre: string } | null;
   updatedAt: string;
   deletedAt?: string | null;
   zonaId?: number | null;
@@ -41,6 +44,7 @@ interface PropiedadAdmin {
   imagenes: { url: string }[];
   direccionPersonalizada?: string | null;
   categoria: string;
+
 }
 
 export default function DashboardPage() {
@@ -539,6 +543,11 @@ export default function DashboardPage() {
                               <span className="text-slate-700 font-extrabold leading-tight block">{prop.titulo}</span>
                             )}
                             <span className="text-[10px] font-mono text-slate-400 block mt-0.5">REF: {prop.codigo}</span>
+                            {!prop.propietarioId && !prop.colegaId && (
+                              <span className="inline-block mt-1 bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-md">
+                                ⚠️ {prop.origen === 'own' ? 'Propietario' :'Colega'} no asignado
+                              </span>
+                            )}
                           </td>
                           <td className="p-3 font-semibold text-slate-800">
                             {getZonaJerarquia(prop)}

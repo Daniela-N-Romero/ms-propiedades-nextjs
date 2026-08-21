@@ -7,7 +7,6 @@ import { sanearPropiedadCompleta, sanearZona } from '@/lib/sanitizers';
 import { getAgentes, getColegas, getPropietarios } from './admin-catalogos.service';
 import { getLocalidadesPorPadre, getZonasPadre } from './zone.service';
 import { getMercadosPadre, getSubtiposPorMercado } from './tipo-inmueble.service';
-import { PropertyFormValues } from '@/features/admin/form/schemas/property-schema';
 
 /**
  * 1. OBTENER PROPIEDADES DESTACADAS

@@ -70,7 +70,7 @@ export default function AdminHomePage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
           {/* TARJETA 1: PROPIEDADES (La principal) */}
           <Link
@@ -96,7 +96,9 @@ export default function AdminHomePage() {
           </Link>
 
           {/* TARJETA 2: PROPIETARIOS */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between text-center">
+          <Link
+            href="/admin/propietarios"
+           className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between text-center">
             <div className="space-y-3">
               <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto text-2xl">
                 🧑
@@ -109,15 +111,11 @@ export default function AdminHomePage() {
               </p>
             </div>
             <div className="mt-6">
-              <button
-                type="button"
-                onClick={() => showAlert('Módulo de Propietarios en desarrollo', { type: 'info' })}
-                className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-spartan font-bold text-xs uppercase tracking-wider rounded-xl transition-colors"
-              >
+              <span className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-spartan font-bold text-xs uppercase tracking-wider rounded-xl block text-center shadow-sm transition-colors"  >
                 Gestionar Propietarios
-              </button>
+              </span>
             </div>
-          </div>
+          </Link>
 
           {/* TARJETA 3: MAPA PRIVADO */}
           <Link
@@ -165,32 +163,33 @@ export default function AdminHomePage() {
             </div>
           </Link>
 
-          {/* TARJETA 5: CONFIGURACIÓN */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between text-center">
+          {/* TARJETA 5: COLEGAS */}
+          <Link
+            href="/admin/colegas"
+            className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between group text-center"
+          >
             <div className="space-y-3">
-              <div className="w-14 h-14 bg-slate-100 text-slate-600 rounded-2xl flex items-center justify-center mx-auto text-2xl">
-                ⚙️
+              <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto text-2xl group-hover:scale-105 transition-transform">
+                🧑
               </div>
-              <h3 className="font-spartan font-bold text-lg text-slate-900">
-                Configuración
+              <h3 className="font-spartan font-bold text-lg text-slate-900 group-hover:text-blue-600 transition-colors">
+                Colegas
               </h3>
               <p className="text-xs text-slate-500 leading-relaxed">
-                Ajustes del sistema, cambio de contraseña del agente y parámetros generales de la plataforma.
+                 Base de datos de colegas, contactos telefónicos de WhatsApp y notas privadas de negociación.
               </p>
             </div>
             <div className="mt-6">
-              <button
-                type="button"
-                onClick={() => showAlert('Módulo de Configuración en desarrollo', { type: 'info' })}
-                className="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-spartan font-bold text-xs uppercase tracking-wider rounded-xl transition-colors"
+              <span className="w-full py-2.5 bg-cyan-600 hover:bg-cyan-900 text-white font-spartan font-bold text-xs uppercase tracking-wider block rounded-xl transition-colors shadow-sm"
               >
-                Ajustes Generales
-              </button>
+                Configurar Feed Meta
+              </span>
             </div>
-          </div>
+          </Link>
+
 
           {/* TARJETA 5: BLOG */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between text-center mb-5">
+          <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between group text-center">
             <div className="space-y-3">
               <div className="w-14 h-14 bg-slate-100 text-slate-600 rounded-2xl flex items-center justify-center mx-auto text-2xl">
                 📘
@@ -213,7 +212,7 @@ export default function AdminHomePage() {
             </div>
           </div>
 
-          {/* TARJETA 6: PUBLICIDAD Y CATÁLOGO META (NUEVA) */}
+          {/* TARJETA 7: PUBLICIDAD Y CATÁLOGO META (NUEVA) */}
           <Link
             href="/admin/meta"
             className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between group text-center"
@@ -236,6 +235,30 @@ export default function AdminHomePage() {
               </span>
             </div>
           </Link>
+
+                    {/* TARJETA 8: CONFIGURACIÓN */}
+          <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between text-center">
+            <div className="space-y-3">
+              <div className="w-14 h-14 bg-slate-100 text-slate-600 rounded-2xl flex items-center justify-center mx-auto text-2xl">
+                ⚙️
+              </div>
+              <h3 className="font-spartan font-bold text-lg text-slate-900">
+                Configuración
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Ajustes del sistema, cambio de contraseña del agente y parámetros generales de la plataforma.
+              </p>
+            </div>
+            <div className="mt-6">
+              <button
+                type="button"
+                onClick={() => showAlert('Módulo de Configuración en desarrollo', { type: 'info' })}
+                className="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-spartan font-bold text-xs uppercase tracking-wider rounded-xl transition-colors"
+              >
+                Ajustes Generales
+              </button>
+            </div>
+          </div>
 
 
         </div>

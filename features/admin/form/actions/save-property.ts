@@ -21,7 +21,7 @@ export async function savePropertyAction(
     const tipoCategoria = tipoInmueble?.padre?.slug || tipoInmueble?.slug || 'industrial';
 
     const permitMetaCalculado = Boolean(values.permitMetaAd);
-    
+
     const precioPuro = typeof values.precio === 'string'
       ? parseRawNumber(values.precio)
       : Number(values.precio || 0);
@@ -71,8 +71,26 @@ export async function savePropertyAction(
         where: { id: propertyId },
       });
 
-      if (!propiedadExistente) {
-        return { success: false, error: 'La propiedad no existe.' };
+      let nuevoSlug = propiedadExistente.slug;
+
+      if (values.slug && values.slug.trim() !== '') {
+        const slugNormalizado = slugify(values.slug);
+
+        // Si el usuario modificó el slug, verificamos que no exista en otra propiedad
+        if (slugNormalizado !== propiedadExistente.slug) {
+          const slugExistente = await prisma.propiedad.findFirst({
+            where: {
+              slug: slugNormalizado,
+              NOT: { id: propertyId },
+            },
+          });
+
+          if (slugExistente) {
+            return { success: false, error: 'El Slug / URL especificado ya pertenece a otra propiedad.' };
+          }
+
+          nuevoSlug = slugNormalizado;
+        }
       }
 
       await prisma.$transaction(async (tx) => {
@@ -80,6 +98,7 @@ export async function savePropertyAction(
           where: { id: propertyId },
           data: {
             titulo: values.titulo,
+            slug: nuevoSlug,
             categoria: (values.categoria as any) || 'venta',
             origen: (values.origen as any) || 'own',
             precio: precioPuro,
