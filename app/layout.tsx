@@ -50,7 +50,6 @@ export default async function RootLayout({
           speed={200}
         />
           {children}
-          <MetaPixel />
           {gaId && <GoogleAnalytics gaId={gaId} />}
         </ConfigProvider>
       </body>

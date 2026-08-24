@@ -4,8 +4,9 @@ import { Header, Footer } from "@/features/navigation";
 import "../globals.css";
 import 'leaflet/dist/leaflet.css';
 import AdminBanner from '@/components/ui/admin-banner';
-import GTMClient  from './components/GTMClient';
+import { GoogleTagManager } from '@next/third-parties/google';
 
+export const dynamic = 'force-dynamic'
 
 export default async function RootLayout({
   children,
@@ -23,8 +24,8 @@ export default async function RootLayout({
 
   return (
     <>
-       <GTMClient />
-       <AdminBanner isAdmin={isAdmin} />
+      {!isAdmin && <GoogleTagManager gtmId="GTM-WMWNMF5F" />}
+      <AdminBanner isAdmin={isAdmin} />
       <Header isAdmin={isAdmin}/>
       <main className="grow bg-slate-50">{children}</main>
       <Footer />
