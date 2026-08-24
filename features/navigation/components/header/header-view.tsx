@@ -44,7 +44,7 @@ export default function HeaderView({ isMenuOpen, toggleMenu, isAdmin }: HeaderVi
                         <a href={links.linkedIn} target="_blank" className={styles.socialLink}>
                             <Image src="/images/logos/social-media/linkedin-logo.svg" width={23} height={23} alt="Enlace a LinkedIn" />
                         </a>
-                        <a href={links.whatsapp} target="_blank" className="text-sm font-semibold text-green-600 hover:text-green-700 pl-2">
+                        <a href={links.whatsapp} target="_blank" className="text-sm font-semibold text-green-600 hover:text-green-700 pl-2" data-gtm-click="whatsapp">
                             <Image src="/images/logos/social-media/whatsapp-logo.svg" width={26} height={26} alt="Enlace a WhatsApp" />
                         </a>
                     </div>

@@ -31,6 +31,7 @@ const { whatsAppUrl, handleWhatsAppClick } = useWhatsAppButtons({ codigo, slug, 
                         rel="noopener noreferrer"
                         onClick={handleWhatsAppClick}
                         className="bg-[#25D366] text-white font-spartan font-bold text-xs uppercase px-4 py-2.5 rounded-xl shadow-md flex items-center gap-1.5 active:scale-95 transition-transform"
+                        data-gtm-click="whatsapp-propiedad"
                     >
                         <span>💬 WhatsApp</span>
                     </a>

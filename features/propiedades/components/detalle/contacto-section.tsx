@@ -55,6 +55,7 @@ export default function ContactoSection({
                     rel="noopener noreferrer"
                     onClick={handleWhatsAppClick}
                     className={styles.btnWhatsApp}
+                    data-gtm-click="whatsapp-propiedad"
                 >
                     <span>💬 Consultar por WhatsApp</span>
                 </a>
