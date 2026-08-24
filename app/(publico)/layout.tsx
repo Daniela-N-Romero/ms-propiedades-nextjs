@@ -1,10 +1,10 @@
 import { cookies, headers } from 'next/headers';
 import { verifySession } from '@/lib/utils-auth';
-import { GoogleTagManager } from '@next/third-parties/google'
 import { Header, Footer } from "@/features/navigation";
 import "../globals.css";
 import 'leaflet/dist/leaflet.css';
 import AdminBanner from '@/components/ui/admin-banner';
+import GTMProvider from './components/GTMProvider';
 
 
 export default async function RootLayout({
@@ -23,7 +23,7 @@ export default async function RootLayout({
 
   return (
     <>
-      {!isAdmin && <GoogleTagManager gtmId="GTM-WMWNMF5F" />}
+      <GTMProvider isAdmin={isAdmin} />
        <AdminBanner isAdmin={isAdmin} />
       <Header isAdmin={isAdmin}/>
       <main className="grow bg-slate-50">{children}</main>
