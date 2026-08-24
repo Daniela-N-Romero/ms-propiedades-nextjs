@@ -7,13 +7,14 @@ import { useContactLinks } from '@/providers/config-provider';
 interface HeaderViewProps {
     isMenuOpen: boolean;
     toggleMenu: () => void;
+    isAdmin: boolean;
 }
 
-export default function HeaderView({ isMenuOpen, toggleMenu }: HeaderViewProps) {
+export default function HeaderView({ isMenuOpen, toggleMenu, isAdmin }: HeaderViewProps) {
     const links = useContactLinks();
 
     return (
-        <header className={styles.header}>
+        <header className={`${styles.header} ${isAdmin? 'top-10' : 'top-0'}`}>
             <div className={styles.container}>
                 {/* LOGO */}
                 <Link href="/" className={styles.logo}>

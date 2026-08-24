@@ -7,6 +7,9 @@ import ContactoSection from '@/features/propiedades/components/detalle/contacto-
 import MapaDetallePropiedad from '@/features/mapa/components/mapa-detalle-propiedad';
 import { VideoSeccion } from '@/features/propiedades/components/detalle/video-section';
 import { PropiedadesSimilares } from '@/features/propiedades/components/detalle/propiedades-similares';
+import { cookies } from 'next/headers';
+import { verifySession } from '@/lib/utils-auth';
+import { RegistrarPropiedadId } from './hooks/registrar-id';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -32,7 +35,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
 
   const propiedad = propiedadRaw as unknown as PropertyFullData;
 
-// Obtenemos hasta 3 propiedades similares
+  // Obtenemos hasta 3 propiedades similares
   const similares = await getPropiedadesSimilares(
     propiedad.id,
     propiedad.tipoInmuebleId,
@@ -40,8 +43,16 @@ export default async function PropertyDetailPage({ params }: PageProps) {
     3
   );
 
+  const cookieStore = await cookies()
+  const token = cookieStore.get('admin_token')?.value
+
+  // 2. Verificamos si hay una sesión válida
+  const session = token ? await verifySession(token) : null
+  const isAdmin = !!session // Será true si el token es válido
+
   return (
     <main className="min-h-screen bg-white pb-24 md:pb-12">
+      <RegistrarPropiedadId id={propiedad.id} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
 
         {/* BLOQUE HERO & GALERÍA */}
@@ -115,7 +126,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
         </div>
         {/* SECCIÓN DE PROPIEDADES SIMILARES */}
         <PropiedadesSimilares propiedades={similares} />
-        
+
       </div>
     </main>
   );

@@ -1,5 +1,5 @@
 export const styles = {
-  header: "sticky top-0 z-50 w-full bg-white border-b border-slate-100 shadow-md z-100",
+  header: "sticky z-50 w-full bg-white border-b border-slate-100 shadow-md z-100",
   container: "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between",
   logo: "text-2xl font-bold text-slate-900 tracking-tight cursor-pointer",
   navDesktop: "hidden md:flex items-center gap-8",

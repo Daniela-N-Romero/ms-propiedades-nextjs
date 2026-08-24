@@ -1,8 +1,10 @@
-import { getContactLinks } from '@/backend/services/config.service';
+import { cookies, headers } from 'next/headers';
+import { verifySession } from '@/lib/utils-auth';
+import { GoogleTagManager } from '@next/third-parties/google'
 import { Header, Footer } from "@/features/navigation";
-
 import "../globals.css";
 import 'leaflet/dist/leaflet.css';
+import AdminBanner from '@/components/ui/admin-banner';
 
 
 export default async function RootLayout({
@@ -11,13 +13,21 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
 
-  const links = await getContactLinks();
+  const cookieStore = await cookies()
+  const token = cookieStore.get('admin_token')?.value
+
+  // 2. Verificamos si hay una sesión válida
+  const session = token ? await verifySession(token) : null
+  const isAdmin = !!session // Será true si el token es válido
+
 
   return (
-        <>
-            <Header />
-            <main className="grow bg-slate-50">{children}</main>
-            <Footer />
-        </>
+    <>
+      {!isAdmin && <GoogleTagManager gtmId="GTM-WMWNMF5F" />}
+       <AdminBanner isAdmin={isAdmin} />
+      <Header isAdmin={isAdmin}/>
+      <main className="grow bg-slate-50">{children}</main>
+      <Footer />
+    </>
   );
 }
