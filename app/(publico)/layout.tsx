@@ -4,7 +4,7 @@ import { Header, Footer } from "@/features/navigation";
 import "../globals.css";
 import 'leaflet/dist/leaflet.css';
 import AdminBanner from '@/components/ui/admin-banner';
-import GTMProvider from './components/GTMProvider';
+import GTMClient  from './components/GTMClient';
 
 
 export default async function RootLayout({
@@ -23,7 +23,7 @@ export default async function RootLayout({
 
   return (
     <>
-      <GTMProvider isAdmin={isAdmin} />
+       <GTMClient />
        <AdminBanner isAdmin={isAdmin} />
       <Header isAdmin={isAdmin}/>
       <main className="grow bg-slate-50">{children}</main>
