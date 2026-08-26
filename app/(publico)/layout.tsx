@@ -1,4 +1,5 @@
-import { cookies, headers } from 'next/headers';
+// import { GoogleAnalytics } from '@next/third-parties/google';
+import { cookies } from 'next/headers';
 import { verifySession } from '@/lib/utils-auth';
 import { Header, Footer } from "@/features/navigation";
 import "../globals.css";
@@ -21,10 +22,12 @@ export default async function RootLayout({
   const session = token ? await verifySession(token) : null
   const isAdmin = !!session // Será true si el token es válido
 
+  // const gaId = process.env.NEXT_PUBLIC_GA_ID;
 
   return (
     <>
       {!isAdmin && <GoogleTagManager gtmId="GTM-WMWNMF5F" />}
+      {/* {gaId && <GoogleAnalytics gaId={gaId} />} */}
       <AdminBanner isAdmin={isAdmin} />
       <Header isAdmin={isAdmin}/>
       <main className="grow bg-slate-50">{children}</main>

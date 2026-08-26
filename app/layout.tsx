@@ -1,8 +1,6 @@
-import { GoogleAnalytics } from '@next/third-parties/google';
 import { getContactLinks } from '@/backend/services/config.service';
 import { ConfigProvider } from '@/providers/config-provider';
 import NextTopLoader from 'nextjs-toploader';
-import MetaPixel from '@/components/analytics/meta-pixel';
 import type { Metadata } from "next";
 import { Montserrat, League_Spartan } from "next/font/google";
 import "./globals.css";
@@ -29,7 +27,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const gaId = process.env.NEXT_PUBLIC_GA_ID;
+
   const links = await getContactLinks();
 
   return (
@@ -50,7 +48,6 @@ export default async function RootLayout({
           speed={200}
         />
           {children}
-          {gaId && <GoogleAnalytics gaId={gaId} />}
         </ConfigProvider>
       </body>
     </html>
