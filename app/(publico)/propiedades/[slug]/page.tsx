@@ -27,13 +27,18 @@ export async function generateMetadata({ params }: PageProps) {
 
 // 2. VISTA (Solo renderizado)
 export default async function PropertyDetailPage({ params }: PageProps) {
-  const { slug } = await params;
+  const resolvedParams = await params;
+  
+  // 2. 🔒 Forzamos la decodificación limpia del slug para limpiar %C3%B1, espacios o acentos
+  const slug = decodeURIComponent(resolvedParams.slug);
+
+  // 3. Llamamos a tu servicio original de Prisma con el string purificado
   const propiedadRaw = await getPropiedadBySlug(slug);
 
   if (!propiedadRaw) {
+    // Si sigue dando 404, revisa en tu BD si 'isPublished' está en true para ese registro
     notFound();
   }
-
   const propiedad = propiedadRaw as unknown as PropertyFullData;
 
   // Obtenemos hasta 3 propiedades similares

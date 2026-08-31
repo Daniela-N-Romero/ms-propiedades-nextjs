@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { getContactLinks } from '@/backend/services/config.service';
 import { styles } from './footer.styles';
-import { trackWhatsAppClickGeneral } from '@/lib/analytics';
+import FooterWhatsAppLink from './footer-whatsapp-link';
 
 export default async function footer() {
     const links = await getContactLinks();
@@ -28,7 +28,7 @@ export default async function footer() {
                 <div>
                     <span className={styles.colTitle}>Contacto</span>
                     <ul className={styles.list}>
-                        <li><a href={links.whatsapp} target="_blank" className="text-green-500 font-medium hover:underline" onClick={() => trackWhatsAppClickGeneral('Footer')} >WhatsApp</a></li>
+                        <li><FooterWhatsAppLink  href={links.whatsapp} className="text-green-500 font-medium hover:underline">WhatsApp</FooterWhatsAppLink></li>
                         <li><a href={`tel:+${links.telefono}`} className={styles.link}>Llamar</a></li>
                     </ul>
                 </div>
