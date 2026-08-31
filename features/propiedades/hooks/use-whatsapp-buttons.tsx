@@ -5,6 +5,7 @@ import { useContactLinks } from '@/providers/config-provider';
 import { ContactLinks } from '@/config/contact-links';
 import { useState } from 'react';
 import { formatPrecio } from '@/lib/utils-formatting';
+import { trackWhatsAppClick } from '@/lib/analytics';
 
 interface useWhatsAppButtonsProps {
     propiedadId?: number;
@@ -41,24 +42,14 @@ ${baseUrl}/propiedades/${slug}`;
         whatsAppUrl = `${links.whatsapp}?text=${whatsappText}`;
     }
 
-    const handleWhatsAppClick = (e: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => {
-        e.preventDefault();
-        // Evento Analytics (Meta Pixel / GA)
-        // Enviamos los datos directamente a Google Tag Manager
-       if (typeof window !== 'undefined' && (window as any).dataLayer) {
-            (window as any).dataLayer.push({
-                event: 'contact', // Capturado automáticamente por tu GTM actual
-                custom_data: {
-                    currency: moneda === 'USD' ? 'USD' : 'ARS',
-                    value: precio,
-                    content_ids: [codigo],
-                    content_category: 'Propiedad',
-                    content_name: titulo
-                }
-            });
-        }
-        window.open(whatsAppUrl, '_blank', 'noopener,noreferrer');
-    };
+const handleWhatsAppClick = (e: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => {
+    e.preventDefault();
+
+    // Llamada unificada pasando el objeto estructurado
+    trackWhatsAppClick({ codigo, titulo, precio, moneda, slug }); 
+
+    window.open(whatsAppUrl, '_blank', 'noopener,noreferrer');
+};
 
 
     return {

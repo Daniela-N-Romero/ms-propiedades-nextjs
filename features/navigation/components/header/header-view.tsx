@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image'
 import { styles } from './header.styles';
 import { useContactLinks } from '@/providers/config-provider';
+import { trackWhatsAppClickGeneral } from '@/lib/analytics';
 
 interface HeaderViewProps {
     isMenuOpen: boolean;
@@ -44,7 +45,7 @@ export default function HeaderView({ isMenuOpen, toggleMenu, isAdmin }: HeaderVi
                         <a href={links.linkedIn} target="_blank" className={styles.socialLink}>
                             <Image src="/images/logos/social-media/linkedin-logo.svg" width={23} height={23} alt="Enlace a LinkedIn" />
                         </a>
-                        <a href={links.whatsapp} target="_blank" className="text-sm font-semibold text-green-600 hover:text-green-700 pl-2" data-gtm-click="whatsapp">
+                        <a href={links.whatsapp} target="_blank" className="text-sm font-semibold text-green-600 hover:text-green-700 pl-2" data-gtm-click="whatsapp" onClick={() => trackWhatsAppClickGeneral('Header')}>
                             <Image src="/images/logos/social-media/whatsapp-logo.svg" width={26} height={26} alt="Enlace a WhatsApp" />
                         </a>
                     </div>
@@ -75,7 +76,7 @@ export default function HeaderView({ isMenuOpen, toggleMenu, isAdmin }: HeaderVi
                         <a href={links.linkedIn} target="_blank" className={styles.mobileLink}>
                             <Image src="/images/logos/social-media/linkedin-logo.svg" width={23} height={23} alt="Enlace a LinkedIn" />
                         </a>
-                        <a href={links.whatsapp} target="_blank" className="text-green-600 font-bold">
+                        <a href={links.whatsapp} target="_blank" className="text-green-600 font-bold" onClick={() => trackWhatsAppClickGeneral('Header')}>
                             <Image src="/images/logos/social-media/whatsapp-logo.svg" width={26} height={26} alt="Enlace a WhatsApp" />
                         </a>
                     </div>

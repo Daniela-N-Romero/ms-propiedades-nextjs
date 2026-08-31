@@ -1,6 +1,7 @@
 'use client';
 
 import { useAlertModal } from '@/components/hooks/use-alert-modal';
+import { trackFormLeadGeneral } from '@/lib/analytics';
 import { useState, useId } from 'react';
 
 interface ContactoFormProps {
@@ -41,9 +42,7 @@ export function useContactoForm({ motivoInicial = 'Quiero vender / alquilar mi p
 
       if (res.ok) {
         setSubmitted(true);
-        if (typeof window !== 'undefined' && (window as any).fbq) {
-          (window as any).fbq('track', 'Lead', { motivo });
-        }
+        trackFormLeadGeneral();
       } else {
         showAlert('Ocurrió un error al enviar el formulario.', {type: 'error'});
       }

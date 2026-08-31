@@ -1,6 +1,7 @@
 'use client';
 
 import { useAlertModal } from '@/components/hooks/use-alert-modal';
+import { trackFormLead } from '@/lib/analytics';
 import { useState } from 'react';
 
 interface UseContactoCardProps {
@@ -46,15 +47,11 @@ export function useContactoCard({
 
             if (res.ok) {
                 setSubmitted(true);
-                if (typeof window !== 'undefined' && (window as any).fbq) {
-                    (window as any).fbq('track', 'Lead', { property_code: codigo });
-                }
-            } else {
-                showAlert('Ocurrió un error al enviar la consulta. Intente nuevamente.', {type: 'error'});
-            }
+                trackFormLead(codigo, titulo);
+        }
         } catch (err) {
             console.error(err);
-            showAlert('Error de conexión.', {type: 'error'});
+            showAlert('Ocurrió un error al enviar la consulta. Intente nuevamente.', {type: 'error'});
         } finally {
             setIsSubmitting(false);
         }

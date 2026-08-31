@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ZonaServer } from '@/types/server-data';
+import { trackHomeSearch } from '@/lib/analytics';
 
 export function useHomeSearch(zonasDB: ZonaServer[]) {
   const router = useRouter();
@@ -27,18 +28,18 @@ export function useHomeSearch(zonasDB: ZonaServer[]) {
   }, [zonaSelected, zonasDB]);
 
   //Manejo de submit
-    const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams();
 
-    // 🔒 Forzamos siempre minúsculas para coincidir con TipoOperacionEnum
+    // Forzamos siempre minúsculas para coincidir con TipoOperacionEnum
     if (categoriaSelected) {
       params.set('categoria', categoriaSelected.toLowerCase());
     }
 
     if (subtipoSelected) {
       params.set('subtipo', subtipoSelected);
-    } 
+    }
 
     if (localidadSelected) {
       params.set('localidad', localidadSelected);
@@ -46,8 +47,14 @@ export function useHomeSearch(zonasDB: ZonaServer[]) {
       // Si eligió una Zona Padre pero no especificó localidad, mandamos las hijas
       localidadesFiltradas.forEach(loc => params.append('localidad', String(loc.id)));
     }
-    
 
+    //  tracking de búsquedas
+    trackHomeSearch({
+      categoria: categoriaSelected,
+      subtipo: subtipoSelected,
+      zonaLabel: zonaSelected,
+      localidadLabel: localidadSelected
+    });
     router.push(`/propiedades?mercado=industrial&${params.toString()}`);
   };
 
