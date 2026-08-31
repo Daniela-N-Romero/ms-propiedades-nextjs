@@ -10,6 +10,7 @@ import { PropiedadesSimilares } from '@/features/propiedades/components/detalle/
 import { cookies } from 'next/headers';
 import { verifySession } from '@/lib/utils-auth';
 import { RegistrarPropiedadId } from './hooks/registrar-id';
+import { RegistrarGTMEvent } from './hooks/registrar-GTM-event';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -53,6 +54,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
   return (
     <main className="min-h-screen bg-white pb-24 md:pb-12">
       <RegistrarPropiedadId id={propiedad.id} />
+      <RegistrarGTMEvent propiedad={propiedad} /> 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
 
         {/* BLOQUE HERO & GALERÍA */}

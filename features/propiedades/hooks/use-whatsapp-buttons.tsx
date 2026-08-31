@@ -41,16 +41,28 @@ ${baseUrl}/propiedades/${slug}`;
         whatsAppUrl = `${links.whatsapp}?text=${whatsappText}`;
     }
 
-    const handleWhatsAppClick = () => {
+    const handleWhatsAppClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        e.preventDefault();
         // Evento Analytics (Meta Pixel / GA)
-        if (typeof window !== 'undefined' && (window as any).fbq) {
-            (window as any).fbq('track', 'Contact', { property_code: codigo, channel: 'whatsapp' });
+        // Enviamos los datos directamente a Google Tag Manager
+       if (typeof window !== 'undefined' && (window as any).dataLayer) {
+            (window as any).dataLayer.push({
+                event: 'contact', // Capturado automáticamente por tu GTM actual
+                custom_data: {
+                    currency: moneda === 'USD' ? 'USD' : 'ARS',
+                    value: precio,
+                    content_ids: [codigo],
+                    content_category: 'Propiedad',
+                    content_name: titulo
+                }
+            });
         }
+        window.open(whatsAppUrl, '_blank', 'noopener,noreferrer');
     };
 
 
     return {
-    whatsAppUrl,
-    handleWhatsAppClick
-  };
+        whatsAppUrl,
+        handleWhatsAppClick
+    };
 }

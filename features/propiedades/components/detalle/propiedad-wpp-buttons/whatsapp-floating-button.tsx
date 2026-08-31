@@ -25,16 +25,12 @@ const { whatsAppUrl, handleWhatsAppClick } = useWhatsAppButtons({ codigo, slug, 
                         <span className={styles.mobilePrice}>{formatPrecio(precio, moneda)}</span>
                     </div>
     
-                    <a
-                        href={whatsAppUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={handleWhatsAppClick}
+                    <button
+                        onClick={(e) => handleWhatsAppClick(e)} 
                         className="bg-[#25D366] text-white font-spartan font-bold text-xs uppercase px-4 py-2.5 rounded-xl shadow-md flex items-center gap-1.5 active:scale-95 transition-transform"
-                        data-gtm-click="whatsapp-propiedad"
                     >
                         <span>💬 WhatsApp</span>
-                    </a>
+                    </button>
                 </div>
   )
 }

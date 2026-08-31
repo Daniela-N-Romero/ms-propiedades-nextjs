@@ -49,16 +49,12 @@ export default function ContactoSection({
                 </div>
 
                 {/* BOTÓN WHATSAPP DIRECTO */}
-                <a
-                    href={whatsAppUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={handleWhatsAppClick}
+                <button
+                    onClick={(e) => handleWhatsAppClick(e)}
                     className={styles.btnWhatsApp}
-                    data-gtm-click="whatsapp-propiedad"
                 >
                     <span>💬 Consultar por WhatsApp</span>
-                </a>
+                </button>
 
                 {/* DESCARGA DE FICHA PDF (Si existe en la DB) */}
                 {pdfUrl && (
