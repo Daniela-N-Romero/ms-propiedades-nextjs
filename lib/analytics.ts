@@ -10,6 +10,7 @@ interface PropertyTrackData {
     slug: string;
 }
 
+
 /**
  * Registra cuando un usuario entra a ver una ficha técnica específica
  */
