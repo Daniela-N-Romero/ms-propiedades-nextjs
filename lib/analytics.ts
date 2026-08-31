@@ -1,5 +1,5 @@
 // @/lib/analytics.ts
-import { PropertyFullData } from '@/types/server-data';
+import type { PropertyFullData } from '@/types/server-data';
 
 // Tipado seguro para evitar escribir mal los nombres de las propiedades
 interface PropertyTrackData {
@@ -88,10 +88,7 @@ export const trackFormLeadGeneral = () => {
             event: 'generate_lead',
             custom_data: {
                 content_category: 'Formulario de Contacto General',
-                custom_data: {
-                    content_category: 'Formulario de Contacto General',
-                    content_name: 'Formulario Home / Contacto General'
-                }
+                content_name: 'Formulario Home / Contacto General'
             }
         });
     }
