@@ -41,7 +41,7 @@ ${baseUrl}/propiedades/${slug}`;
         whatsAppUrl = `${links.whatsapp}?text=${whatsappText}`;
     }
 
-    const handleWhatsAppClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    const handleWhatsAppClick = (e: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => {
         e.preventDefault();
         // Evento Analytics (Meta Pixel / GA)
         // Enviamos los datos directamente a Google Tag Manager
