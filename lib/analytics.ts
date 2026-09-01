@@ -116,24 +116,6 @@ export const trackWhatsAppClickGeneral = (origen: 'Header' | 'Footer' = 'Footer'
  * Registra cuando un usuario completa con éxito el formulario de contacto integrado
  */
 export const trackFormLead = (codigo: string, titulo: string) => {
-    if (typeof window !== 'undefined' && (window as any).dataLayer) {
-        (window as any).dataLayer.push({
-            event: 'generate_lead',
-            custom_data: {
-                content_category: 'Formulario Ficha Propiedad',
-                content_ids: [codigo],
-                content_name: titulo
-            }
-        });
-    }
-};
-
-
-/**
- * Registra cuando un usuario completa con éxito el formulario de contacto integrado al HomePage
- */
-export const trackFormLeadGeneral = () => {
-export const trackFormLead = (codigo: string, titulo: string) => {
     if (typeof window !== 'undefined') {
         if ((window as any).dataLayer) {
             (window as any).dataLayer.push({
@@ -158,6 +140,24 @@ export const trackFormLead = (codigo: string, titulo: string) => {
             });
         }
     }
+};
+
+/**
+ * Registra cuando un usuario completa con éxito el formulario de contacto integrado al HomePage
+ */
+export const trackFormLeadGeneral = () => {
+    if (typeof window !== 'undefined' && (window as any).dataLayer) {
+        (window as any).dataLayer.push({
+            event: 'generate_lead',
+            custom_data: {
+                currency: 'USD',
+                value: 0,
+                content_category: 'Formulario de Contacto General',
+                content_name: 'Formulario Home / Contacto General'
+            }
+        });
+    }
+
 };
 
 /**
