@@ -44,24 +44,41 @@ export const trackViewProperty = (propiedad: PropertyTrackData | PropertyFullDat
                 currency: moneda,
                 content_name: propiedad.titulo
             });
-        } 
+        }
     }
 };
 /**
  * Registra el clic saliente hacia el canal de WhatsApp de un agente
  */
 export const trackWhatsAppClick = (propiedad: PropertyTrackData) => {
-    if (typeof window !== 'undefined' && (window as any).dataLayer) {
-        (window as any).dataLayer.push({
-            event: 'contact',
-            custom_data: {
-                currency: propiedad.moneda === 'USD' ? 'USD' : 'ARS',
-                value: propiedad.precio,
+    if (typeof window !== 'undefined') {
+        const moneda = propiedad.moneda === 'USD' ? 'USD' : 'ARS';
+        const precio = Number(propiedad.precio) || 0;
+
+        // GTM / Google Analytics
+        if ((window as any).dataLayer) {
+            (window as any).dataLayer.push({
+                event: 'contact',
+                custom_data: {
+                    currency: moneda,
+                    value: precio,
+                    content_ids: [propiedad.codigo],
+                    content_category: 'Propiedad Industrial',
+                    content_name: propiedad.titulo
+                }
+            });
+        }
+
+        // Envío directo a Meta Pixel
+        if (typeof (window as any).fbq === 'function') {
+            (window as any).fbq('track', 'Contact', {
+                currency: moneda,
+                value: precio,
                 content_ids: [propiedad.codigo],
                 content_category: 'Propiedad Industrial',
                 content_name: propiedad.titulo
-            }
-        });
+            });
+        }
     }
 };
 
@@ -69,14 +86,29 @@ export const trackWhatsAppClick = (propiedad: PropertyTrackData) => {
  * Registra el clic saliente hacia el canal de WhatsApp genral desde Header / Footer
  */
 export const trackWhatsAppClickGeneral = (origen: 'Header' | 'Footer' = 'Footer') => {
-    if (typeof window !== 'undefined' && (window as any).dataLayer) {
-        (window as any).dataLayer.push({
-            event: 'contact', // Mantiene el nombre para que GTM lo atrape
-            custom_data: {
+    if (typeof window !== 'undefined') {
+        // 1. Envío al dataLayer (GTM)
+        if ((window as any).dataLayer) {
+            (window as any).dataLayer.push({
+                event: 'contact',
+                custom_data: {
+                    currency: 'USD', // Agregamos la divisa requerida por Meta
+                    value: 0,        // Asignamos un valor numérico (0 si no aplica)
+                    content_category: 'WhatsApp General',
+                    content_name: `Clic WhatsApp desde ${origen}`
+                }
+            });
+        }
+
+        // 2. Envío directo a Meta Pixel (opcional, si no lo manejas vía GTM)
+        if (typeof (window as any).fbq === 'function') {
+            (window as any).fbq('track', 'Contact', {
+                currency: 'USD',
+                value: 0,
                 content_category: 'WhatsApp General',
                 content_name: `Clic WhatsApp desde ${origen}`
-            }
-        });
+            });
+        }
     }
 };
 
@@ -101,16 +133,31 @@ export const trackFormLead = (codigo: string, titulo: string) => {
  * Registra cuando un usuario completa con éxito el formulario de contacto integrado al HomePage
  */
 export const trackFormLeadGeneral = () => {
-    if (typeof window !== 'undefined' && (window as any).dataLayer) {
-        (window as any).dataLayer.push({
-            event: 'generate_lead',
-            custom_data: {
-                content_category: 'Formulario de Contacto General',
-                content_name: 'Formulario Home / Contacto General'
-            }
-        });
-    }
+export const trackFormLead = (codigo: string, titulo: string) => {
+    if (typeof window !== 'undefined') {
+        if ((window as any).dataLayer) {
+            (window as any).dataLayer.push({
+                event: 'generate_lead',
+                custom_data: {
+                    currency: 'USD',
+                    value: 0,
+                    content_category: 'Formulario Ficha Propiedad',
+                    content_ids: [codigo],
+                    content_name: titulo
+                }
+            });
+        }
 
+        if (typeof (window as any).fbq === 'function') {
+            (window as any).fbq('track', 'Lead', {
+                currency: 'USD',
+                value: 0,
+                content_category: 'Formulario Ficha Propiedad',
+                content_ids: [codigo],
+                content_name: titulo
+            });
+        }
+    }
 };
 
 /**
