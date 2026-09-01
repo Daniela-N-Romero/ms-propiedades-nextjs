@@ -6,7 +6,7 @@ import "../globals.css";
 import 'leaflet/dist/leaflet.css';
 import AdminBanner from '@/components/ui/admin-banner';
 import { GoogleTagManager } from '@next/third-parties/google';
-import MetaPixel from '@/components/meta-pixel';
+import MetaPixel from '@/components/analytics/meta-pixel';
 
 export const dynamic = 'force-dynamic'
 
