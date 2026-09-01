@@ -42,7 +42,7 @@ export const trackViewProperty = (propiedad: PropertyTrackData | PropertyFullDat
                 value: precio,
                 currency: moneda,
                 content_name: propiedad.titulo
-            });
+            }, { test_event_code: 'TEST59236' });
         }
     }
 };
