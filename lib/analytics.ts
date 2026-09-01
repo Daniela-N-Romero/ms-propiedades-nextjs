@@ -15,20 +15,37 @@ interface PropertyTrackData {
  * Registra cuando un usuario entra a ver una ficha técnica específica
  */
 export const trackViewProperty = (propiedad: PropertyTrackData | PropertyFullData) => {
-    if (typeof window !== 'undefined' && (window as any).dataLayer) {
-        (window as any).dataLayer.push({
-            event: 'view_item',
-            custom_data: {
-                currency: propiedad.moneda === 'USD' ? 'USD' : 'ARS',
-                value: propiedad.precio,
-                content_ids: [propiedad.codigo],
-                content_type: 'product',
+if (typeof window !== 'undefined') {
+        const codigo = propiedad.codigo?.trim();
+        const moneda = propiedad.moneda === 'USD' ? 'USD' : 'ARS';
+        const precio = Number(propiedad.precio) || 0;
+
+        // 1. Capa para GTM / Google Analytics
+        if ((window as any).dataLayer) {
+            (window as any).dataLayer.push({
+                event: 'view_item',
+                custom_data: {
+                    currency: moneda,
+                    value: precio,
+                    content_ids: [codigo],
+                    content_type: 'product',
+                    content_name: propiedad.titulo
+                }
+            });
+        }
+
+        // 2. Disparo directo al Píxel de Meta (Facebook)
+        if ((window as any).fbq) {
+            (window as any).fbq('track', 'ViewContent', {
+                content_type: 'home_listing', // 'home_listing' o 'product'
+                content_ids: [codigo],
+                value: precio,
+                currency: moneda,
                 content_name: propiedad.titulo
-            }
-        });
+            });
+        }
     }
 };
-
 /**
  * Registra el clic saliente hacia el canal de WhatsApp de un agente
  */
