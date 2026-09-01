@@ -6,6 +6,7 @@ import "../globals.css";
 import 'leaflet/dist/leaflet.css';
 import AdminBanner from '@/components/ui/admin-banner';
 import { GoogleTagManager } from '@next/third-parties/google';
+import MetaPixel from '@/components/meta-pixel';
 
 export const dynamic = 'force-dynamic'
 
@@ -27,6 +28,7 @@ export default async function RootLayout({
   return (
     <>
       {!isAdmin && <GoogleTagManager gtmId="GTM-WMWNMF5F" />}
+      {!isAdmin && <MetaPixel />}
       {/* {gaId && <GoogleAnalytics gaId={gaId} />} */}
       <AdminBanner isAdmin={isAdmin} />
       <Header isAdmin={isAdmin}/>

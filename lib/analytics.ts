@@ -15,7 +15,7 @@ interface PropertyTrackData {
  * Registra cuando un usuario entra a ver una ficha técnica específica
  */
 export const trackViewProperty = (propiedad: PropertyTrackData | PropertyFullData) => {
-if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined') {
         const codigo = propiedad.codigo?.trim();
         const moneda = propiedad.moneda === 'USD' ? 'USD' : 'ARS';
         const precio = Number(propiedad.precio) || 0;
@@ -34,11 +34,11 @@ if (typeof window !== 'undefined') {
             });
         }
 
-        // 2. Disparo directo al Píxel de Meta (Facebook)
-        if ((window as any).fbq) {
+        // 2. Envío directo al Píxel de Meta (Evento estándar de Meta Ads)
+        if (typeof (window as any).fbq === 'function') {
             (window as any).fbq('track', 'ViewContent', {
-                content_type: 'home_listing', // 'home_listing' o 'product'
-                content_ids: [codigo],
+                content_type: 'home_listing',
+                content_ids: [codigo],        // Debe coincidir con 'home_listing_id' de feed de meta (ej. IND-CAN-XP)
                 value: precio,
                 currency: moneda,
                 content_name: propiedad.titulo
