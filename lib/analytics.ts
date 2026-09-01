@@ -20,11 +20,9 @@ export const trackViewProperty = (propiedad: PropertyTrackData | PropertyFullDat
         const moneda = propiedad.moneda === 'USD' ? 'USD' : 'ARS';
         const precio = Number(propiedad.precio) || 0;
 
-        console.log(`🔍 [Analytics] Iniciando trackViewProperty para: ${codigo} | ${propiedad.titulo}`);
 
         // 1. Capa para GTM / Google Analytics
         if ((window as any).dataLayer) {
-            console.log(`📊 [GTM] Enviando event: view_item`);
             (window as any).dataLayer.push({
                 event: 'view_item',
                 custom_data: {
@@ -39,7 +37,6 @@ export const trackViewProperty = (propiedad: PropertyTrackData | PropertyFullDat
 
         // 2. Envío directo al Píxel de Meta
         if (typeof (window as any).fbq === 'function') {
-            console.log(`✅ [Meta Pixel] Enviando ViewContent con content_ids:`, [codigo]);
             (window as any).fbq('track', 'ViewContent', {
                 content_type: 'home_listing',
                 content_ids: [codigo],
@@ -47,9 +44,7 @@ export const trackViewProperty = (propiedad: PropertyTrackData | PropertyFullDat
                 currency: moneda,
                 content_name: propiedad.titulo
             });
-        } else {
-            console.warn(`⚠️ [Meta Pixel] window.fbq NO está disponible en el navegador.`);
-        }
+        } 
     }
 };
 /**
