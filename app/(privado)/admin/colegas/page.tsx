@@ -34,7 +34,7 @@ export default function ColegasManagerPage() {
   const [loading, setLoading] = useState(true);
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [showImages, setShowImages] = useState(false);
+  const [showImages, setShowImages] = useState(true);
   const [expandedNote, setExpandedNote] = useState<string | null>(null);
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
