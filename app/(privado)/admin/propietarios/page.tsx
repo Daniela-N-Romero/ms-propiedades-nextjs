@@ -412,11 +412,13 @@ export default function PropietariosManagerPage() {
                                     className="bg-slate-50/50 border border-slate-300 rounded-xl p-3 flex flex-col justify-between gap-3 text-xs"
                                 >
                                     <div className="flex gap-2">
-                                        <img
-                                            src={prop.imagenes?.[0]?.url || '/images/placeholder.png'}
-                                            alt=""
-                                            className="w-8 h-8 object-cover rounded-lg bg-slate-200 border border-slate-300"
-                                        />
+                                        {showImages && (
+                                            <img
+                                                src={prop.imagenes?.[0]?.url || '/images/placeholder.jpg'}
+                                                alt=""
+                                                className="w-8 h-8 object-cover rounded-lg bg-slate-200 border border-slate-300"
+                                            />
+                                        )}
                                         <div>
                                             <span className="font-mono font-bold text-slate-500 block text-[10px]">{prop.codigo}</span>
                                             <Link
