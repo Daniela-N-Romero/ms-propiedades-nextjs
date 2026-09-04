@@ -34,6 +34,25 @@ export default function AdminBanner({ isAdmin }: AdminBannerProps) {
         );
     }
 
+    //     const esPaginaPropuesta = pathname.includes("/propuestas/");
+
+    // // BANNER DE EDICIÓN: Si estamos en una propiedad y el ID ya fue registrado internamente
+    // if (esPaginaPropuesta && propuestaSlug) {
+    //     return (
+    //         <div className="bg-amber-300/90 text-center px-3 py-3 font-bold sticky top-0 z-1000 shadow-lg flex flex-col sm:flex-row justify-between text-xs items-center gap-2">
+    //             <span>Modo Vista Previa: Sesión de Administrador activa.</span>
+    //             <span>
+    //                 <Link
+    //                     href={`/admin/propuestas/${propuestaSlug}/editar/`}
+    //                     className="bg-blue-500 text-white px-3 py-1 rounded-sm font-bold transition-all shadow-md hover:bg-blue-800"
+    //                 >
+    //                     ✏️ Editar esta Propuesta
+    //                 </Link>
+    //             </span>
+    //         </div>
+    //     );
+    // }
+
     // BANNER GENERAL: Para el resto de las páginas públicas del sitio
     return (
         <div className="bg-amber-300/90 text-center px-3 py-3 font-bold sticky top-0 z-1000 shadow-lg flex flex-col sm:flex-row justify-between text-xs items-center gap-2">

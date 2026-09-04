@@ -170,6 +170,7 @@ model Propiedad {
   // Relaciones inversas hacia las hijas
   imagenes              Imagen[]
   leads                 Lead[]
+  propuestas            PropuestaItem[]
 
   @@index([deletedAt])
   @@map("propiedades")
@@ -219,4 +220,37 @@ model configuracionEmpresa {
   linkedin                  String   @db.VarChar(255)
   videoIndustrialDefault    String   @db.VarChar(255) @default("https://www.youtube.com/embed/lLOIMzl-7_Q")
   updatedAt                 DateTime @updatedAt
+}
+
+model PropuestaComercial {
+  id              String   @id @default(cuid())
+  clienteNombre   String
+  clienteEmpresa  String?
+  slug            String   @unique // URL amigable: /propuesta/cliente-x
+  
+  // Punto de Interés / Destino de la carga
+  puntoInteresNombre String   // ej: "Neuquén Capital", "Puerto de Buenos Aires", "Ezeiza"
+  puntoInteresLat    Float
+  puntoInteresLng    Float
+  
+  // Propiedades incluidas en la propuesta (Relación muchos a muchos)
+  items           PropuestaItem[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model PropuestaItem {
+  id            String             @id @default(cuid())
+  propuestaId   String
+  propuesta     PropuestaComercial @relation(fields: [propuestaId], references: [id], onDelete: Cascade)
+  
+  propiedadId   Int
+  propiedad     Propiedad          @relation(fields: [propiedadId], references: [id])
+  
+  // Campos personalizados por propuesta
+  esPrioritaria Boolean            @default(false)
+  notaLogistica String?            // ej: "Ahorro de 2hs de peajes por salir directo a RN 3"
+  tiempoEstimadoString String?     // ej: "~11 hs / 1.040 km"
+  orden         Int                @default(0)
 }

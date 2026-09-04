@@ -1,10 +1,10 @@
 import Link from 'next/link';
-import { getContactLinks } from '@/backend/services/config.service';
+import { useContactLinks } from "@/providers/config-provider";
 import { styles } from './footer.styles';
 import FooterWhatsAppLink from './footer-whatsapp-link';
 
 export default async function footer() {
-    const links = await getContactLinks();
+    const links = useContactLinks();
 
     return (
         <footer className={styles.footer}>

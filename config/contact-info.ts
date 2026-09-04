@@ -7,7 +7,7 @@ export const links: ContactLinks = {
     linkedIn: "https://www.linkedin.com/in/matias-settecerze/",
     telefono: "5491136358302",
     direccion: "https://maps.app.goo.gl/7cqD5222jy4EpZ277", //TO DO: actualizar enlace cuando mudemos la ubicacion de google maps
-    email: "info@msconstruccion.net",
+    email: "mspropiedadesindustrial@gmail.com",
     videoIndustrialDefault: "https://www.youtube.com/embed/lLOIMzl-7_Q"
 }
 

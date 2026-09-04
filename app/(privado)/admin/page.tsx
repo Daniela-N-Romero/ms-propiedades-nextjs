@@ -98,7 +98,7 @@ export default function AdminHomePage() {
           {/* TARJETA 2: PROPIETARIOS */}
           <Link
             href="/admin/propietarios"
-           className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between text-center">
+            className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between text-center">
             <div className="space-y-3">
               <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto text-2xl">
                 🧑
@@ -176,7 +176,7 @@ export default function AdminHomePage() {
                 Colegas
               </h3>
               <p className="text-xs text-slate-500 leading-relaxed">
-                 Base de datos de colegas, contactos telefónicos de WhatsApp y notas privadas de negociación.
+                Base de datos de colegas, contactos telefónicos de WhatsApp y notas privadas de negociación.
               </p>
             </div>
             <div className="mt-6">
@@ -236,7 +236,33 @@ export default function AdminHomePage() {
             </div>
           </Link>
 
-                    {/* TARJETA 8: CONFIGURACIÓN */}
+          {/* TARJETA 8: PROPUESTAS */}
+          <Link
+            href="/admin/propuestas"
+            className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between group text-center"
+          >
+              <div className="space-y-3">
+                <div className="w-14 h-14 bg-slate-100 text-slate-600 rounded-2xl flex items-center justify-center mx-auto text-2xl">
+                  📊
+                </div>
+                <h3 className="font-spartan font-bold text-lg text-slate-900">
+                  Propuestas a Clientes
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Gestión de propuestas comerciales enviadas a los clientes.
+                </p>
+              </div>
+              <div className="mt-6">
+                <span className="w-full py-2.5 bg-purple-600 group-hover:bg-purple-700 text-white font-spartan font-bold text-xs uppercase tracking-wider block rounded-xl transition-colors shadow-sm"
+              >                
+                  Ver Propuestas
+                </span>
+              </div>
+            
+          </Link>
+
+
+          {/* TARJETA 9: CONFIGURACIÓN */}
           <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between text-center">
             <div className="space-y-3">
               <div className="w-14 h-14 bg-slate-100 text-slate-600 rounded-2xl flex items-center justify-center mx-auto text-2xl">

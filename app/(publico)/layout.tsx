@@ -1,12 +1,12 @@
 // import { GoogleAnalytics } from '@next/third-parties/google';
 import { cookies } from 'next/headers';
 import { verifySession } from '@/lib/utils-auth';
-import { Header, Footer } from "@/features/navigation";
 import "../globals.css";
 import 'leaflet/dist/leaflet.css';
 import AdminBanner from '@/components/ui/admin-banner';
 import { GoogleTagManager } from '@next/third-parties/google';
 import MetaPixel from '@/components/analytics/meta-pixel';
+import NavigationWrapper from '../../features/navigation/navigation-wrapper';
 
 export const dynamic = 'force-dynamic'
 
@@ -26,14 +26,15 @@ export default async function RootLayout({
   // const gaId = process.env.NEXT_PUBLIC_GA_ID;
 
   return (
-    <>
+   <>
       {!isAdmin && <GoogleTagManager gtmId="GTM-WMWNMF5F" />}
       {!isAdmin && <MetaPixel />}
-      {/* {gaId && <GoogleAnalytics gaId={gaId} />} */}
       <AdminBanner isAdmin={isAdmin} />
-      <Header isAdmin={isAdmin}/>
-      <main className="grow bg-slate-50">{children}</main>
-      <Footer />
+      
+      {/* El Wrapper (que incluye al Header/Footer) detecta el pathname en el navegador sin romper el Servidor */}
+      <NavigationWrapper isAdmin={isAdmin}>
+        {children}
+      </NavigationWrapper>
     </>
   );
 }
