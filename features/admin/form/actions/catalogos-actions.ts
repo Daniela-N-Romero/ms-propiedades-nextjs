@@ -66,3 +66,30 @@ export async function createColegaAction(formData: {
     return { success: false, error: 'No se pudo crear el colega.' };
   }
 }
+
+//CREAR ZONA RÁPIDO
+export async function createZonaAction(data: {
+  nombre: string;
+  padreId?: number | null;
+}) {
+  try {
+    if (!data.nombre.trim()) {
+      return { success: false, error: 'El nombre de la ubicación es obligatorio.' };
+    }
+
+    const nuevaZona = await prisma.zona.create({
+      data: {
+        nombre: data.nombre.trim(),
+        padreId: data.padreId || null,
+      },
+    });
+
+    revalidatePath('/admin/crear');
+    revalidatePath('/admin/dashboard');
+
+    return { success: true, zona: nuevaZona };
+  } catch (error) {
+    console.error('Error creando zona:', error);
+    return { success: false, error: 'No se pudo crear la ubicación.' };
+  }
+}

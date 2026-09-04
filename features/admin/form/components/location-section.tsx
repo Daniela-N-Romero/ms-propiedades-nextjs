@@ -1,9 +1,10 @@
 'use client';
-
+import { useState } from 'react'
 import { useFormContext, useWatch } from 'react-hook-form';
 import { PropertyFormValues } from '@/features/admin/form/schemas/property-schema';
 import { getInputClass, getSelectClass } from '../utils/form-utils';
 import { LocationPicker } from './location-picker';
+import { ZonaModal } from '../modals/zona-modal';
 import type { ZonaServer } from '@/types/server-data';
 
 interface LocationSectionProps {
@@ -34,6 +35,20 @@ export function LocationSection({
   const isMapConfirmed = useWatch<PropertyFormValues>({
     name: 'isMapConfirmed',
   }) ?? false;
+
+  // Estados locales para listas dinámicas e interacción con los Modales
+  const [listaRegiones, setListaRegiones] = useState<ZonaServer[]>(zonasPadre);
+  const [listaPartidos, setListaPartidos] = useState<ZonaServer[]>(partidosDisponibles);
+  const [listaLocalidades, setListaLocalidades] = useState<ZonaServer[]>(localidadesDisponibles);
+
+  const [zonaModalConfig, setZonaModalConfig] = useState<{
+    isOpen: boolean;
+    tipo: 'region' | 'partido' | 'localidad';
+    padreId?: number | null;
+  }>({
+    isOpen: false,
+    tipo: 'region',
+  });
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-5">
@@ -75,11 +90,10 @@ export function LocationSection({
         {/* CHECKBOX DE CONFIRMACIÓN */}
         <div className="space-y-1 mt-2">
           <label
-            className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-              errors.isMapConfirmed
-                ? 'bg-red-50 border-red-500 ring-1 ring-red-300'
-                : 'bg-white border-slate-300 hover:bg-slate-50'
-            }`}
+            className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${errors.isMapConfirmed
+              ? 'bg-red-50 border-red-500 ring-1 ring-red-300'
+              : 'bg-white border-slate-300 hover:bg-slate-50'
+              }`}
           >
             <input
               type="checkbox"
@@ -114,14 +128,23 @@ export function LocationSection({
       {/* PASO 2: CASCADA DE ZONAS (Bloqueada si no se confirmó el mapa) */}
       <div
         className={`grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl border transition-all ${isMapConfirmed
-            ? 'bg-slate-100/70 border-slate-200'
-            : 'bg-slate-100/40 border-slate-200 opacity-60 pointer-events-none'
+          ? 'bg-slate-100/70 border-slate-200'
+          : 'bg-slate-100/40 border-slate-200 opacity-60 pointer-events-none'
           }`}
       >
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-800">
-            2. Región Principal <span className="text-red-500">*</span>
-          </label>
+          <div className="flex justify-between items-center">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-800">
+              2. Región Principal <span className="text-red-500">*</span>
+            </label>
+            <button
+              type="button"
+              onClick={() => setZonaModalConfig({ isOpen: true, tipo: 'region', padreId: null })}
+              className="text-[10px] font-bold text-brand-orange hover:underline bg-white px-1.5 py-0.5 rounded border border-slate-200 shadow-2xs"
+            >
+              ➕ Nueva
+            </button>
+          </div>
           <select
             value={selectedRegionId}
             disabled={!isMapConfirmed}
@@ -143,9 +166,22 @@ export function LocationSection({
         </div>
 
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-800">
-            3. Partido / Comuna <span className="text-red-500">*</span>
-          </label>
+          <div className="flex justify-between items-center">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-800">
+              3. Partido / Comuna <span className="text-red-500">*</span>
+            </label>
+            {selectedRegionId > 0 && (
+              <button
+                type="button"
+                onClick={() =>
+                  setZonaModalConfig({ isOpen: true, tipo: 'partido', padreId: selectedRegionId })
+                }
+                className="text-[10px] font-bold text-brand-orange hover:underline bg-white px-1.5 py-0.5 rounded border border-slate-200 shadow-2xs"
+              >
+                ➕ Nuevo
+              </button>
+            )}
+          </div>
           <select
             value={selectedPartidoId}
             onChange={(e) => {
@@ -168,9 +204,22 @@ export function LocationSection({
         </div>
 
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-800">
-            4. Localidad Específica <span className="text-red-500">*</span>
-          </label>
+          <div className="flex justify-between items-center">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-800">
+              4. Localidad Específica <span className="text-red-500">*</span>
+            </label>
+            {selectedPartidoId > 0 && (
+              <button
+                type="button"
+                onClick={() =>
+                  setZonaModalConfig({ isOpen: true, tipo: 'localidad', padreId: selectedPartidoId })
+                }
+                className="text-[10px] font-bold text-brand-orange hover:underline bg-white px-1.5 py-0.5 rounded border border-slate-200 shadow-2xs"
+              >
+                ➕ Nueva
+              </button>
+            )}
+          </div>
           <select
             {...register('zonaId', { valueAsNumber: true })}
             disabled={!isMapConfirmed || !selectedPartidoId || isPending}
@@ -203,6 +252,35 @@ export function LocationSection({
           className={getInputClass(!!errors.direccionPersonalizada)}
         />
       </div>
+
+      {/* MODAL DE ZONAS */}
+      <ZonaModal
+        isOpen={zonaModalConfig.isOpen}
+        tipo={zonaModalConfig.tipo}
+        padreId={zonaModalConfig.padreId}
+        onClose={() => setZonaModalConfig((prev) => ({ ...prev, isOpen: false }))}
+        onCreated={(nueva) => {
+          if (zonaModalConfig.tipo === 'region') {
+            setListaRegiones((prev) => [...prev, nueva as any]);
+            setSelectedRegionId(nueva.id);
+            // Limpiamos los niveles inferiores para la nueva región
+            setListaPartidos([]);
+            setListaLocalidades([]);
+            setSelectedPartidoId(0);
+            setValue('zonaId', 0);
+          } else if (zonaModalConfig.tipo === 'partido') {
+            setListaPartidos((prev) => [...prev, nueva as any]);
+            setSelectedPartidoId(nueva.id);
+            // Limpiamos las localidades del partido anterior
+            setListaLocalidades([]);
+            setValue('zonaId', 0);
+          } else if (zonaModalConfig.tipo === 'localidad') {
+            setListaLocalidades((prev) => [...prev, nueva as any]);
+            setValue('zonaId', nueva.id, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+          }
+        }}
+      />
+
     </div>
   );
 }

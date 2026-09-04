@@ -79,7 +79,6 @@ export function ColegaModal({ isOpen, onClose, onCreated }: ColegaModalProps) {
               </label>
               <input
                 type="text"
-                required
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
                 placeholder="Ej: Juan Carlos"
@@ -93,7 +92,6 @@ export function ColegaModal({ isOpen, onClose, onCreated }: ColegaModalProps) {
               </label>
               <input
                 type="text"
-                required
                 value={apellido}
                 onChange={(e) => setApellido(e.target.value)}
                 placeholder="Ej: Pérez"
@@ -108,6 +106,7 @@ export function ColegaModal({ isOpen, onClose, onCreated }: ColegaModalProps) {
             </label>
             <input
               type="text"
+              required
               value={inmobiliaria}
               onChange={(e) => setInmobiliaria(e.target.value)}
               placeholder="Ej: Gómez Propiedades"

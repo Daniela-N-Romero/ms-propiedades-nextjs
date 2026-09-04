@@ -90,7 +90,6 @@ export function PropietarioModal({ isOpen, onClose, onCreated }: PropietarioModa
               </label>
               <input
                 type="text"
-                required
                 value={apellido}
                 onChange={(e) => setApellido(e.target.value)}
                 placeholder="Ej: Pérez"
