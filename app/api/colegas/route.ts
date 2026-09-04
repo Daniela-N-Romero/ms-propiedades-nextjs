@@ -35,6 +35,11 @@ export async function GET() {
         codigo: true,
         titulo: true,
         slug: true,
+        imagenes: {
+          select: { url: true },
+          take: 1,
+          orderBy: { orden: 'asc' },
+        },
       },
       orderBy: { codigo: 'asc' },
     });

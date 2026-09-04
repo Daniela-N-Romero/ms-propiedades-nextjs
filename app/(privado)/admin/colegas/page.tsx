@@ -286,7 +286,7 @@ export default function ColegasManagerPage() {
                                     href={`/admin/${prop.id}/editar`}
                                     className="font-bold text-slate-800 hover:text-purple-800 block text-[11px]"
                                   >
-                                    {prop.codigo} - {prop.titulo.slice(0, 18)}...
+                                    {prop.codigo} - {prop.titulo.slice(0, 15)}...
                                   </Link>
                                 </div>
 
@@ -407,11 +407,11 @@ export default function ColegasManagerPage() {
           {propiedadesLibres.length === 0 ? (
             <p className="text-xs text-slate-400 italic">¡Todas las propiedades tienen asignación!</p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="">
               {propiedadesLibres.map((prop) => (
                 <div
                   key={prop.id}
-                  className="bg-slate-50/50 border border-slate-300 rounded-xl p-3  flex flex-col justify-between gap-3 text-xs"
+                  className="bg-slate-200 border border-slate-300 rounded-xl p-3 flex  justify-between  mb-2 text-xs"
                 >
                   <div className="flex gap-2">
                     {showImages && (
@@ -425,7 +425,7 @@ export default function ColegasManagerPage() {
                       <span className="font-mono font-bold text-slate-500 block text-[10px]">{prop.codigo}</span>
                       <Link
                         href={`/admin/${prop.id}/editar`}
-                        className="font-bold text-slate-800 hover:text-amber-800"
+                        className="font-bold text-slate-800 hover:text-amber-600"
                       >
                         {prop.titulo}
                       </Link>
@@ -439,7 +439,7 @@ export default function ColegasManagerPage() {
                       }
                     }}
                     defaultValue=""
-                    className="px-2 py-1 bg-white border border-amber-400 rounded-lg text-[11px] font-bold text-slate-700 outline-none cursor-pointer"
+                    className="px-2 py-1 bg-white border border-gray-700 focus:border-amber-400 rounded-lg text-[11px] font-bold text-slate-700 outline-none cursor-pointer"
                   >
                     <option value="" disabled>
                       + Asignar a Colega...
