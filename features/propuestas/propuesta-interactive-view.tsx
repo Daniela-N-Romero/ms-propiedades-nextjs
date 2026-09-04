@@ -31,7 +31,7 @@ interface PropiedadPropuesta {
 interface Props {
   propiedades: PropiedadPropuesta[];
   destinoCoords: [number, number];
-  puntoInteresNombre?: string; 
+  puntoInteresNombre?: string;
 }
 
 export default function PropuestaInteractiveView({
@@ -44,9 +44,9 @@ export default function PropuestaInteractiveView({
 
 
   // Helper para asignar el badge de opción según el orden
-   const getBadgeOption = (index: number) => {
+  const getBadgeOption = (index: number) => {
     const numeroOpcion = index + 1; // 0 -> 1 (Opción 1), 1 -> 2 (Opción 2), etc.
-    
+
     if (numeroOpcion === 1) {
       return <span className="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded font-bold whitespace-nowrap">⭐ Opción 1</span>;
     }
@@ -76,17 +76,16 @@ export default function PropuestaInteractiveView({
             <div
               key={prop.id}
               onClick={() => setSelectedId(prop.id)}
-              className={`p-5 rounded-2xl cursor-pointer transition-all duration-300 border-2 relative ${
-                isSelected
+              className={`p-5 rounded-2xl cursor-pointer transition-all duration-300 border-2 relative ${isSelected
                   ? "border-blue-600 bg-white shadow-lg scale-[1.01]"
                   : "border-gray-200 bg-white hover:border-blue-300 shadow-sm"
-              }`}
+                }`}
             >
               <div className="flex justify-between items-start mb-2 gap-2">
                 <h3 className="font-bold text-slate-900 text-base leading-snug">{prop.title}</h3>
                 {getBadgeOption(idx)}
               </div>
-              
+
               <p className="text-sm font-medium text-slate-500 mb-3">{prop.localidad}</p>
 
               <div className="grid grid-cols-2 gap-2 text-xs mb-3 bg-gray-50 p-2.5 rounded-lg">
@@ -110,8 +109,8 @@ export default function PropuestaInteractiveView({
 
               <div className="space-y-1.5 text-xs mb-3">
                 <div className="flex items-center text-slate-700">
-                  <span className="mr-1">🚚</span>
-                  <strong>Ruta a {puntoInteresNombre}:</strong>&nbsp;{prop.tiempoRuta}
+                  <p><span className="mr-1">🚚</span>
+                    <strong>Ruta a {puntoInteresNombre}:</strong>&nbsp;{prop.tiempoRuta}</p>
                 </div>
                 {prop.ahorroTiempo && (
                   <div className="flex items-center text-emerald-700 font-medium">
