@@ -118,26 +118,26 @@ export const basePublishPropertySchema = z.object({
 export type PropertyFormValues = z.infer<typeof basePublishPropertySchema>;
 
 // Refinamos el esquema y lo exportamos
-export const publishPropertySchema = basePublishPropertySchema.superRefine((data, ctx) => {
+// export const publishPropertySchema = basePublishPropertySchema.superRefine((data, ctx) => {
 
-  const colegaIdNum = Number(data.colegaId);
-  const propietarioIdNum = Number(data.propietarioId);
+//   const colegaIdNum = Number(data.colegaId);
+//   const propietarioIdNum = Number(data.propietarioId);
 
-  // Si es De Colega y no seleccionó un ID válido (> 0)
-  if (data.origen === 'fromColleague' && (!colegaIdNum || isNaN(colegaIdNum) || colegaIdNum <= 0)) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['colegaId'],
-      message: 'Debe seleccionar la Inmobiliaria Colega de origen.',
-    });
-  }
+//   // Si es De Colega y no seleccionó un ID válido (> 0)
+//   if (data.origen === 'fromColleague' && (!colegaIdNum || isNaN(colegaIdNum) || colegaIdNum <= 0)) {
+//     ctx.addIssue({
+//       code: 'custom',
+//       path: ['colegaId'],
+//       message: 'Debe seleccionar la Inmobiliaria Colega de origen.',
+//     });
+//   }
 
-  // Si es Cartera Propia y no seleccionó Propietario (> 0)
-  if (data.origen === 'own' && (!propietarioIdNum || isNaN(propietarioIdNum) || propietarioIdNum <= 0)) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['propietarioId'],
-      message: 'Debe seleccionar el Propietario asignado.',
-    });
-  }
-});
+//   // Si es Cartera Propia y no seleccionó Propietario (> 0)
+//   if (data.origen === 'own' && (!propietarioIdNum || isNaN(propietarioIdNum) || propietarioIdNum <= 0)) {
+//     ctx.addIssue({
+//       code: 'custom',
+//       path: ['propietarioId'],
+//       message: 'Debe seleccionar el Propietario asignado.',
+//     });
+//   }
+// });

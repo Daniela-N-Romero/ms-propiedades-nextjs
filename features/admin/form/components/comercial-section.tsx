@@ -376,7 +376,7 @@ export function ComercialSection({
                   }}
                   className={getSelectClass(!!errors.propietarioId)}
                 >
-                  <option value="">Seleccionar Propietario...</option>
+                  <option value="">⚠️ Sin Asignar / Desconocido</option>
                   {listaPropietarios.map((p) => (
                     <option key={p.id} value={p.id}>{p.nombre}</option>
                   ))}
@@ -419,7 +419,7 @@ export function ComercialSection({
                   }}
                   className={getSelectClass(!!errors.colegaId)}
                 >
-                  <option value="">Seleccionar Colega...</option>
+                  <option value="">⚠️ Sin Asignar / Desconocido</option>
                   {listaColegas.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.nombre} {c.inmobiliaria ? `(${c.inmobiliaria})` : ''}

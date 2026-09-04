@@ -79,3 +79,19 @@ export async function assignColegaAction(propertyId: number, colegaId: number) {
     return { success: false, error: 'Error al vincular la propiedad.' };
   }
 }
+
+// 4. Eliminar Colega (sus propiedades pasarán automáticamente a null / Sin Asignar)
+export async function deleteColegaAction(id: number) {
+  try {
+    await prisma.colega.delete({
+      where: { id },
+    });
+
+    revalidatePath('/admin/colegas');
+    revalidatePath('/admin/dashboard');
+    return { success: true };
+  } catch (error) {
+    console.error('Error al eliminar colega:', error);
+    return { success: false, error: 'No se pudo eliminar el colega.' };
+  }
+}

@@ -75,3 +75,19 @@ export async function assignPropietarioAction(propertyId: number, propietarioId:
     return { success: false, error: 'Error al vincular la propiedad.' };
   }
 }
+
+// Eliminar Propietario (sus propiedades pasarán automáticamente a null / Sin Asignar)
+export async function deletePropietarioAction(id: number) {
+  try {
+    await prisma.propietario.delete({
+      where: { id },
+    });
+
+    revalidatePath('/admin/propietarios');
+    revalidatePath('/admin/dashboard');
+    return { success: true };
+  } catch (error) {
+    console.error('Error al eliminar propietario:', error);
+    return { success: false, error: 'No se pudo eliminar el propietario.' };
+  }
+}

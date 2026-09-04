@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/backend/db';
-import { publishPropertySchema } from '@/features/admin/form/schemas/property-schema';
+import { basePublishPropertySchema } from '@/features/admin/form/schemas/property-schema';
 
 export async function PUT(
   req: Request,
@@ -61,7 +61,7 @@ export async function PUT(
           : ['/images/placeholder.png'],
       };
 
-      const result = publishPropertySchema.safeParse(datosAValidar);
+      const result = basePublishPropertySchema.safeParse(datosAValidar);
 
       if (!result.success) {
         const faltantes = Object.keys(result.error.flatten().fieldErrors).join(', ');

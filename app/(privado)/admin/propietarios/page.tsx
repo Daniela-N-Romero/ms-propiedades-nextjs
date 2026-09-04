@@ -6,6 +6,7 @@ import {
     savePropietarioAction,
     unassignPropietarioAction,
     assignPropietarioAction,
+    deletePropietarioAction,
 } from './actions';
 
 interface PropiedadMini {
@@ -353,6 +354,29 @@ export default function PropietariosManagerPage() {
                                                                     </a>
                                                                 </>
                                                             )}
+
+                                                            <hr className="my-1 border-slate-100" />
+
+                                                            <button
+                                                                onClick={async () => {
+                                                                    if (
+                                                                        confirm(
+                                                                            `¿Eliminar a "${p.nombre} ${p.apellido || ''}"?\n\nSus propiedades no se borrarán, pero pasarán a la sección "Sin Asignar / Desconocidas".`
+                                                                        )
+                                                                    ) {
+                                                                        const res = await deletePropietarioAction(p.id);
+                                                                        if (res.success) {
+                                                                            setOpenMenuId(null);
+                                                                            cargarDatos();
+                                                                        } else {
+                                                                            alert(res.error);
+                                                                        }
+                                                                    }
+                                                                }}
+                                                                className="w-full text-left px-3 py-1.5 hover:bg-red-50 font-semibold text-red-600 flex items-center gap-2 cursor-pointer"
+                                                            >
+                                                                🗑️ Eliminar Propietario
+                                                            </button>
                                                         </div>
                                                     )}
                                                 </div>
@@ -388,11 +412,11 @@ export default function PropietariosManagerPage() {
                                     className="bg-slate-50/50 border border-slate-300 rounded-xl p-3 flex flex-col justify-between gap-3 text-xs"
                                 >
                                     <div className="flex gap-2">
-                                            <img
-                                                src={prop.imagenes?.[0]?.url || '/images/placeholder.png'}
-                                                alt=""
-                                                className="w-8 h-8 object-cover rounded-lg bg-slate-200 border border-slate-300"
-                                            />
+                                        <img
+                                            src={prop.imagenes?.[0]?.url || '/images/placeholder.png'}
+                                            alt=""
+                                            className="w-8 h-8 object-cover rounded-lg bg-slate-200 border border-slate-300"
+                                        />
                                         <div>
                                             <span className="font-mono font-bold text-slate-500 block text-[10px]">{prop.codigo}</span>
                                             <Link

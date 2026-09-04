@@ -6,6 +6,7 @@ import {
   saveColegaAction,
   unassignColegaAction,
   assignColegaAction,
+  deleteColegaAction,
 } from './actions';
 
 interface PropiedadMini {
@@ -355,6 +356,29 @@ export default function ColegasManagerPage() {
                                   </a>
                                 </>
                               )}
+
+                              <hr className="my-1 border-slate-100" />
+
+                              <button
+                                onClick={async () => {
+                                  if (
+                                    confirm(
+                                      `¿Eliminar a "${c.nombre} ${c.apellido || ''}"?\n\nSus propiedades no se borrarán, pero pasarán a la sección "Sin Asignar / Desconocidas".`
+                                    )
+                                  ) {
+                                    const res = await deleteColegaAction(c.id);
+                                    if (res.success) {
+                                      setOpenMenuId(null);
+                                      cargarDatos();
+                                    } else {
+                                      alert(res.error);
+                                    }
+                                  }
+                                }}
+                                className="w-full text-left px-3 py-1.5 hover:bg-red-50 font-semibold text-red-600 flex items-center gap-2 cursor-pointer"
+                              >
+                                🗑️ Eliminar Colega
+                              </button>
                             </div>
                           )}
                         </div>

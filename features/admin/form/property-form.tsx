@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { FormProvider } from 'react-hook-form';
-import { PropertyFormValues, publishPropertySchema, draftPropertySchema } from '@/features/admin/form/schemas/property-schema';
+import { PropertyFormValues, basePublishPropertySchema, draftPropertySchema } from '@/features/admin/form/schemas/property-schema';
 import { savePropertyAction } from './actions/save-property';
 import { useRouter } from 'next/navigation';
 import { usePropertyCascades } from './hooks/use-property-cascades';
@@ -63,7 +63,7 @@ export default function PropertyForm({
   });
 
   const form = useForm<PropertyFormValues>({
-    resolver: zodResolver(publishPropertySchema) as any,
+    resolver: zodResolver(basePublishPropertySchema) as any,
     defaultValues: initialData
       ? {
         titulo: initialData.titulo,
