@@ -8,12 +8,13 @@ interface MetaImageUploaderProps {
   value?: string | null;
   onChange: (url: string | null) => void;
   galleryImages?: string[];
+  isLoadingGallery?: boolean;
 }
 
-export function MetaImageUploader({ value, onChange, galleryImages = [] }: MetaImageUploaderProps) {
+export function MetaImageUploader({ value, onChange, galleryImages = [], isLoadingGallery = false }: MetaImageUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [selectedToCrop, setSelectedToCrop] = useState<string | null>(null);
-  
+
   // Estados para el encuadre 1:1
   const [zoom, setZoom] = useState<number>(1);
   const [offset, setOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -139,29 +140,51 @@ export function MetaImageUploader({ value, onChange, galleryImages = [] }: MetaI
             </label>
           </div>
 
-          {galleryImages.length > 0 && (
+          {/* SI LA GALERÍA ESTÁ SUBIENDO FOTOS MUESTRA ESTO */}
+          {isLoadingGallery ? (
+            <div className="space-y-1.5">
+              <p className="text-[11px] font-bold text-slate-500 animate-pulse">
+                ⏳ Cargando miniaturas de la galería...
+              </p>
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                {[1, 2, 3].map((n) => (
+                  <div
+                    key={n}
+                    className="w-12 h-12 rounded-lg bg-slate-200 animate-pulse border border-slate-300 shrink-0"
+                  />
+                ))}
+              </div>
+            </div>
+          ) : galleryImages.length > 0 ? (
+            /* SI YA HAY FOTOS MUESTRA EL CARRUSEL */
             <div>
               <p className="text-[11px] font-bold text-slate-600 mb-1.5">
-                O elegí una foto cargada para recortar en 1:1:
+                O elegí una foto cargada para recortar en 1:1 ({galleryImages.length} disponibles):
               </p>
               <div className="flex gap-2 overflow-x-auto pb-2">
                 {galleryImages.map((imgUrl, i) => (
                   <button
-                    key={i}
+                    key={`${imgUrl}-${i}`}
                     type="button"
                     onClick={() => {
                       setSelectedToCrop(imgUrl);
                       setZoom(1);
                       setOffset({ x: 0, y: 0 });
                     }}
-                    className="relative w-12 h-12 rounded-lg border border-slate-300 overflow-hidden shrink-0 hover:border-blue-500 hover:scale-105 transition"
+                    className="relative w-12 h-12 rounded-lg border border-slate-300 overflow-hidden shrink-0 hover:border-blue-500 hover:scale-105 transition cursor-pointer bg-slate-100"
                   >
-                    <Image src={imgUrl} alt={`Opción ${i}`} fill className="object-cover" />
+                    <img
+                      src={imgUrl}
+                      alt={`Opción ${i + 1}`}
+                      loading="lazy"
+                      className="w-full h-full object-cover"
+                    />
                   </button>
                 ))}
               </div>
             </div>
-          )}
+          ) : null}
+
         </div>
       )}
 

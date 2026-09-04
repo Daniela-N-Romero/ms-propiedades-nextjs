@@ -1,16 +1,23 @@
 'use client';
 
-import { useFormContext, Controller } from 'react-hook-form';
+import { useFormContext, Controller, useWatch } from 'react-hook-form';
 import { PropertyFormValues } from '@/features/admin/form/schemas/property-schema';
 import { getInputClass } from '../utils/form-utils';
 import { ImageUploader } from './image-uploader';
 import { PdfUploader } from './pdf-uploader';
 import { MetaImageUploader } from './meta-image-uploader';
+import { useState } from 'react';
 
 interface MultimediaSectionProps { }
 
 export function MultimediaSection({ }: MultimediaSectionProps) {
-  const { register, control, watch, formState: { errors } } = useFormContext<PropertyFormValues>();
+  const { register, control, formState: { errors } } = useFormContext<PropertyFormValues>();
+  const [isGalleryUploading, setIsGalleryUploading] = useState(false);
+  // Suscripción en tiempo real a las imágenes subidas en la galería
+  const imagenesGaleria = useWatch({
+    control,
+    name: 'imagenes',
+  }) || [];
 
   return (
     <div id="multimedia" className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-5">
@@ -34,6 +41,7 @@ export function MultimediaSection({ }: MultimediaSectionProps) {
               imagenes={field.value || []}
               onChange={field.onChange}
               error={errors.imagenes?.message}
+              onUploadingChange={setIsGalleryUploading}
             />
           )}
         />
@@ -51,7 +59,8 @@ export function MultimediaSection({ }: MultimediaSectionProps) {
           <MetaImageUploader
             value={field.value}
             onChange={field.onChange}
-            galleryImages={watch('imagenes') || []}
+            galleryImages={imagenesGaleria}
+            isLoadingGallery={isGalleryUploading}
           />
         )}
       />

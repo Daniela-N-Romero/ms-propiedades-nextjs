@@ -8,9 +8,10 @@ interface ImageUploaderProps {
   imagenes: string[];
   onChange: (urls: string[]) => void;
   error?: string;
+  onUploadingChange?: (isUploading: boolean) => void;
 }
 
-export function ImageUploader({ imagenes, onChange, error }: ImageUploaderProps) {
+export function ImageUploader({ imagenes, onChange, error, onUploadingChange }: ImageUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
@@ -24,6 +25,8 @@ export function ImageUploader({ imagenes, onChange, error }: ImageUploaderProps)
     if (validImages.length === 0) return;
 
     setIsUploading(true);
+    onUploadingChange?.(true);
+
     const uploadedUrls: string[] = [];
 
     for (let i = 0; i < validImages.length; i++) {
@@ -41,6 +44,7 @@ export function ImageUploader({ imagenes, onChange, error }: ImageUploaderProps)
     onChange([...prevImages, ...uploadedUrls]);
 
     setIsUploading(false);
+    onUploadingChange?.(false);
     setUploadProgress(null);
   };
 
