@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 
 const LocationPickerDestino = dynamic(
   () => import("@/features/propuestas/location-picker-destino"),
@@ -153,9 +154,29 @@ export default function CrearPropuestaPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-6 bg-white rounded-xl shadow-md my-8 border">
-      <h1 className="text-2xl font-bold text-slate-800 mb-6">Crear Nueva Propuesta Comercial</h1>
+    <>
 
+            <div className="bg-slate-900 text-white py-4 px-6 mb-6 shadow-md">
+              <div className="max-w-7xl mx-auto flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Link href="/admin/propuestas" className="text-xs px-3 mr-5 font-spartan font-bold uppercase tracking-wider text-slate-300 hover:text-white transition-colors">
+                    ← Menú Propuestas
+                  </Link>
+                  <div>
+                    <h1 className="text-lg font-spartan font-bold">Crear Nueva Propuesta Comercial</h1>
+                  </div>
+                </div>
+      
+                <Link
+                  href="/admin/propuestas/crear"
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-4 py-2.5 rounded-lg shadow-sm transition-all"
+                >
+                  + Nueva Propuesta
+                </Link>
+              </div>
+            </div>
+
+      <div className="max-w-5xl mx-3 lg:mx-auto p-6 bg-white rounded-xl shadow-md my-8 border">
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* 1. Cliente */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b pb-6">
@@ -379,6 +400,7 @@ export default function CrearPropuestaPage() {
           {loading ? "Guardando Propuesta..." : "🚀 Guardar y Ver Propuesta Interactiva"}
         </button>
       </form>
-    </div>
+      </div>
+    </>
   );
 }

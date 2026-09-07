@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 
 const LocationPickerDestino = dynamic(
   () => import("@/features/propuestas/location-picker-destino"),
@@ -176,229 +177,251 @@ export default function EditarPropuestaPage({ params }: { params: Promise<{ id: 
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-6 bg-white rounded-xl shadow-md my-8 border">
-      <h1 className="text-2xl font-bold text-slate-800 mb-6">Editar Propuesta Comercial</h1>
+    <>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b pb-6">
-          <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Cliente</label>
-            <input
-              type="text"
-              required
-              value={clienteNombre}
-              onChange={(e) => setClienteNombre(e.target.value)}
-              className="w-full border rounded p-2 text-sm"
-            />
+
+      <div className="bg-slate-900 text-white py-4 px-6 mb-6 shadow-md">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Link href="/admin/propuestas" className="text-xs px-3 mr-5 font-spartan font-bold uppercase tracking-wider text-slate-300 hover:text-white transition-colors">
+              ← Menú Propuestas
+            </Link>
+            <div>
+              <h1 className="text-lg font-spartan font-bold">Editar Propuesta Comercial</h1>
+            </div>
           </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">URL Personalizada (Slug)</label>
-            <div className="flex items-center text-sm text-gray-500 bg-gray-50 border rounded-lg px-3 py-2">
-              <span>/propuestas/</span>
+
+          <Link
+            href="/admin/propuestas/crear"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-4 py-2.5 rounded-lg shadow-sm transition-all"
+          >
+            + Nueva Propuesta
+          </Link>
+        </div>
+      </div>
+
+      <div className="max-w-5xl mx-3 lg:mx-auto p-6 bg-white rounded-xl shadow-md my-8 border">
+
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b pb-6">
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Cliente</label>
               <input
                 type="text"
                 required
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-                className="w-full bg-transparent border-none p-0 focus:outline-none text-slate-900 font-semibold"
+                value={clienteNombre}
+                onChange={(e) => setClienteNombre(e.target.value)}
+                className="w-full border rounded p-2 text-sm"
               />
             </div>
-          </div>
-        </div>
-
-        {/* Punto de Interés */}
-        <div className="border-b pb-6">
-          <h2 className="text-md font-bold text-slate-800 mb-2">📍 Punto de Referencia / Destino</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-            <div className="lg:col-span-5 space-y-3">
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Nombre del Lugar</label>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">URL Personalizada (Slug)</label>
+              <div className="flex items-center text-sm text-gray-500 bg-gray-50 border rounded-lg px-3 py-2">
+                <span>/propuestas/</span>
                 <input
                   type="text"
                   required
-                  value={puntoNombre}
-                  onChange={(e) => setPuntoNombre(e.target.value)}
-                  className="w-full border rounded p-2 text-sm"
+                  value={slug}
+                  onChange={(e) => setSlug(e.target.value)}
+                  className="w-full bg-transparent border-none p-0 focus:outline-none text-slate-900 font-semibold"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-2">
+            </div>
+          </div>
+
+          {/* Punto de Interés */}
+          <div className="border-b pb-6">
+            <h2 className="text-md font-bold text-slate-800 mb-2">📍 Punto de Referencia / Destino</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+              <div className="lg:col-span-5 space-y-3">
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Latitud</label>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Nombre del Lugar</label>
                   <input
-                    type="number"
-                    step="any"
-                    value={puntoLat}
-                    onChange={(e) => setPuntoLat(Number(e.target.value))}
-                    className="w-full border rounded p-1.5 text-xs bg-gray-50"
+                    type="text"
+                    required
+                    value={puntoNombre}
+                    onChange={(e) => setPuntoNombre(e.target.value)}
+                    className="w-full border rounded p-2 text-sm"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Longitud</label>
-                  <input
-                    type="number"
-                    step="any"
-                    value={puntoLng}
-                    onChange={(e) => setPuntoLng(Number(e.target.value))}
-                    className="w-full border rounded p-1.5 text-xs bg-gray-50"
-                  />
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Latitud</label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={puntoLat}
+                      onChange={(e) => setPuntoLat(Number(e.target.value))}
+                      className="w-full border rounded p-1.5 text-xs bg-gray-50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Longitud</label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={puntoLng}
+                      onChange={(e) => setPuntoLng(Number(e.target.value))}
+                      className="w-full border rounded p-1.5 text-xs bg-gray-50"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="lg:col-span-7 h-48 rounded-lg overflow-hidden border">
-              {puntoLat !== 0 && (
-                <LocationPickerDestino
-                  lat={puntoLat}
-                  lng={puntoLng}
-                  onSelect={(lat, lng) => {
-                    setPuntoLat(lat);
-                    setPuntoLng(lng);
-                  }}
-                />
-              )}
+              <div className="lg:col-span-7 h-48 rounded-lg overflow-hidden border">
+                {puntoLat !== 0 && (
+                  <LocationPickerDestino
+                    lat={puntoLat}
+                    lng={puntoLng}
+                    onSelect={(lat, lng) => {
+                      setPuntoLat(lat);
+                      setPuntoLng(lng);
+                    }}
+                  />
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Propiedades */}
-        <div>
-          <div className="flex justify-between items-center mb-3">
-            <h2 className="text-md font-bold text-slate-800">
-              🏬 Modificar Propiedades Seleccionadas ({itemsSeleccionados.length})
-            </h2>
-            <input
-              type="text"
-              placeholder="🔍 Buscar para añadir/quitar..."
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              className="border rounded-lg px-3 py-1.5 text-xs w-64"
-            />
-          </div>
+          {/* Propiedades */}
+          <div>
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="text-md font-bold text-slate-800">
+                🏬 Modificar Propiedades Seleccionadas ({itemsSeleccionados.length})
+              </h2>
+              <input
+                type="text"
+                placeholder="🔍 Buscar para añadir/quitar..."
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                className="border rounded-lg px-3 py-1.5 text-xs w-64"
+              />
+            </div>
 
-          <div className="space-y-3 max-h-96 overflow-y-auto pr-2 rounded-lg p-3 bg-gray-50">
-            {propiedadesFiltradas.map((prop) => {
-              const indexEnSeleccionados = itemsSeleccionados.findIndex((i) => i.propiedadId === prop.id);
-              const isChecked = indexEnSeleccionados !== -1;
-              const item = isChecked ? itemsSeleccionados[indexEnSeleccionados] : null;
-              const posicion = indexEnSeleccionados + 1;
+            <div className="space-y-3 max-h-96 overflow-y-auto pr-2 rounded-lg p-3 bg-gray-50">
+              {propiedadesFiltradas.map((prop) => {
+                const indexEnSeleccionados = itemsSeleccionados.findIndex((i) => i.propiedadId === prop.id);
+                const isChecked = indexEnSeleccionados !== -1;
+                const item = isChecked ? itemsSeleccionados[indexEnSeleccionados] : null;
+                const posicion = indexEnSeleccionados + 1;
 
-              return (
-                <div
-                  key={prop.id}
-                  className={`p-3 rounded-lg border transition-all ${
-                    isChecked ? "border-blue-500 bg-white shadow-sm" : "border-gray-200 bg-white"
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => togglePropiedad(prop.id)}
-                        className="h-4 w-4 text-blue-600 rounded cursor-pointer"
-                      />
-                      <div>
-                        <p className="font-semibold text-sm text-slate-800">{prop.titulo}</p>
-                        <p className="text-xs text-gray-500">
-                          Cód: <strong>{prop.codigo}</strong> | {prop.moneda} {prop.precio}
-                        </p>
+                return (
+                  <div
+                    key={prop.id}
+                    className={`p-3 rounded-lg border transition-all ${isChecked ? "border-blue-500 bg-white shadow-sm" : "border-gray-200 bg-white"
+                      }`}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => togglePropiedad(prop.id)}
+                          className="h-4 w-4 text-blue-600 rounded cursor-pointer"
+                        />
+                        <div>
+                          <p className="font-semibold text-sm text-slate-800">{prop.titulo}</p>
+                          <p className="text-xs text-gray-500">
+                            Cód: <strong>{prop.codigo}</strong> | {prop.moneda} {prop.precio}
+                          </p>
+                        </div>
                       </div>
+
+                      {isChecked && (
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`text-xs px-2.5 py-1 rounded-full font-bold border ${posicion === 1
+                                ? "bg-amber-100 text-amber-900 border-amber-300 text-nowrap"
+                                : posicion === 2
+                                  ? "bg-blue-100 text-blue-900 border-blue-300 text-nowrap"
+                                  : "bg-slate-100 text-slate-700 border-slate-300 text-nowrap"
+                              }`}
+                          >
+                            {posicion === 1 ? "⭐ Opción 1 (Prioritaria)" : `Opción ${posicion}`}
+                          </span>
+
+                          <div className="flex flex-col gap-0.5">
+                            <button
+                              type="button"
+                              disabled={indexEnSeleccionados === 0}
+                              onClick={() => moverArriba(indexEnSeleccionados)}
+                              className="p-1 leading-none text-xs bg-gray-100 hover:bg-gray-200 disabled:opacity-30 rounded"
+                              title="Subir prioridad"
+                            >
+                              ▲
+                            </button>
+                            <button
+                              type="button"
+                              disabled={indexEnSeleccionados === itemsSeleccionados.length - 1}
+                              onClick={() => moverAbajo(indexEnSeleccionados)}
+                              className="p-1 leading-none text-xs bg-gray-100 hover:bg-gray-200 disabled:opacity-30 rounded"
+                              title="Bajar prioridad"
+                            >
+                              ▼
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
-                    {isChecked && (
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`text-xs px-2.5 py-1 rounded-full font-bold border ${
-                            posicion === 1
-                              ? "bg-amber-100 text-amber-900 border-amber-300 text-nowrap"
-                              : posicion === 2
-                              ? "bg-blue-100 text-blue-900 border-blue-300 text-nowrap"
-                              : "bg-slate-100 text-slate-700 border-slate-300 text-nowrap"
-                          }`}
-                        >
-                          {posicion === 1 ? "⭐ Opción 1 (Prioritaria)" : `Opción ${posicion}`}
-                        </span>
-
-                        <div className="flex flex-col gap-0.5">
-                          <button
-                            type="button"
-                            disabled={indexEnSeleccionados === 0}
-                            onClick={() => moverArriba(indexEnSeleccionados)}
-                            className="p-1 leading-none text-xs bg-gray-100 hover:bg-gray-200 disabled:opacity-30 rounded"
-                            title="Subir prioridad"
-                          >
-                            ▲
-                          </button>
-                          <button
-                            type="button"
-                            disabled={indexEnSeleccionados === itemsSeleccionados.length - 1}
-                            onClick={() => moverAbajo(indexEnSeleccionados)}
-                            className="p-1 leading-none text-xs bg-gray-100 hover:bg-gray-200 disabled:opacity-30 rounded"
-                            title="Bajar prioridad"
-                          >
-                            ▼
-                          </button>
+                    {isChecked && item && (
+                      <div className="mt-3 pl-7 grid grid-cols-1 md:grid-cols-2 gap-3 border-t pt-3">
+                        <div>
+                          <label className="block text-[11px] font-semibold text-gray-600 mb-0.5">
+                            Nota Logística / Ventaja Competitiva:
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Ej: Ahorro de 2.5 hs al evitar el tráfico de AMBA"
+                            value={item.notaLogistica}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setItemsSeleccionados(
+                                itemsSeleccionados.map((i) =>
+                                  i.propiedadId === prop.id ? { ...i, notaLogistica: val } : i
+                                )
+                              );
+                            }}
+                            className="w-full border rounded p-1.5 text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-semibold text-gray-600 mb-0.5">
+                            Tiempo Estimado / Salida Vial:
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Ej: ~11 hs / Salida directa a RN 3"
+                            value={item.tiempoEstimadoString}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setItemsSeleccionados(
+                                itemsSeleccionados.map((i) =>
+                                  i.propiedadId === prop.id ? { ...i, tiempoEstimadoString: val } : i
+                                )
+                              );
+                            }}
+                            className="w-full border rounded p-1.5 text-xs"
+                          />
                         </div>
                       </div>
                     )}
                   </div>
-
-                  {isChecked && item && (
-                    <div className="mt-3 pl-7 grid grid-cols-1 md:grid-cols-2 gap-3 border-t pt-3">
-                      <div>
-                        <label className="block text-[11px] font-semibold text-gray-600 mb-0.5">
-                          Nota Logística / Ventaja Competitiva:
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="Ej: Ahorro de 2.5 hs al evitar el tráfico de AMBA"
-                          value={item.notaLogistica}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setItemsSeleccionados(
-                              itemsSeleccionados.map((i) =>
-                                i.propiedadId === prop.id ? { ...i, notaLogistica: val } : i
-                              )
-                            );
-                          }}
-                          className="w-full border rounded p-1.5 text-xs"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[11px] font-semibold text-gray-600 mb-0.5">
-                          Tiempo Estimado / Salida Vial:
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="Ej: ~11 hs / Salida directa a RN 3"
-                          value={item.tiempoEstimadoString}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setItemsSeleccionados(
-                              itemsSeleccionados.map((i) =>
-                                i.propiedadId === prop.id ? { ...i, tiempoEstimadoString: val } : i
-                              )
-                            );
-                          }}
-                          className="w-full border rounded p-1.5 text-xs"
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-all"
-        >
-          {loading ? "Guardando Cambios..." : "Guardar Cambios en Propuesta"}
-        </button>
-      </form>
-    </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-all"
+          >
+            {loading ? "Guardando Cambios..." : "Guardar Cambios en Propuesta"}
+          </button>
+        </form>
+      </div>
+    </>
   );
 }
