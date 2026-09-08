@@ -1,9 +1,10 @@
+'use client';
 import Link from 'next/link';
 import { useContactLinks } from "@/providers/config-provider";
 import { styles } from './footer.styles';
 import FooterWhatsAppLink from './footer-whatsapp-link';
 
-export default async function footer() {
+export default function footer() {
     const links = useContactLinks();
 
     return (

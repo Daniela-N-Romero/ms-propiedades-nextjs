@@ -19,10 +19,18 @@ interface PageProps {
 
 // 1. METADATA (Llama al helper externo)
 export async function generateMetadata({ params }: PageProps) {
-  const resolvedParams = await params; // 👈 Imprescindible para Next.js 15+
-  const propiedad = await getPropiedadBySlug(resolvedParams.slug);
+  const resolvedParams = await params;
 
-  return buildPropertyMetadata(propiedad as any);
+  try {
+    const slug = decodeURIComponent(resolvedParams.slug);
+    const propiedad = await getPropiedadBySlug(slug);
+
+    if (propiedad) {
+      return buildPropertyMetadata(propiedad as any);
+    }
+  } catch (error) {
+    console.error('Error cargando metadata:', error);
+  }
 }
 
 // 2. VISTA (Solo renderizado)
@@ -58,8 +66,9 @@ export default async function PropertyDetailPage({ params }: PageProps) {
 
   return (
     <main className="min-h-screen bg-white pb-24 md:pb-12">
+      {/* COMENTAR TEMPORALMENTE: */}
       <RegistrarPropiedadId id={propiedad.id} />
-      <RegistrarGTMEvent propiedad={propiedad} /> 
+      <RegistrarGTMEvent propiedad={propiedad} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
 
         {/* BLOQUE HERO & GALERÍA */}
@@ -93,6 +102,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
             {propiedad.videoUrl && (
               <VideoSeccion videoUrl={propiedad.videoUrl} />
             )}
+
 
             {propiedad.latitud && propiedad.longitud && (
               <MapaDetallePropiedad

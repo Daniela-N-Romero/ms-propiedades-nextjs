@@ -19,7 +19,7 @@ export default function ErrorGlobal({ error, reset }: ErrorProps) {
       
       <div className="flex gap-4">
         <button 
-          onClick={() => reset()} 
+          onClick={() => window.location.reload()} 
           className="bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition"
         >
           Intentar de nuevo

@@ -1,5 +1,4 @@
 'use client';
-
 import { trackWhatsAppClickGeneral } from '@/lib/analytics';
 
 interface FooterWhatsAppLinkProps {

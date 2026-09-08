@@ -7,6 +7,7 @@ import { sanearPropiedadCompleta, sanearZona } from '@/lib/sanitizers';
 import { getAgentes, getColegas, getPropietarios } from './admin-catalogos.service';
 import { getLocalidadesPorPadre, getZonasPadre } from './zone.service';
 import { getMercadosPadre, getSubtiposPorMercado } from './tipo-inmueble.service';
+import { cache } from 'react';
 
 /**
  * 1. OBTENER PROPIEDADES DESTACADAS
@@ -121,8 +122,9 @@ export async function getSubtiposPorTipoMercado(mercadoSlug?: string) {
  * trayendo relaciones completas: zona padre/hija, tipo inmueble padre/hijo, 
  * agente asignado e imágenes ordenadas.
  */
-export async function getPropiedadBySlug(slug: string) {
-  const propiedad = await prisma.propiedad.findUnique({
+export const getPropiedadBySlug = cache(async (slug: string) => {
+  try {
+    const propiedad = await prisma.propiedad.findUnique({
     where: { slug, isPublished: true },
     include: {
       zona: {
@@ -136,13 +138,18 @@ export async function getPropiedadBySlug(slug: string) {
       },
       tipoInmueble: { include: { padre: true } },
       agente: true,
-      imagenes: { orderBy: { orden: 'asc' } }
-    }
+      imagenes: { orderBy: { orden: 'asc' } },
+    },
   });
+
   if (!propiedad) return null;
 
   return sanearParaServer(propiedad) as unknown as PropertyFullData;
-}
+  } catch (error) {
+    console.error('Error en Prisma getPropiedadBySlug:', error);
+    return null;
+  }
+});
 
 
 
