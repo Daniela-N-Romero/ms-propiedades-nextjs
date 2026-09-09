@@ -1,11 +1,15 @@
 'use client';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useTransition } from 'react';
 
 export function usePropertyFilters() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  // 🔑 Capturamos el estado de transición del servidor
+  const [isPending, startTransition] = useTransition();
 
   // 1. Obtener estados actuales de la URL 
   const filters = {
@@ -22,11 +26,17 @@ export function usePropertyFilters() {
     supCubMax: searchParams.get('supCubMax') || '',
     localidades: searchParams.getAll('localidad'),
     ordenar: searchParams.get('ordenar') || '',
-    // Cuántos filtros hay activos en total
     totalActivos: Object.keys(Object.fromEntries(searchParams.entries())).filter(k => k !== 'ordenar').length
   };
 
-  // 2. Función para actualizar un filtro individual de valor único (radio, select, texto, rango)
+  // Helper centralizado con startTransition y scroll: false
+  const navigateWithFilters = (params: URLSearchParams) => {
+    startTransition(() => {
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    });
+  };
+
+  // 2. Función para actualizar un filtro individual
   const setFilter = (key: string, value: string | null) => {
     const params = new URLSearchParams(searchParams.toString());
     if (key === 'moneda') {
@@ -38,10 +48,10 @@ export function usePropertyFilters() {
     } else {
       params.delete(key);
     }
-    router.push(`${pathname}?${params.toString()}`);
+    navigateWithFilters(params);
   };
 
-  // 3. Función específica para filtros múltiples (Checkboxes de Localidades)
+  // 3. Función para filtros múltiples (Checkboxes)
   const toggleArrayFilter = (key: string, id: string, isChecked: boolean) => {
     const params = new URLSearchParams(searchParams.toString());
     const currentValues = params.getAll(key);
@@ -52,16 +62,19 @@ export function usePropertyFilters() {
       params.delete(key);
       currentValues.filter(v => v !== id).forEach(v => params.append(key, v));
     }
-    router.push(`${pathname}?${params.toString()}`);
+    navigateWithFilters(params);
   };
 
-  // 4. Limpiar todos los filtros en un click si el usuario quiere reiniciar
+  // 4. Limpiar todos los filtros
   const clearAllFilters = () => {
-    router.push(pathname);
+    startTransition(() => {
+      router.push(pathname, { scroll: false });
+    });
   };
 
   return {
     filters,
+    isPending,
     setFilter,
     toggleArrayFilter,
     clearAllFilters

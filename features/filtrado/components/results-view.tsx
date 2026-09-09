@@ -17,7 +17,7 @@ interface ResultsViewProps {
 }
 
 export default function ResultsView({ propiedades, localidades, subtipos, esFallback }: ResultsViewProps) {
-  const { filters } = usePropertyFilters();
+  const { filters, isPending } = usePropertyFilters();
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
   const pathname = usePathname()
@@ -36,14 +36,25 @@ if (['industrial', 'residencial', 'comercial'].includes(mercadoActual)) {
   
   return (
     <main className={styles.container}>
-      {/* LEYENDA SUPERIOR */}
+{/* LEYENDA SUPERIOR CON INDICADOR DE CARGA */}
       <div className={styles.headerBar}>
-        <div className={styles.leyenda}>
-          Mostrando <span className={styles.strongEmphasis}>{propiedades.length}</span> propiedades
-          {filters.categoria ? ` en ${filters.categoria}` : ''} {filters.mercado ? ` de tipo ${filters.mercado}` : ''}
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className={styles.leyenda}>
+            Mostrando <span className={styles.strongEmphasis}>{propiedades.length}</span> propiedades
+            {filters.categoria ? ` en ${filters.categoria}` : ''} {filters.mercado ? ` de tipo ${filters.mercado}` : ''}
+          </div>
+
+          {/* INDICADOR VISUAL MIENTRAS SE APLICAN LOS FILTROS */}
+          {isPending && (
+            <span className="text-xs font-spartan font-bold text-amber-700 animate-pulse bg-amber-50 px-3 py-1 rounded-full border border-amber-300 flex items-center gap-1.5 shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+              Aplicando filtros...
+            </span>
+          )}
         </div>
+
         <div className={styles.topControlsDesktop}>
-          <Link href={mapaUrl} className="text-xs font-spartan font-bold uppercase tracking-wider text-brand-dark px-4 py-1.5 bg-white border border-slate-300 rounded-lg shadow-sm">
+          <Link href={mapaUrl} className="text-xs font-spartan font-bold uppercase tracking-wider text-brand-dark px-4 py-1.5 bg-white border border-slate-300 rounded-lg shadow-xs">
             🗺️ Ver Mapa
           </Link>
         </div>

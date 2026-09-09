@@ -24,7 +24,7 @@ export default function MapaResultsView({
   centroInicial,
   zoomInicial,
 }: MapaResultsViewProps) {
-  const { filters } = usePropertyFilters();
+  const { filters, isPending } = usePropertyFilters();
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
   const searchParams = useSearchParams();
@@ -37,26 +37,35 @@ export default function MapaResultsView({
   listParams.delete('zoom');
 
   const queryStr = listParams.toString();
-  
+
   const listaUrl = `/propiedades/${mercado}${queryStr ? `?${queryStr}` : ''}`;
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
-      {/* LEYENDA SUPERIOR & BOTÓN TOGGLE A VISTA DE LISTA */}
+      {/* LEYENDA SUPERIOR & BOTÓN TOGGLE */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold font-spartan text-slate-900">
-            Mapa Interactivo de Propiedades
-          </h1>
-          <p className="text-slate-500 text-xs">
-            Mostrando <span className="font-bold text-brand-dark">{propiedades.length}</span> inmuebles ubicados
-          </p>
+        <div className="flex items-center gap-3">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold font-spartan text-slate-900">
+              Mapa Interactivo de Propiedades
+            </h1>
+            <p className="text-slate-500 text-xs">
+              Mostrando <span className="font-bold text-brand-dark">{propiedades.length}</span> inmuebles ubicados
+            </p>
+          </div>
+
+          {/* INDICADOR EN TIEMPO REAL */}
+          {isPending && (
+            <span className="text-xs font-spartan font-bold text-amber-700 animate-pulse bg-amber-50 px-3 py-1 rounded-full border border-amber-300 flex items-center gap-1.5 shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+              Actualizando mapa...
+            </span>
+          )}
         </div>
 
-        {/* Botón para cambiar a Vista de Lista / Grilla */}
         <Link
           href={listaUrl}
-          className="hidden md:inline-flex text-xs font-spartan font-bold uppercase tracking-wider text-brand-dark px-4 py-2 bg-white border border-slate-300 rounded-xl shadow-sm hover:bg-slate-50 transition-all items-center gap-1.5"
+          className="hidden md:inline-flex text-xs font-spartan font-bold uppercase tracking-wider text-brand-dark px-4 py-2 bg-white border border-slate-300 rounded-xl shadow-xs hover:bg-slate-50 transition-all items-center gap-1.5"
         >
           ☰ Ver en Lista
         </Link>
@@ -137,10 +146,10 @@ export default function MapaResultsView({
         {/* SECCIÓN PRINCIPAL DEL MAPA */}
         <section className="md:col-span-3">
           <MapaPropiedades
-          propiedades={propiedades}
-          centroInicial={centroInicial} 
-          zoomInicial={zoomInicial}
-          alturaClass="h-[calc(100vh-140px)] min-h-[500px]"/>
+            propiedades={propiedades}
+            centroInicial={centroInicial}
+            zoomInicial={zoomInicial}
+            alturaClass="h-[calc(100vh-140px)] min-h-[500px]" />
         </section>
       </div>
     </main>

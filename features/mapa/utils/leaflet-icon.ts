@@ -9,22 +9,22 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
 });
 
-// PIN PERSONALIZADO MS PROPIEDADES (Marca Verde/Azul)
-export const customBrandIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png', // URL versión normal 1x
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+// 🟢 Icono para Cartera Propia
+export const greenIcon = L.icon({
+  iconUrl: '/images/icons/marker-icon-green.png',
+  shadowUrl: '/images/markers/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
-  shadowSize: [41, 41],
+  shadowSize: [41, 41]
 });
 
-// Ícono Cartera Colega (Azul)
-export const colleagueBrandIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+// 🔵 Icono para De Colega
+export const blueIcon = L.icon({
+  iconUrl: '/images/icons/marker-icon-blue.png',
+  shadowUrl: '/images/markers/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
-  shadowSize: [41, 41],
+  shadowSize: [41, 41]
 });

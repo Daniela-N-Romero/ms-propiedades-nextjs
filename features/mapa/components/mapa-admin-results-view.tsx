@@ -25,20 +25,30 @@ export default function MapaAdminResultsView({
   propietarios,
   colegas
 }: MapaAdminResultsViewProps) {
-  const { filters } = usePropertyFilters();
+  const { filters, isPending } = usePropertyFilters();
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
   return (
     <div className="space-y-4">
       {/* LEYENDA Y HEADER INTERNO */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold font-spartan text-slate-900">
-            🗺️ Mapa Privado de Administración
-          </h1>
-          <p className="text-slate-500 text-xs mt-0.5">
-            Mostrando <span className="font-bold text-slate-900">{propiedades.length}</span> inmuebles geolocalizados
-          </p>
+        <div className="flex items-center gap-3">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold font-spartan text-slate-900">
+              🗺️ Mapa Privado de Administración
+            </h1>
+            <p className="text-slate-500 text-xs mt-0.5">
+              Mostrando <span className="font-bold text-slate-900">{propiedades.length}</span> inmuebles geolocalizados
+            </p>
+          </div>
+
+          {/* INDICADOR EN TIEMPO REAL MIENTRAS FILTRA */}
+          {isPending && (
+            <span className="text-xs font-spartan font-bold text-amber-700 animate-pulse bg-amber-50 px-3 py-1 rounded-full border border-amber-300 flex items-center gap-1.5 shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+              Actualizando mapa...
+            </span>
+          )}
         </div>
 
         {/* LEYENDA DE COLORES DE CARTERA */}
