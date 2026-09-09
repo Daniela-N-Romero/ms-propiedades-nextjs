@@ -95,7 +95,7 @@ export default function SearchView({
 
         {/* 4. LOCALIDAD */}
         <div className="col-span-1">
-          <label className={styles.label}>Localidad</label>
+          <label className={styles.label}>Partido</label>
           <div className={styles.selectWrapper}>
             <select
               className={styles.select}

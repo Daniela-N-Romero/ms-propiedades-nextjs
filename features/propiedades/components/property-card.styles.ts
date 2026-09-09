@@ -7,7 +7,7 @@ export const styles = {
   
   // Badges sobre la foto
   badgeOperation: "absolute top-2.5 left-2.5 z-10 font-spartan font-extrabold uppercase tracking-wider text-[9px] sm:text-[10px] px-2.5 py-1 rounded-md shadow-md",
-  destacada: "absolute top-2.5 right-2.5 z-10 bg-amber-400 text-slate-950 text-[11px] font-black p-1.5 rounded-md shadow-md flex items-center justify-center border border-amber-300",
+  destacada: "absolute top-2.5 right-2.5 z-10 bg-amber-400/50 text-slate-950 text-[11px] font-black p-1.5 rounded-md shadow-md flex items-center justify-center border border-amber-300",
 
   // Cuerpo de la tarjeta
   content: "p-3 sm:p-3.5 flex-grow flex flex-col justify-between gap-2.5",

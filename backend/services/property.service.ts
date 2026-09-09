@@ -211,8 +211,25 @@ export async function searchPropiedades(filters: SearchFilters, isPublishedOnly:
     queryWhere.moneda = filters.moneda as MonedaEnum;
   }
 
+  // Filtrado por Localidades o Partidos (Soporta Zonas Padre e Hijas)
   if (filters.localidades && filters.localidades.length > 0) {
-    queryWhere.zonaId = { in: filters.localidades };
+    // 1. Buscamos si alguna de las IDs enviadas es una Zona Padre (Partido/Región)
+    const zonasConHijas = await prisma.zona.findMany({
+      where: { id: { in: filters.localidades } },
+      select: {
+        id: true,
+        hijas: { select: { id: true } }
+      }
+    });
+
+    // 2. Aplanamos las IDs de todas las localidades hijas encontradas
+    const idsHijas = zonasConHijas.flatMap(z => z.hijas.map(hija => hija.id));
+
+    // 3. Unificamos las IDs de entrada con las hijas resultantes
+    const todasLasZonaIds = Array.from(new Set([...filters.localidades, ...idsHijas]));
+
+    // 4. Aplicamos la búsqueda sobre la lista completa de IDs
+    queryWhere.zonaId = { in: todasLasZonaIds };
   }
 
   if (filters.precioMin || filters.precioMax) {

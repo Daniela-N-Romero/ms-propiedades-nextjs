@@ -1,3 +1,4 @@
+//features\buscador\hooks\use-home-search.ts
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
