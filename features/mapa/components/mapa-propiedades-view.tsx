@@ -2,7 +2,7 @@
 
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { customBrandIcon, colleagueBrandIcon } from '../utils/leaflet-icon';
+import { greenIcon, blueIcon } from '../utils/leaflet-icon';
 import { formatPrecio } from '@/lib/utils-formatting';
 import Link from 'next/link';
 import { useEffect } from 'react';
@@ -90,7 +90,7 @@ export default function MapaPropiedadesView({
         {/* Pines con Popups */}
         {propiedades.map((prop) => {
           const isOwn = prop.origen !== 'fromColleague';
-          const iconToUse = isOwn ? customBrandIcon : colleagueBrandIcon;
+          const iconToUse = isOwn ? greenIcon : blueIcon;
           const colega = colegas.find(c => c.id === prop.colegaId);
           const propietario = propietarios.find(p => p.id === prop.propietarioId);
 
