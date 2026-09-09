@@ -22,7 +22,7 @@ export const greenIcon = L.icon({
 // 🔵 Icono para De Colega
 export const blueIcon = L.icon({
   iconUrl: '/icons/marker-icon-blue.png',
-  shadowUrl: '/images/markers/marker-shadow.png',
+  shadowUrl: '/icons/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
