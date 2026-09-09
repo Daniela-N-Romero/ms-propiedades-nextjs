@@ -9,7 +9,6 @@ import { trackHomeSearch } from '@/lib/analytics';
 export function useHomeSearch(zonasDB: ZonaServer[] = []) {
   const router = useRouter();
 
-  console.log("Zonas que llegaron al cliente desde DB:", zonasDB);
   // 1. Memoizamos las zonas padre usando comprobación laxo (!z.padreId)
   const zonasPadre = useMemo(() => {
     return (zonasDB || []).filter(z => !z.padreId);

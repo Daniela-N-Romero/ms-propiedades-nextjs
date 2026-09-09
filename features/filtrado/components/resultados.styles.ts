@@ -17,7 +17,7 @@ export const styles = {
   
   // Contenedor Derecho (Controles superiores + Cards)
   mainContent: "md:col-span-3 space-y-4",
-  topControlsDesktop: "hidden md:flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200",
+  topControlsDesktop: "hidden md:flex items-center justify-between  p-3",
   
   // Grilla de Fichas
   cardsGrid: "grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-6",
