@@ -11,7 +11,7 @@ L.Icon.Default.mergeOptions({
 
 // 🟢 Icono para Cartera Propia
 export const greenIcon = L.icon({
-  iconUrl: '/images/icons/marker-icon-green.png',
+  iconUrl: '/icons/marker-icon-green.png',
   shadowUrl: '/images/markers/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
@@ -21,7 +21,7 @@ export const greenIcon = L.icon({
 
 // 🔵 Icono para De Colega
 export const blueIcon = L.icon({
-  iconUrl: '/images/icons/marker-icon-blue.png',
+  iconUrl: '/icons/marker-icon-blue.png',
   shadowUrl: '/images/markers/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
