@@ -56,6 +56,7 @@ if (['industrial', 'residencial', 'comercial'].includes(mercadoActual)) {
           onClick={() => setIsMobileFiltersOpen(true)} // 👈 Abre el modal mobile
           className={styles.mobileBtn}
         >
+          <img src="/icons/filter-slider-icon.svg" alt="" className="w-4" />
           <span>Filtros</span>
           {filters.totalActivos > 0 && (
             <span className={styles.filterBadge}>{filters.totalActivos}</span>

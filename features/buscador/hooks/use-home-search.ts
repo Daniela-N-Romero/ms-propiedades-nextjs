@@ -1,13 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { ZonaServer } from '@/types/server-data';
 import { trackHomeSearch } from '@/lib/analytics';
 
-export function useHomeSearch(zonasDB: ZonaServer[]) {
+export function useHomeSearch(zonasDB: ZonaServer[] = []) {
   const router = useRouter();
-  const zonasPadre = zonasDB.filter(z => z.padreId === null);
+
+  console.log("Zonas que llegaron al cliente desde DB:", zonasDB);
+  // 1. Memoizamos las zonas padre usando comprobación laxo (!z.padreId)
+  const zonasPadre = useMemo(() => {
+    return (zonasDB || []).filter(z => !z.padreId);
+  }, [zonasDB]);
+  console.log("Zonas Padre filtradas:", zonasPadre);
 
   const [zonaSelected, setZonaSelected] = useState<string>('');
   const [localidadesFiltradas, setLocalidadesFiltradas] = useState<ZonaServer[]>([]);
@@ -15,24 +21,31 @@ export function useHomeSearch(zonasDB: ZonaServer[]) {
   const [categoriaSelected, setCategoriaSelected] = useState<string>('');
   const [subtipoSelected, setSubtipoSelected] = useState<string>('');
 
-  //Manejo de selección de zonas y localidades
+  // 2. Manejo de selección de zonas e hijas
   useEffect(() => {
     if (!zonaSelected) {
       setLocalidadesFiltradas([]);
       setLocalidadSelected('');
       return;
     }
-    const hijas = zonasDB.filter(z => z.padreId === Number(zonaSelected));
+
+    // Buscamos las hijas comparando Numbers
+    const hijas = (zonasDB || []).filter(z => Number(z.padreId) === Number(zonaSelected));
+    
     setLocalidadesFiltradas(hijas);
-    setLocalidadSelected('');
   }, [zonaSelected, zonasDB]);
 
-  //Manejo de submit
+  // Handler para cambiar de zona (limpia la localidad en el evento de usuario)
+  const handleZonaChange = (id: string) => {
+    setZonaSelected(id);
+    setLocalidadSelected('');
+  };
+
+  // 3. Manejo de submit
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams();
 
-    // Forzamos siempre minúsculas para coincidir con TipoOperacionEnum
     if (categoriaSelected) {
       params.set('categoria', categoriaSelected.toLowerCase());
     }
@@ -44,17 +57,16 @@ export function useHomeSearch(zonasDB: ZonaServer[]) {
     if (localidadSelected) {
       params.set('localidad', localidadSelected);
     } else if (zonaSelected) {
-      // Si eligió una Zona Padre pero no especificó localidad, mandamos las hijas
       localidadesFiltradas.forEach(loc => params.append('localidad', String(loc.id)));
     }
 
-    //  tracking de búsquedas
     trackHomeSearch({
       categoria: categoriaSelected,
       subtipo: subtipoSelected,
       zonaLabel: zonaSelected,
       localidadLabel: localidadSelected
     });
+
     router.push(`/propiedades?mercado=industrial&${params.toString()}`);
   };
 
@@ -65,7 +77,7 @@ export function useHomeSearch(zonasDB: ZonaServer[]) {
     localidadSelected,
     categoriaSelected,
     subtipoSelected,
-    setZonaSelected,
+    setZonaSelected: handleZonaChange, // Usamos la función envuelta
     setLocalidadSelected,
     setCategoriaSelected,
     setSubtipoSelected,

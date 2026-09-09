@@ -3,6 +3,7 @@ import { sanearZona } from '@/lib/sanitizers';
 import { sanearParaServer} from '@/lib/sanitizers';
 import { ZonaServer } from '@/types/server-data';
 import { TipoOperacionEnum } from '@prisma-client';
+import { cache } from 'react';
 
 // ZONAS Y LOCALIDADES
 
@@ -51,20 +52,20 @@ export async function getZonasTodas() {
 
 // GET ZONAS Y LOCALIDADES PARA PROPIEDADES CON PUBLISHED: TRUE
 //[Padres e Hijas + Publicadas]
-export async function getZonasActivas(): Promise<ZonaServer[]> {
-  const zonas = await prisma.zona.findMany({
-    where: {
-      OR: [
-        { propiedades: { some: { isPublished: true } } },
-        { hijas: { some: { propiedades: { some: { isPublished: true } } } } }
-      ]
-    },
-    include: { padre: true },
-    orderBy: { nombre: 'asc' }
-  });
+export const getZonasActivas = cache(async () => {
+  try {
+    const zonas = await prisma.zona.findMany({
+      orderBy: { nombre: 'asc' },
+    });
 
-  return zonas.map(sanearZona);
-}
+    // Nos aseguramos de devolver el array saneado
+    return sanearParaServer(zonas) as unknown as ZonaServer[];
+  } catch (error) {
+    console.error('Error al traer zonas:', error);
+    return [];
+  }
+});
+
 //[Solo Hijas + Publicadas + Filtra por Tipo/Categoría]
 export async function getLocalidadesActivasPorTipo(mercadoSlug: string, categoria?: string) {
 const wherePropiedad: any = {

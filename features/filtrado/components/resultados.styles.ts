@@ -20,7 +20,7 @@ export const styles = {
   topControlsDesktop: "hidden md:flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200",
   
   // Grilla de Fichas
-  cardsGrid: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6",
+  cardsGrid: "grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-6",
   
   // Elementos de Filtro Individual (Filtros Aside)
   filterSection: "space-y-1 pb-1 border-b border-slate-100 last:border-b-0 last:pb-0",

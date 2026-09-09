@@ -18,7 +18,7 @@ export default function PropertyCard({ propiedad }: PropertyCardProps) {
     <article className={`${styles.card} relative group cursor-pointer transition-shadow hover:shadow-xl`}>
       <div className={styles.imageWrapper}>
 
-        <span className={`${styles.badgeOperation} ${propiedad.categoria === 'venta' ? 'bg-brand-dark text-white' : 'bg-green-700 text-white'}`}>
+        <span className={`${styles.badgeOperation} ${propiedad.categoria === 'venta' ? 'bg-gray-900/90 text-white' : 'bg-emerald-700/90 text-white'}`}>
           {propiedad.categoria}
         </span>
         {/* 
@@ -28,14 +28,14 @@ export default function PropertyCard({ propiedad }: PropertyCardProps) {
 
         {/* BADGE DESTACADA */}
         {propiedad.isDestacada && (
-          <span className="absolute top-12 right-4 bg-brand-orange text-brand-dark text-[10px] font-spartan font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg shadow-lg flex items-center gap-1 z-10">
-            ⭐ Destacada
+          <span className={`${styles.destacada}`}>
+            ⭐
           </span>
         )}
 
         {/* 💳 BADGE FLOTANTE DE FINANCIACIÓN (SOBRE LA FOTO) */}
         {propiedad.financiacion && (
-          <span className="absolute bottom-3 left-3 right-3 bg-red-600 text-white text-[12px] font-spartan font-extrabold uppercase tracking-wider px-2.5 py-1.5 rounded-lg shadow-md backdrop-blur-xs flex items-center justify-center gap-1 z-10 text-center">
+          <span className="absolute bottom-2 left-2 right-2 z-10 bg-slate-900/70 backdrop-blur-xs text-amber-300 text-[10px] font-extrabold uppercase tracking-wide px-2 py-1 rounded-md text-center truncate">
             💳 {propiedad.financiacion}
           </span>
         )}
@@ -67,13 +67,6 @@ export default function PropertyCard({ propiedad }: PropertyCardProps) {
             </Link>
           </h3>
 
-
-          <div className="space-y-1 mt-2">
-            <div className={styles.priceBlock}>
-              <span>VALOR:</span>
-              <span>{formatPrecio(propiedad.precio, propiedad.moneda)}</span>
-            </div>
-          </div>
         </div>
 
         {/* DETALLES DE M2 / MEDIDAS */}
@@ -92,11 +85,22 @@ export default function PropertyCard({ propiedad }: PropertyCardProps) {
           </div>
         </div>
 
+
+
+
+
         {/* ACCIÓN */}
-        <span className={styles.viewBtn}>
+        {/* <span className={styles.viewBtn}>
           Ver Ficha Técnica
-        </span>
+        </span> */}
       </div>
+        {/* BLOQUE DE PRECIO */}
+        <div className={styles.priceBlock}>
+          <span>VALOR:</span>
+          <span>{formatPrecio(propiedad.precio, propiedad.moneda)}</span>
+        </div>
+
+
     </article>
   );
 }

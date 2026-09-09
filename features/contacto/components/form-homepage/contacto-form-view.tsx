@@ -43,7 +43,7 @@ export default function FormContactoView({
     );
   }
     return (
-        <form id="formulario-contacto" onSubmit={handleSubmit} className="bg-white border border-slate-200 shadow-sm rounded-2xl p-8 space-y-6">
+        <form id="formulario-contacto" onSubmit={handleSubmit} className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6 space-y-4">
             <div className={styles.columns}>
                 <div>
                     <label className={styles.label}>Nombre</label>
@@ -109,7 +109,7 @@ export default function FormContactoView({
             <div>
                 <label className={styles.label}>Mensaje o Detalles adicionales</label>
                 <textarea
-                    rows={4}
+                    rows={3}
                     className={styles.input}
                     placeholder="Contanos qué tipo de nave o lote estás buscando o las características de tu inmueble..."
                     value={formState.mensaje}
