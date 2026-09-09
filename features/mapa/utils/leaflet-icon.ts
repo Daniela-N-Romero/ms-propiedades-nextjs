@@ -12,7 +12,7 @@ L.Icon.Default.mergeOptions({
 // 🟢 Icono para Cartera Propia
 export const greenIcon = L.icon({
   iconUrl: '/icons/marker-icon-green.png',
-  shadowUrl: '/images/markers/marker-shadow.png',
+  shadowUrl: '/icons/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
