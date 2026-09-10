@@ -160,7 +160,7 @@ const centroInicialSeguro: [number, number] = isValidLatLng(propCoords[0], propC
     <div className="relative w-full h-full">
       {/* Cajas flotantes con Info de Viaje sobre el mapa */}
       {tiempoTexto && (
-        <div className="absolute top-4 right-4 z-[1000] bg-slate-900/90 text-white text-xs px-3.5 py-2 rounded-xl shadow-xl backdrop-blur-md border border-slate-700 flex items-center gap-3">
+        <div className="absolute top-4 right-4 z-1000 bg-slate-900/90 text-white text-xs px-3.5 py-2 rounded-xl shadow-xl backdrop-blur-md border border-slate-700 flex items-center gap-3">
           <div className="flex items-center gap-1.5">
             <span>⏱️</span>
             <div>
@@ -168,7 +168,7 @@ const centroInicialSeguro: [number, number] = isValidLatLng(propCoords[0], propC
               <strong className="text-emerald-400 text-sm">{tiempoTexto}</strong>
             </div>
           </div>
-          <div className="h-6 w-[1px] bg-slate-700" />
+          <div className="h-6 w-px bg-slate-700" />
           <div className="flex items-center gap-1.5">
             <span>🛣️</span>
             <div>
@@ -190,7 +190,7 @@ const centroInicialSeguro: [number, number] = isValidLatLng(propCoords[0], propC
         {isValidLatLng(propCoords[0], propCoords[1]) && (
           <Marker position={propCoords} icon={defaultIcon}>
             <Tooltip permanent direction="top" offset={[0, -40]} interactive={true} className="shadow-lg border-0 bg-transparent">
-              <div className="bg-slate-900 text-white p-2.5 rounded-xl shadow-2xl border border-slate-700 max-w-[220px] text-center flex flex-col gap-1.5">
+              <div className="bg-slate-900 text-white p-2.5 rounded-xl shadow-2xl border border-slate-700 max-w-55 text-center flex flex-col gap-1.5">
                 <p className="font-bold text-xs leading-snug line-clamp-2 text-blue-200">
                   {selectedProp.title}
                 </p>

@@ -164,7 +164,7 @@ export default function PropuestaInteractiveView({
 
         {/* Columna Derecha: Mapa */}
         <div
-          className={`lg:col-span-7 h-full min-h-[350px] bg-slate-100 rounded-2xl overflow-hidden shadow-md border border-gray-200 ${vistaMobile === "mapa" ? "block" : "hidden md:block"
+          className={`lg:col-span-7 h-full min-h-87.5 bg-slate-100 rounded-2xl overflow-hidden shadow-md border border-gray-200 ${vistaMobile === "mapa" ? "block" : "hidden md:block"
             }`}
         >
           {/* 🔑 renderizamos MapaPropuesta solo cuando la pestaña mobile es 'mapa' o en Desktop */}

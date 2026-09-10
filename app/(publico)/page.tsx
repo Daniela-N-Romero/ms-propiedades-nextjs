@@ -35,7 +35,7 @@ export default async function HomePage() {
       {/* 2. SECCIÓN PROPIEDADES DESTACADAS */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <h2 className={styles.sectionTitle}>Propiedades Destacadas</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-6">
           {destacadas.map((propiedad) => (
             <PropertyCard key={propiedad.id} propiedad={propiedad as any} />
           ))}
