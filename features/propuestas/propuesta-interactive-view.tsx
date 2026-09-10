@@ -4,6 +4,7 @@
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import Script from "next/script"; 
 
 const MapaPropuesta = dynamic(
   () => import("./mapa-propuesta"),
@@ -66,6 +67,18 @@ export default function PropuestaInteractiveView({
 
   return (
     <div className="flex flex-col gap-4 h-[calc(100vh-140px)]">
+      {/* 🚀 CONSOLA DE DEBUGGING PARA MOBILE (ERUDA) */}
+      <Script
+        src="https://cdn.jsdelivr.net/npm/eruda"
+        strategy="afterInteractive"
+        onLoad={() => {
+          // @ts-ignore
+          if (typeof window !== "undefined" && window.eruda) {
+            // @ts-ignore
+            window.eruda.init();
+          }
+        }}
+      />
       {/* Selector de Vista Exclusivo para Mobile */}
       <div className="flex md:hidden bg-slate-200 p-1 rounded-xl gap-1">
         <button
@@ -175,8 +188,12 @@ export default function PropuestaInteractiveView({
               onVerEnLista={() => setVistaMobile("lista")}
             />
           )}
+
+          
         </div>
       </div>
+
+      
     </div>
   );
 }
