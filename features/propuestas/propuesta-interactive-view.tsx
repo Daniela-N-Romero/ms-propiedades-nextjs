@@ -4,7 +4,7 @@
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import Script from "next/script"; 
+import Script from "next/script";
 
 const MapaPropuesta = dynamic(
   () => import("./mapa-propuesta"),
@@ -116,8 +116,8 @@ export default function PropuestaInteractiveView({
                 key={prop.id}
                 onClick={() => seleccionarYVerMapa(prop.id)}
                 className={`p-5 rounded-2xl cursor-pointer transition-all duration-300 border-2 relative ${isSelected
-                    ? "border-blue-600 bg-white shadow-lg scale-[1.01]"
-                    : "border-gray-200 bg-white hover:border-blue-300 shadow-sm"
+                  ? "border-blue-600 bg-white shadow-lg scale-[1.01]"
+                  : "border-gray-200 bg-white hover:border-blue-300 shadow-sm"
                   }`}
               >
                 <div className="flex justify-between items-start mb-2 gap-2">
@@ -180,6 +180,7 @@ export default function PropuestaInteractiveView({
           className={`lg:col-span-7 h-full min-h-[350px] bg-slate-100 rounded-2xl overflow-hidden shadow-md border border-gray-200 ${vistaMobile === "mapa" ? "block" : "hidden md:block"
             }`}
         >
+          {/* 🔑 renderizamos MapaPropuesta solo cuando la pestaña mobile es 'mapa' o en Desktop */}
           {selectedProp && (
             <MapaPropuesta
               selectedProp={selectedProp}
@@ -188,12 +189,10 @@ export default function PropuestaInteractiveView({
               onVerEnLista={() => setVistaMobile("lista")}
             />
           )}
-
-          
         </div>
       </div>
 
-      
+
     </div>
   );
 }

@@ -39,22 +39,27 @@ function isValidLatLng(latOrCoords: any, lng?: any): boolean {
 function MapController({ coords, zoom }: { coords: [number, number]; zoom?: number }) {
   const map = useMap();
 
-useEffect(() => {
+  useEffect(() => {
     const [lat, lng] = coords || [];
-  // 🔍 DEBUG: Inspeccionamos exactamente qué llega antes de volar
-    console.log("🔍 [MapController Debug]:", {
-      rawCoords: coords,
-      latParsed: Number(lat),
-      lngParsed: Number(lng),
-      esValido: isValidLatLng(lat, lng),
-    });
 
     if (isValidLatLng(lat, lng)) {
-      map.flyTo([Number(lat), Number(lng)], zoom || 10, { duration: 1.5 });
-    } else {
-      console.warn("⚠️ [MapController Warn]: Coordenadas inválidas bloqueadas para flyTo:", coords);
+      // Usamos un timeout para esperar a que el DOM del celular renderice las dimensiones reales del mapa
+      const timer = setTimeout(() => {
+        try {
+          // 1. Forzamos a Leaflet a recalcular el ancho/alto del contenedor en Mobile
+          map.invalidateSize();
+
+          // 2. Ejecutamos el flyTo de forma segura
+          map.flyTo([Number(lat), Number(lng)], zoom || 10, { duration: 1.2 });
+        } catch (err) {
+          console.warn("⚠️ [MapController Error at flyTo]:", err);
+        }
+      }, 200); // 200ms da tiempo suficiente al navegador mobile
+
+      return () => clearTimeout(timer);
     }
   }, [coords, zoom, map]);
+
   return null;
 }
 
