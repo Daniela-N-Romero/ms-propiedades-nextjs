@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, Tooltip } from "react-leaflet";
 import L, { LatLngExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -36,29 +36,37 @@ function isValidLatLng(latOrCoords: any, lng?: any): boolean {
     numLng <= 180
   );
 }
-function MapController({ coords, zoom }: { coords: [number, number]; zoom?: number }) {
+function MapController({ coords }: { coords: [number, number] }) {
   const map = useMap();
+  const lastCoordsRef = useRef<string>("");
 
   useEffect(() => {
-    const [lat, lng] = coords || [];
+    if (!isValidLatLng(coords[0], coords[1])) return;
 
-    if (isValidLatLng(lat, lng)) {
-      // Usamos un timeout para esperar a que el DOM del celular renderice las dimensiones reales del mapa
-      const timer = setTimeout(() => {
-        try {
-          // 1. Forzamos a Leaflet a recalcular el ancho/alto del contenedor en Mobile
-          map.invalidateSize();
+    const coordsKey = `${coords[0]}-${coords[1]}`;
+    // Evitamos re-ejecutar el reposicionamiento si son exactamente las mismas coordenadas
+    if (lastCoordsRef.current === coordsKey) return;
 
-          // 2. Ejecutamos el flyTo de forma segura
-          map.flyTo([Number(lat), Number(lng)], zoom || 10, { duration: 1.2 });
-        } catch (err) {
-          console.warn("⚠️ [MapController Error at flyTo]:", err);
+    const timer = setTimeout(() => {
+      try {
+        if (!map) return;
+        map.invalidateSize();
+
+        // 🔑 Usamos setView de manera segura. Evita los micro-frames de flyTo que crashean en unproject()
+        const targetLat = Number(coords[0]);
+        const targetLng = Number(coords[1]);
+
+        if (!isNaN(targetLat) && !isNaN(targetLng)) {
+          map.setView([targetLat, targetLng], 12, { animate: false });
+          lastCoordsRef.current = coordsKey;
         }
-      }, 200); // 200ms da tiempo suficiente al navegador mobile
+      } catch (err) {
+        console.warn("⚠️ [MapController Handled Warning]:", err);
+      }
+    }, 250);
 
-      return () => clearTimeout(timer);
-    }
-  }, [coords, zoom, map]);
+    return () => clearTimeout(timer);
+  }, [coords, map]);
 
   return null;
 }
@@ -143,6 +151,11 @@ export default function MapaPropuesta({
   const puntoMedioRuta =
     routeCoords.length > 0 ? routeCoords[Math.floor(routeCoords.length / 2)] : null;
 
+// Fijamos un centro inicial por defecto seguro para el MapContainer
+const centroInicialSeguro: [number, number] = isValidLatLng(propCoords[0], propCoords[1])
+  ? propCoords
+  : [-34.6037, -58.3816];
+
   return (
     <div className="relative w-full h-full">
       {/* Cajas flotantes con Info de Viaje sobre el mapa */}
@@ -166,7 +179,7 @@ export default function MapaPropuesta({
         </div>
       )}
 
-      <MapContainer center={propCoords} zoom={10} className="w-full h-full" scrollWheelZoom={false}>
+      <MapContainer center={centroInicialSeguro} zoom={10} className="w-full h-full" scrollWheelZoom={false}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -174,7 +187,7 @@ export default function MapaPropuesta({
         <MapController coords={propCoords} />
 
         {/* Marcador de la Propiedad con Etiqueta Superior Permanente */}
-        {isValidLatLng(propCoords) && (
+        {isValidLatLng(propCoords[0], propCoords[1]) && (
           <Marker position={propCoords} icon={defaultIcon}>
             <Tooltip permanent direction="top" offset={[0, -40]} interactive={true} className="shadow-lg border-0 bg-transparent">
               <div className="bg-slate-900 text-white p-2.5 rounded-xl shadow-2xl border border-slate-700 max-w-[220px] text-center flex flex-col gap-1.5">
@@ -198,7 +211,7 @@ export default function MapaPropuesta({
           </Marker>
         )}
 
-        {isValidLatLng(safeDestinoCoords) && (
+        {isValidLatLng(safeDestinoCoords[0], safeDestinoCoords[1]) && (
           <Marker position={safeDestinoCoords} icon={defaultIcon}>
             <Popup>
               <strong>Destino: {puntoInteresNombre}</strong>
