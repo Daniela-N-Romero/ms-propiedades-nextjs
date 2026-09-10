@@ -13,7 +13,6 @@ export function useHomeSearch(zonasDB: ZonaServer[] = []) {
   const zonasPadre = useMemo(() => {
     return (zonasDB || []).filter(z => !z.padreId);
   }, [zonasDB]);
-  console.log("Zonas Padre filtradas:", zonasPadre);
 
   const [zonaSelected, setZonaSelected] = useState<string>('');
   const [localidadesFiltradas, setLocalidadesFiltradas] = useState<ZonaServer[]>([]);

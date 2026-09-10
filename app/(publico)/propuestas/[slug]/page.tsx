@@ -2,6 +2,7 @@ import { prisma } from "@/backend/db";
 import { notFound } from "next/navigation";
 import PropuestaInteractiveView from "@/features/propuestas/propuesta-interactive-view";
 import Link from "next/link";
+import { sanearParaServer } from "@/lib/sanitizers";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -11,7 +12,7 @@ export default async function PropuestaDinamicaPage({ params }: Props) {
   const { slug } = await params;
 
   // 1. Buscar la propuesta con sus propiedades relacionadas desde la BBDD
-  const propuesta = await prisma.propuestaComercial.findUnique({
+  const propuestaRaw = await prisma.propuestaComercial.findUnique({
     where: { slug },
     include: {
       items: {
@@ -28,7 +29,9 @@ export default async function PropuestaDinamicaPage({ params }: Props) {
     },
   });
 
-  if (!propuesta) notFound();
+  if (!propuestaRaw) notFound();
+
+const propuesta = sanearParaServer(propuestaRaw);
 
   // 2. Mapear datos a la vista interactiva
 const propiedadesParaVista = propuesta.items.map((item) => {
@@ -50,8 +53,8 @@ const propiedadesParaVista = propuesta.items.map((item) => {
     slug: p.slug,
     title: p.titulo,
     localidad: p.zona?.nombre || "Ubicación Industrial",
-    lat: p.latitud ? Number(p.latitud) : 0, // Convertimos Decimal de Prisma a number de JS
-    lng: p.longitud ? Number(p.longitud) : 0, // Convertimos Decimal de Prisma a number de JS
+    lat: Number(p.latitud || 0),
+    lng: Number(p.longitud || 0),
     precio: `${p.moneda} ${Number(p.precio).toLocaleString("es-AR")}`,
     precioM2: precioM2Calculado, // Valor por m² o "Consulte"
     supCubierta: p.superficieCubierta ? `${p.superficieCubierta} m²` : "Sin especificar",
@@ -104,7 +107,7 @@ const propiedadesParaVista = propuesta.items.map((item) => {
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6">
         <PropuestaInteractiveView
           propiedades={propiedadesParaVista}
-          destinoCoords={[propuesta.puntoInteresLat, propuesta.puntoInteresLng]}
+          destinoCoords={[Number(propuesta.puntoInteresLat), Number(propuesta.puntoInteresLng)]}
           puntoInteresNombre={propuesta.puntoInteresNombre}
         />
       </main>
