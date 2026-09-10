@@ -69,6 +69,8 @@ const propiedadesParaVista = propuesta.items.map((item) => {
   };
 });
 
+const destinoLat = propuesta.puntoInteresLat ? Number(propuesta.puntoInteresLat) : -34.6037;
+const destinoLng = propuesta.puntoInteresLng ? Number(propuesta.puntoInteresLng) : -58.3816;
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -108,7 +110,7 @@ const propiedadesParaVista = propuesta.items.map((item) => {
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6">
         <PropuestaInteractiveView
           propiedades={propiedadesParaVista}
-          destinoCoords={[Number(propuesta.puntoInteresLat), Number(propuesta.puntoInteresLng)]}
+          destinoCoords={[destinoLat, destinoLng]}
           puntoInteresNombre={propuesta.puntoInteresNombre}
         />
       </main>
