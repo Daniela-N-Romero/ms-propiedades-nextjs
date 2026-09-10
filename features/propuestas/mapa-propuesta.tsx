@@ -13,10 +13,26 @@ const defaultIcon = L.icon({
   iconAnchor: [12, 41],
 });
 
+function isValidLatLng(coords: [number, number]): boolean {
+  return (
+    Array.isArray(coords) &&
+    coords.length === 2 &&
+    typeof coords[0] === "number" &&
+    typeof coords[1] === "number" &&
+    !isNaN(coords[0]) &&
+    !isNaN(coords[1]) &&
+    coords[0] !== 0 &&
+    coords[1] !== 0
+  );
+}
+
 function MapController({ coords }: { coords: [number, number] }) {
   const map = useMap();
   useEffect(() => {
-    map.flyTo(coords, 10, { duration: 1.5 });
+    // Módulo de seguridad: Solo volamos si el par es LatLng válido
+    if (isValidLatLng(coords)) {
+      map.flyTo(coords, 10, { duration: 1.5 });
+    }
   }, [coords, map]);
   return null;
 }
@@ -40,14 +56,21 @@ export default function MapaPropuesta({
   puntoInteresNombre = "Punto de Interés",
   onVerEnLista,
 }: MapaPropuestaProps) {
-  const propCoords: [number, number] = [selectedProp.lat, selectedProp.lng];
+  const latProp = Number(selectedProp?.lat) || -34.6037;
+  const lngProp = Number(selectedProp?.lng) || -58.3816;
+  const propCoords: [number, number] = [latProp, lngProp];
+
+  const latDest = Number(destinoCoords?.[0]) || -34.6037;
+  const lngDest = Number(destinoCoords?.[1]) || -58.3816;
+  const safeDestinoCoords: [number, number] = [latDest, lngDest];
+
   const [routeCoords, setRouteCoords] = useState<LatLngExpression[]>([]);
   const [distanciaTexto, setDistanciaTexto] = useState<string>("");
   const [tiempoTexto, setTiempoTexto] = useState<string>("");
 
   // Trazar Ruta Real por Carretera usando la API de OSRM
   useEffect(() => {
-    if (!selectedProp.lat || !selectedProp.lng || !destinoCoords[0] || !destinoCoords[1]) return;
+    if (!isValidLatLng(propCoords) || !isValidLatLng(safeDestinoCoords)) return;
 
     const fetchRoute = async () => {
       try {
@@ -125,33 +148,37 @@ export default function MapaPropuesta({
         <MapController coords={propCoords} />
 
         {/* Marcador de la Propiedad con Etiqueta Superior Permanente */}
-        <Marker position={propCoords} icon={defaultIcon}>
-          <Tooltip permanent direction="top" offset={[0, -40]} interactive={true} className="shadow-lg border-0 bg-transparent">
-            <div className="bg-slate-900 text-white p-2.5 rounded-xl shadow-2xl border border-slate-700 max-w-[220px] text-center flex flex-col gap-1.5">
-              <p className="font-bold text-xs leading-snug line-clamp-2 text-blue-200">
-                {selectedProp.title}
-              </p>
-              {onVerEnLista && (
-                <button
-                  type="button"
-                 onClick={(e) => {
-                    e.stopPropagation(); // Previene la propagación hacia el mapa
-                    onVerEnLista();
-                  }}
-                 className="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold py-1 px-2.5 rounded-lg transition-all shadow pointer-events-auto cursor-pointer md:hidden"
-                >
-                  📋 Ver detalles en lista
-                </button>
-              )}
-            </div>
-          </Tooltip>
-        </Marker>
+        {isValidLatLng(propCoords) && (
+          <Marker position={propCoords} icon={defaultIcon}>
+            <Tooltip permanent direction="top" offset={[0, -40]} interactive={true} className="shadow-lg border-0 bg-transparent">
+              <div className="bg-slate-900 text-white p-2.5 rounded-xl shadow-2xl border border-slate-700 max-w-[220px] text-center flex flex-col gap-1.5">
+                <p className="font-bold text-xs leading-snug line-clamp-2 text-blue-200">
+                  {selectedProp.title}
+                </p>
+                {onVerEnLista && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onVerEnLista();
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold py-1 px-2.5 rounded-lg transition-all shadow pointer-events-auto cursor-pointer md:hidden"
+                  >
+                    📋 Ver detalles en lista
+                  </button>
+                )}
+              </div>
+            </Tooltip>
+          </Marker>
+        )}
 
-        <Marker position={destinoCoords} icon={defaultIcon}>
-          <Popup>
-            <strong>Destino: {puntoInteresNombre}</strong>
-          </Popup>
-        </Marker>
+        {isValidLatLng(safeDestinoCoords) && (
+          <Marker position={safeDestinoCoords} icon={defaultIcon}>
+            <Popup>
+              <strong>Destino: {puntoInteresNombre}</strong>
+            </Popup>
+          </Marker>
+        )}
 
         {routeCoords.length > 0 && (
           <>
@@ -162,7 +189,6 @@ export default function MapaPropuesta({
               opacity={0.8}
             />
 
-            {/* Etiqueta flotante justo en medio de la carretera */}
             {puntoMedioRuta && tiempoTexto && (
               <Tooltip position={puntoMedioRuta} permanent direction="center" className="custom-route-tooltip">
                 <div className="bg-slate-900 text-white font-bold text-[11px] px-2 py-1 rounded shadow-lg border border-slate-700">

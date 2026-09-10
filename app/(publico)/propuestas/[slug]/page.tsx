@@ -4,6 +4,7 @@ import PropuestaInteractiveView from "@/features/propuestas/propuesta-interactiv
 import Link from "next/link";
 import { sanearParaServer } from "@/lib/sanitizers";
 
+
 interface Props {
   params: Promise<{ slug: string }>;
 }
@@ -111,6 +112,8 @@ const propiedadesParaVista = propuesta.items.map((item) => {
           puntoInteresNombre={propuesta.puntoInteresNombre}
         />
       </main>
+
+
     </div>
   );
 }
