@@ -148,7 +148,7 @@ export async function savePropertyAction(
       revalidatePath('/admin/dashboard');
       revalidatePath(`/propiedades/${propiedadExistente.slug}`);
       revalidatePath('/');
-      revalidatePath('/propiedades');
+      revalidatePath('/propiedades', 'layout');
 
       return { success: true, propertyId };
 

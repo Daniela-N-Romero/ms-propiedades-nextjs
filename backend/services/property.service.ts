@@ -18,7 +18,11 @@ import { cache } from 'react';
 export async function getDestacadas() {
   const destacadas = await prisma.propiedad.findMany({
     where: { isPublished: true, isDestacada: true, isUnlisted: false, }, // isUnlisted: false para excluir propiedades no listadas
-    include: { zona: true, tipoInmueble: true, imagenes: true },
+    include: { zona: true, tipoInmueble: true, imagenes: {
+    orderBy: {
+      orden: 'asc',
+    },
+  }, },
     orderBy: { createdAt: 'desc' }
   });
 
@@ -47,7 +51,11 @@ export async function getPropiedades(filtros?: {
     include: {
       zona: true,
       tipoInmueble: true,
-      imagenes: true
+      imagenes: {
+        orderBy: {
+          orden: 'asc'
+        }
+      }
     },
   });
 
@@ -260,7 +268,11 @@ export async function searchPropiedades(filters: SearchFilters, isPublishedOnly:
     where: queryWhere,
     include: {
       zona: true,
-      imagenes: true,
+      imagenes: {
+        orderBy: {
+          orden: 'asc'
+        }
+      },
       tipoInmueble: { include: { padre: true } }
     },
     orderBy: [
