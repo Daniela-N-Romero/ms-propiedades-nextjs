@@ -16,6 +16,7 @@ import { StatusSection } from './components/status-section';
 import type { ZonaServer, PropertyFullData } from '@/types/server-data';
 import type { TipoInmueble, Agente, Propietario, Colega } from '@prisma-client';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useFormAutoSave } from './hooks/use-form-auto-save';
 
 interface PropertyFormProps {
   initialData?: PropertyFullData | null;
@@ -41,6 +42,7 @@ export default function PropertyForm({
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isSavingDraftDb, setIsSavingDraftDb] = useState(false);
 
   // Inicialización de IDs para zonas y tipos
   const mercadoPadreInicialId = initialData?.tipoInmueble?.padreId || initialData?.tipoInmuebleId || 0;
@@ -53,15 +55,7 @@ export default function PropertyForm({
     ? localidadActual.padreId
     : (localidadActual?.id || 0)
 
-  // Custom Hook para Cascadas
-  const cascades = usePropertyCascades({
-    subtiposIniciales,
-    localidadesIniciales,
-    mercadoPadreInicialId,
-    regionInicialId,
-    partidoInicialId,
-  });
-
+  
   const form = useForm<PropertyFormValues>({
     resolver: zodResolver(basePublishPropertySchema) as any,
     defaultValues: initialData
@@ -126,6 +120,19 @@ export default function PropertyForm({
       },
   });
 
+  // Custom Hook para Cascadas
+  const cascades = usePropertyCascades({
+    subtiposIniciales,
+    localidadesIniciales,
+    mercadoPadreInicialId,
+    regionInicialId,
+    partidoInicialId,
+  });
+
+
+// INTEGRACIÓN DEL HOOK DE GUARDADO AUTOMÁTICO
+  const isEditing = Boolean(initialData?.id);
+  const { draftData, restoreDraft, clearDraft } = useFormAutoSave(form, isEditing);
 
   const { errors } = form.formState;
   const errorCount = Object.keys(errors).length;
@@ -135,6 +142,60 @@ export default function PropertyForm({
     err?.message ? [err.message] : Object.values(err || {})
   );
   const totalErrors = flattenedErrors.length;
+
+const handleRestoreDraft = () => {
+  if (!draftData) return;
+
+  // 1. Restaurar las imágenes (asegurando fallback si está vacío)
+  const imagenesRecuperadas =
+    draftData.imagenes && draftData.imagenes.length > 0
+      ? draftData.imagenes
+      : ['/images/placeholder.png'];
+
+  // 2. Cargar todos los valores en el formulario
+  form.reset({
+    ...draftData,
+    imagenes: imagenesRecuperadas,
+  });
+
+  // 3. Sincronizar los selecciones de las cascadas si existían en el borrador
+  if (draftData.tipoInmuebleId) {
+    // Si guardaste el Mercado Principal o Subtipo:
+    // cascades.setSelectedMercadoId(draftData.mercadoId);
+  }
+
+  // 4. Limpiar el banner de borrador detectado
+  clearDraft();
+};
+
+// OPCIÓN DIRECTA DEL BANNER: Guardar el borrador recuperado directamente en PostgreSQL
+  const handleSaveDraftToDB = async () => {
+    if (!draftData) return;
+    setIsSavingDraftDb(true);
+
+    try {
+      const dataToSave = {
+        ...draftData,
+        isPublished: false,
+        titulo: draftData.titulo || 'Borrador recuperado sin título',
+      };
+
+      const result = await savePropertyAction(dataToSave as any, initialData?.id);
+
+      if (result.success) {
+        clearDraft();
+        router.push('/admin/dashboard');
+        router.refresh();
+      } else {
+        setErrorMsg(result.error || 'Ocurrió un error al guardar el borrador en la base de datos.');
+      }
+    } catch (err) {
+      console.error(err);
+      setErrorMsg('Error de conexión al intentar guardar en la base de datos.');
+    } finally {
+      setIsSavingDraftDb(false);
+    }
+  };
 
   // 1. GUARDAR COMO BORRADOR (Solo requiere título)
   const handleSaveAsDraft = async () => {
@@ -225,6 +286,49 @@ export default function PropertyForm({
 
   return (
     <FormProvider {...form}>
+
+      <div className="max-w-5xl mx-auto p-4 sm:p-8 space-y-6">
+        {/* 👈 3. BANNER DE BORRADOR RECUPERADO (Si se detecta un cierre accidental previo) */}
+        {draftData && !isEditing && (
+          <div className="bg-amber-50 border-2 border-amber-300 p-5 rounded-2xl shadow-sm space-y-3">
+            <div className="flex items-center gap-2 text-amber-900 font-bold text-sm">
+              <span className="text-xl">⚠️</span>
+              <h3>Se encontró una propiedad que estabas cargando anteriormente</h3>
+            </div>
+
+            <p className="text-xs text-amber-800">
+              Tenés datos no guardados en este navegador (<strong>&quot;{draftData.titulo || 'Sin Título'}&quot;</strong>). ¿Qué te gustaría hacer?
+            </p>
+
+            <div className="flex flex-wrap gap-2 pt-1">
+              <button
+                type="button"
+                onClick={handleRestoreDraft}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition cursor-pointer"
+              >
+                ✏️ Continuar cargando
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSaveDraftToDB}
+                disabled={isSavingDraftDb}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition cursor-pointer disabled:opacity-50"
+              >
+                {isSavingDraftDb ? '⏳ Guardando...' : '💾 Guardar Borrador en BD'}
+              </button>
+
+              <button
+                type="button"
+                onClick={clearDraft}
+                className="px-4 py-2 bg-slate-200 hover:bg-red-100 text-slate-700 hover:text-red-700 rounded-xl text-xs font-bold transition cursor-pointer"
+              >
+                🗑️ Descartar y empezar en blanco
+              </button>
+            </div>
+          </div>
+        )}
+
       <form onSubmit={form.handleSubmit(handlePublishSubmit as any, onError)} className="space-y-6 max-w-5xl mx-auto p-4 sm:p-8">
         {/* HEADER PRINCIPAL */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-200 gap-4">
@@ -322,6 +426,7 @@ export default function PropertyForm({
           </button>
         </div>
       </form>
+      </div>
     </FormProvider>
   );
 }

@@ -13,27 +13,48 @@ const defaultIcon = L.icon({
   iconAnchor: [12, 41],
 });
 
-function isValidLatLng(coords: [number, number]): boolean {
+function isValidLatLng(latOrCoords: any, lng?: any): boolean {
+  let numLat: number;
+  let numLng: number;
+
+  if (Array.isArray(latOrCoords)) {
+    numLat = Number(latOrCoords[0]);
+    numLng = Number(latOrCoords[1]);
+  } else {
+    numLat = Number(latOrCoords);
+    numLng = Number(lng);
+  }
+
   return (
-    Array.isArray(coords) &&
-    coords.length === 2 &&
-    typeof coords[0] === "number" &&
-    typeof coords[1] === "number" &&
-    !isNaN(coords[0]) &&
-    !isNaN(coords[1]) &&
-    coords[0] !== 0 &&
-    coords[1] !== 0
+    !isNaN(numLat) &&
+    !isNaN(numLng) &&
+    numLat !== 0 &&
+    numLng !== 0 &&
+    numLat >= -90 &&
+    numLat <= 90 &&
+    numLng >= -180 &&
+    numLng <= 180
   );
 }
-
-function MapController({ coords }: { coords: [number, number] }) {
+function MapController({ coords, zoom }: { coords: [number, number]; zoom?: number }) {
   const map = useMap();
-  useEffect(() => {
-    // Módulo de seguridad: Solo volamos si el par es LatLng válido
-    if (isValidLatLng(coords)) {
-      map.flyTo(coords, 10, { duration: 1.5 });
+
+useEffect(() => {
+    const [lat, lng] = coords || [];
+  // 🔍 DEBUG: Inspeccionamos exactamente qué llega antes de volar
+    console.log("🔍 [MapController Debug]:", {
+      rawCoords: coords,
+      latParsed: Number(lat),
+      lngParsed: Number(lng),
+      esValido: isValidLatLng(lat, lng),
+    });
+
+    if (isValidLatLng(lat, lng)) {
+      map.flyTo([Number(lat), Number(lng)], zoom || 10, { duration: 1.5 });
+    } else {
+      console.warn("⚠️ [MapController Warn]: Coordenadas inválidas bloqueadas para flyTo:", coords);
     }
-  }, [coords, map]);
+  }, [coords, zoom, map]);
   return null;
 }
 
@@ -70,7 +91,7 @@ export default function MapaPropuesta({
 
   // Trazar Ruta Real por Carretera usando la API de OSRM
   useEffect(() => {
-    if (!isValidLatLng(propCoords) || !isValidLatLng(safeDestinoCoords)) return;
+    if (!isValidLatLng(propCoords[0], propCoords[1]) || !isValidLatLng(safeDestinoCoords[0], safeDestinoCoords[1])) return;
 
     const fetchRoute = async () => {
       try {
