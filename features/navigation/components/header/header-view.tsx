@@ -23,7 +23,9 @@ export default function HeaderView({ isMenuOpen, toggleMenu, isAdmin }: HeaderVi
                         src="/images/logos/ms-blue-logo.svg"
                         width={190}
                         height={150}
+                        style={{ width: 'auto', height: 'auto' }}
                         alt="Logo de MS Propiedades"
+                        loading="eager"
                     />
                 </Link>
 

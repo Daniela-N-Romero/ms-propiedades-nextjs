@@ -29,21 +29,36 @@ export async function POST(request: Request) {
       },
     });
 
-    // 3. Buscar si la propiedad tiene un Agente asignado para enviarle el mail a él
-    let toEmail;
-    if (propiedadId) {
-      const prop = await prisma.propiedad.findUnique({
-        where: { id: Number(propiedadId) },
-        select: { agente: { select: { email: true } } },
-      });
-      if (prop?.agente?.email) {
-        toEmail = prop.agente.email;
-      }
-    }else{
-      const links = await getContactLinks();
-      toEmail = links.email;
-    }
+   // 3. Definir destinatario del correo
+    const links = await getContactLinks();
+    let toEmail = links?.email || 'mspropiedadesindustrial@gmail.com';
 
+    /* 
+      ========================================================================
+      LÓGICA DESACTIVADA TEMPORALMENTE (ENVÍO POR AGENTE):
+      Descomentar cuando los agentes tengan casillas corporativas operativas.
+      ========================================================================
+
+      if (propiedadId) {
+        const prop = await prisma.propiedad.findUnique({
+          where: { id: Number(propiedadId) },
+          select: { agente: { select: { email: true } } },
+        });
+
+        if (prop?.agente?.email) {
+          // Opción A: Enviar solo al agente
+          // toEmail = prop.agente.email;
+
+          // Opción B: Enviar al agente Y al correo general centralizado
+          // toEmail = `${prop.agente.email}, ${toEmail}`;
+        }
+      }
+    */
+
+    // Verificar que realmente tengamos un destinatario
+    if (!toEmail) {
+      console.error('⚠️ No se definió un destinatario de correo válido.');
+    }
     // 4. Disparar correo de notificación (No frena la respuesta si falla el correo)
     sendLeadNotificationEmail({
       leadNombre: nombre,
@@ -54,7 +69,10 @@ export async function POST(request: Request) {
       propiedadCodigo,
       propiedadTitulo,
       toEmail,
-    }).catch(err => console.error('Error background email:', err));
+    }).then((result) => {
+      console.log('✅ Correo procesado con éxito por el servicio. Respuesta/Resultado:', result);
+    })
+    .catch(err => console.error('Error background email:', err));
 
     return NextResponse.json(
       { success: true, message: 'Consulta enviada con éxito.', leadId: newLead.id },

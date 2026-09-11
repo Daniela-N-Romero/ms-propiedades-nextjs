@@ -1,7 +1,7 @@
 // src/backend/services/property.service.ts
 import { prisma } from '@/backend/db';
 import { PropertyFullData, ZonaServer } from '@/types/server-data';
-import { sanearParaServer } from '@/lib/sanitizers';
+import { sanearParaServer, sanearPropiedad } from '@/lib/sanitizers';
 import { TipoOperacionEnum, MonedaEnum, TipoInmueble } from '@prisma-client'
 import { sanearPropiedadCompleta, sanearZona } from '@/lib/sanitizers';
 import { getAgentes, getColegas, getPropietarios } from './admin-catalogos.service';
@@ -18,15 +18,29 @@ import { cache } from 'react';
 export async function getDestacadas() {
   const destacadas = await prisma.propiedad.findMany({
     where: { isPublished: true, isDestacada: true, isUnlisted: false, }, // isUnlisted: false para excluir propiedades no listadas
-    include: { zona: true, tipoInmueble: true, imagenes: {
-    orderBy: {
-      orden: 'asc',
+    select: {
+      id: true,
+      slug: true,
+      titulo: true,
+      categoria: true,
+      precio: true,
+      moneda: true,
+      financiacion: true,
+      isDestacada: true,
+      superficieTotal: true,
+      superficieCubierta: true,
+      zona: { select: { nombre: true } },
+      tipoInmueble: { select: { nombre: true } },
+      imagenes: {
+        take: 1, // Solo trae 1 foto de portada
+        orderBy: { orden: 'asc' },
+        select: { url: true }
+      }
     },
-  }, },
     orderBy: { createdAt: 'desc' }
   });
 
-  return destacadas.map(prop => sanearParaServer(prop));
+  return destacadas.map(prop => sanearPropiedad(prop));
 }
 
 
@@ -37,6 +51,9 @@ export async function getDestacadas() {
  * ⚠️ SUPERPOSICIÓN: Es un subconjunto de `searchPropiedades`. Si no necesitas mantenerla 
  * por compatibilidad, se recomienda consolidarla en `searchPropiedades`.
  */
+/**
+ * 2. OBTENER PROPIEDADES (Listado Básico)
+ */
 export async function getPropiedades(filtros?: {
   operacion?: string;
   tipoInmueble?: string;
@@ -45,22 +62,34 @@ export async function getPropiedades(filtros?: {
   const propiedades = await prisma.propiedad.findMany({
     where: {
       isPublished: true,
+      isUnlisted: false,
       ...(filtros?.operacion && { operacion: filtros.operacion }),
       ...(filtros?.zonaId && { zonaId: filtros.zonaId }),
     },
-    include: {
-      zona: true,
-      tipoInmueble: true,
+    select: {
+      id: true,
+      slug: true,
+      titulo: true,
+      categoria: true,
+      precio: true,
+      moneda: true,
+      financiacion: true,
+      isDestacada: true,
+      superficieTotal: true,
+      superficieCubierta: true,
+      zona: { select: { nombre: true } },
+      tipoInmueble: { select: { nombre: true } },
       imagenes: {
-        orderBy: {
-          orden: 'asc'
-        }
+        take: 1,
+        orderBy: { orden: 'asc' },
+        select: { url: true }
       }
     },
   });
 
-  return propiedades.map((prop) => sanearParaServer(prop));
+  return propiedades.map((prop) => sanearPropiedad(prop));
 }
+
 /**
  * ELIMINAR PROPIEDAD
  */
@@ -102,13 +131,12 @@ export async function guardarImagenEnBD(urlPublica: string, propiedadId: number)
  */
 export async function getSubtiposPorTipoMercado(mercadoSlug?: string) {
   const whereCondition: any = {
-    padreId: { not: null }, // EXIGE QUE SEA UN HIJO
+    padreId: { not: null },
     propiedades: {
-      some: { isPublished: true,  isUnlisted: false, } // Solo con stock publicado
+      some: { isPublished: true, isUnlisted: false }
     }
   };
 
-  // Si seleccionaron un mercado específico (industrial, comercial, vivienda, etc.)
   if (mercadoSlug && mercadoSlug !== 'todas') {
     whereCondition.padre = {
       slug: { equals: mercadoSlug, mode: 'insensitive' }
@@ -117,10 +145,16 @@ export async function getSubtiposPorTipoMercado(mercadoSlug?: string) {
 
   const subtipos = await prisma.tipoInmueble.findMany({
     where: whereCondition,
+    select: {
+      id: true,
+      nombre: true,
+      slug: true,
+      padreId: true
+    },
     orderBy: { nombre: 'asc' }
   });
 
-  return sanearParaServer(subtipos);
+  return subtipos;
 }
 
 /**
@@ -133,26 +167,26 @@ export async function getSubtiposPorTipoMercado(mercadoSlug?: string) {
 export const getPropiedadBySlug = cache(async (slug: string) => {
   try {
     const propiedad = await prisma.propiedad.findUnique({
-    where: { slug, isPublished: true },
-    include: {
-      zona: {
-        include: {
-          padre: {
-            include: {
-              padre: true,
+      where: { slug, isPublished: true },
+      include: {
+        zona: {
+          include: {
+            padre: {
+              include: {
+                padre: true,
+              },
             },
           },
         },
+        tipoInmueble: { include: { padre: true } },
+        agente: true,
+        imagenes: { orderBy: { orden: 'asc' } },
       },
-      tipoInmueble: { include: { padre: true } },
-      agente: true,
-      imagenes: { orderBy: { orden: 'asc' } },
-    },
-  });
+    });
 
-  if (!propiedad) return null;
+    if (!propiedad) return null;
 
-  return sanearParaServer(propiedad) as unknown as PropertyFullData;
+    return sanearPropiedadCompleta(propiedad) as unknown as PropertyFullData;
   } catch (error) {
     console.error('Error en Prisma getPropiedadBySlug:', error);
     return null;
@@ -183,15 +217,23 @@ interface SearchFilters {
   supCubMax?: number;
   localidades?: number[];
   ordenar?: string;
+  page?: number;
+  pageSize?: number;
 }
 
-export async function searchPropiedades(filters: SearchFilters, isPublishedOnly: boolean = true, isNotUnlisted: boolean = true) {
+export type SearchMode = 'list' | 'map' | 'full';
+
+export async function searchPropiedades(
+  filters: SearchFilters,
+  isPublishedOnly: boolean = true,
+  isNotUnlisted: boolean = true,
+  mode: SearchMode = 'full' // 'full' por defecto para retrocompatibilidad
+) {
   const queryWhere: any = {};
 
   if (isPublishedOnly) {
     queryWhere.isPublished = true;
   }
-  //excluimos las propiedades no listadas si isNotUnlisted es true
   if (isNotUnlisted) {
     queryWhere.isUnlisted = false;
   }
@@ -199,12 +241,11 @@ export async function searchPropiedades(filters: SearchFilters, isPublishedOnly:
   if (filters.categoria) {
     queryWhere.categoria = filters.categoria as TipoOperacionEnum;
   }
+
   // Filtrado por jerarquía de tipos de inmueble
   if (filters.subtiposSlugs && filters.subtiposSlugs.length > 0) {
-    // Si filtran un subtipo específico (ej: "nave-industrial")
     queryWhere.tipoInmueble = { slug: { in: filters.subtiposSlugs } };
   } else if (filters.mercadoSlug) {
-    // Si filtran el mercado completo (ej: "industrial"), buscamos donde el PADRE sea "industrial"
     queryWhere.tipoInmueble = {
       OR: [
         { padre: { slug: { equals: filters.mercadoSlug, mode: 'insensitive' } } },
@@ -213,15 +254,12 @@ export async function searchPropiedades(filters: SearchFilters, isPublishedOnly:
     };
   }
 
-
-  // Filtrado de Moneda Obligatorio (Evita cruzar USD con ARS)
   if (filters.moneda) {
     queryWhere.moneda = filters.moneda as MonedaEnum;
   }
 
-  // Filtrado por Localidades o Partidos (Soporta Zonas Padre e Hijas)
+  // Filtrado por Localidades
   if (filters.localidades && filters.localidades.length > 0) {
-    // 1. Buscamos si alguna de las IDs enviadas es una Zona Padre (Partido/Región)
     const zonasConHijas = await prisma.zona.findMany({
       where: { id: { in: filters.localidades } },
       select: {
@@ -230,13 +268,8 @@ export async function searchPropiedades(filters: SearchFilters, isPublishedOnly:
       }
     });
 
-    // 2. Aplanamos las IDs de todas las localidades hijas encontradas
     const idsHijas = zonasConHijas.flatMap(z => z.hijas.map(hija => hija.id));
-
-    // 3. Unificamos las IDs de entrada con las hijas resultantes
     const todasLasZonaIds = Array.from(new Set([...filters.localidades, ...idsHijas]));
-
-    // 4. Aplicamos la búsqueda sobre la lista completa de IDs
     queryWhere.zonaId = { in: todasLasZonaIds };
   }
 
@@ -258,30 +291,122 @@ export async function searchPropiedades(filters: SearchFilters, isPublishedOnly:
     if (filters.supCubMax) queryWhere.superficieCubierta.lte = filters.supCubMax;
   }
 
+  // Si es MODO MAPA, obligamos a la base de datos a traer solo geolocalizados
+  if (mode === 'map') {
+    queryWhere.latitud = { not: null };
+    queryWhere.longitud = { not: null };
+  }
+
   let queryOrderBy: any = { createdAt: 'desc' };
   if (filters.ordenar === 'precio_asc') queryOrderBy = { precio: 'asc' };
   if (filters.ordenar === 'precio_desc') queryOrderBy = { precio: 'desc' };
   if (filters.ordenar === 'sup_asc') queryOrderBy = { superficieTotal: 'asc' };
   if (filters.ordenar === 'sup_desc') queryOrderBy = { superficieTotal: 'desc' };
 
+  // 1. MODO MAPA
+  if (mode === 'map') {
+    const resultados = await prisma.propiedad.findMany({
+      where: queryWhere,
+      select: {
+        id: true,
+        codigo: true,
+        slug: true,
+        titulo: true,
+        precio: true,
+        moneda: true,
+        financiacion: true,
+        superficieTotal: true,
+        superficieCubierta: true,
+        latitud: true,
+        longitud: true,
+        origen: true,
+        propietarioId: true,
+        colegaId: true,
+        direccionPersonalizada: true,
+        zona: { select: { nombre: true } },
+        imagenes: {
+          take: 1,
+          orderBy: { orden: 'asc' },
+          select: { url: true }
+        }
+      },
+      orderBy: [{ isDestacada: 'desc' }, queryOrderBy],
+    });
+
+    const saneadas = resultados.map(p => sanearPropiedad(p));
+
+    return {
+      propiedades: saneadas,
+      totalPropiedades: saneadas.length,
+      currentPage: 1,
+      totalPages: 1
+    };
+  }
+
+  // 2. MODO LISTA
+  if (mode === 'list') {
+    const page = filters.page || 1;
+    const pageSize = filters.pageSize || 12; // 👈 12 propiedades por página
+
+    // Ejecutamos la búsqueda de la página Y el conteo total en paralelo
+    const [resultados, totalPropiedades] = await Promise.all([
+      prisma.propiedad.findMany({
+        where: queryWhere,
+        take: pageSize,
+        skip: (page - 1) * pageSize, // 👈 Se salta los registros de páginas anteriores
+        select: {
+          id: true,
+          slug: true,
+          titulo: true,
+          categoria: true,
+          precio: true,
+          moneda: true,
+          financiacion: true,
+          isDestacada: true,
+          superficieTotal: true,
+          superficieCubierta: true,
+          zona: { select: { nombre: true } },
+          tipoInmueble: { select: { nombre: true } },
+          imagenes: {
+            take: 1,
+            orderBy: { orden: 'asc' },
+            select: { url: true }
+          }
+        },
+        orderBy: [{ isDestacada: 'desc' }, queryOrderBy],
+      }),
+      prisma.propiedad.count({ where: queryWhere }) // Cuenta el total real sin límites
+    ]);
+
+    const totalPages = Math.ceil(totalPropiedades / pageSize);
+
+    return {
+      propiedades: resultados.map(p => sanearPropiedad(p)),
+      totalPropiedades,
+      currentPage: page,
+      totalPages
+    };
+  }
+
+  // 3. MODO FULL (Fallback de seguridad)
   const resultados = await prisma.propiedad.findMany({
     where: queryWhere,
     include: {
       zona: true,
-      imagenes: {
-        orderBy: {
-          orden: 'asc'
-        }
-      },
+      imagenes: { orderBy: { orden: 'asc' } },
       tipoInmueble: { include: { padre: true } }
     },
-    orderBy: [
-      { isDestacada: 'desc' }, // Primero las destacadas (true va antes que false)
-      queryOrderBy           // Luego el orden secundario elegido por el usuario
-    ],
+    orderBy: [{ isDestacada: 'desc' }, queryOrderBy],
   });
 
-  return resultados.map(prop => sanearParaServer(prop));
+  const saneadas = resultados.map(prop => sanearPropiedadCompleta(prop));
+
+  return {
+    propiedades: saneadas,
+    totalPropiedades: saneadas.length,
+    currentPage: 1,
+    totalPages: 1
+  };
 }
 
 export async function getPropiedadById(propertyId: number) {
@@ -379,19 +504,30 @@ export async function getPropiedadesSimilares(
         { isDestacada: 'desc' }, // Entre las de la misma zona, primero las destacadas
         { updatedAt: 'desc' },
       ],
-      include: {
+      select: {
+        id: true,
+        slug: true,
+        titulo: true,
+        categoria: true,
+        precio: true,
+        moneda: true,
+        financiacion: true,
+        isDestacada: true,
+        superficieTotal: true,
+        superficieCubierta: true,
         zona: { select: { nombre: true } },
         tipoInmueble: { select: { nombre: true, padre: { select: { slug: true } } } },
         imagenes: {
-          orderBy: { orden: 'asc' },
           take: 1,
+          orderBy: { orden: 'asc' },
+          select: { url: true }
         },
       },
     });
 
     // Si ya completamos el cupo con la misma zona, las devolvemos directo
     if (mismasZona.length >= limit) {
-      return mismasZona;
+      return mismasZona.map(p => sanearPropiedad(p));
     }
 
     // 🗺️ CAPA 2: FALLBACK POR TIPO DE INMUEBLE (Si faltan para completar los 3 casilleros)
@@ -411,18 +547,30 @@ export async function getPropiedadesSimilares(
         { isDestacada: 'desc' },
         { updatedAt: 'desc' },
       ],
-      include: {
+      select: {
+        id: true,
+        slug: true,
+        titulo: true,
+        categoria: true,
+        precio: true,
+        moneda: true,
+        financiacion: true,
+        isDestacada: true,
+        superficieTotal: true,
+        superficieCubierta: true,
         zona: { select: { nombre: true } },
         tipoInmueble: { select: { nombre: true, padre: { select: { slug: true } } } },
         imagenes: {
-          orderBy: { orden: 'asc' },
           take: 1,
+          orderBy: { orden: 'asc' },
+          select: { url: true }
         },
       },
     });
 
     // Unimos los resultados: Primero las de la zona, luego las alternativas
-    return [...mismasZona, ...adicionalesMismoTipo];
+    const unificadas = [...mismasZona, ...adicionalesMismoTipo];
+    return unificadas.map(p => sanearPropiedad(p));
   } catch (error) {
     console.error('Error al obtener propiedades similares:', error);
     return [];

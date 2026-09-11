@@ -8,6 +8,7 @@ interface RenderProps {
 
 export async function renderPageByPropertyType({ searchParams, mercadoSlug }: RenderProps) {
   const params = searchParams;
+  const page = Number(params.page) || 1;
 
   // 1. Mapeamos las variables de la URL
   let localidadesIds: number[] = [];
@@ -25,7 +26,7 @@ export async function renderPageByPropertyType({ searchParams, mercadoSlug }: Re
 
 
   // 2. Ejecutamos los servicios en paralelo
-  let [propiedades, localidades, subtipos] = await Promise.all([
+  const [searchResult, localidades, subtipos] = await Promise.all([
     searchPropiedades({
       categoria: categoriaParam,
       mercadoSlug: mercadoSlug,
@@ -36,28 +37,42 @@ export async function renderPageByPropertyType({ searchParams, mercadoSlug }: Re
       supMin: params.supMin ? Number(params.supMin) : undefined,
       supMax: params.supMax ? Number(params.supMax) : undefined,
       localidades: localidadesIds,
-      ordenar: typeof params.ordenar === 'string' ? params.ordenar : undefined
-    }),
+      ordenar: typeof params.ordenar === 'string' ? params.ordenar : undefined,
+      page: page,      
+      pageSize: 12,    // Cantidad de cards por página
+    }, true, true, 'list'),
     getLocalidadesActivasPorTipo(mercadoSlug, categoriaParam),
     getSubtiposPorTipoMercado(mercadoSlug)
   ]);
-let esFallback = false;
+  // 3. Declaramos las variables mutables con let
+  let propiedades = searchResult.propiedades;
+  let totalPropiedades = searchResult.totalPropiedades;
+  let totalPages = searchResult.totalPages;
+  let esFallback = false;
 
-  // 3. 💡 SI NO HAY RESULTADOS: Búsqueda Relajada / Similares
-if (propiedades.length === 0) {
+  // 4. 💡 SI NO HAY RESULTADOS: Búsqueda Relajada / Fallback
+  if (propiedades.length === 0) {
     esFallback = true;
-    propiedades = await searchPropiedades({
+
+    const fallbackResult = await searchPropiedades({
       mercadoSlug: mercadoSlug,
-      categoria: categoriaParam, // Mantiene venta/alquiler si el usuario lo seleccionó
-      // Liberamos deliberadamente precios, superficies, subtipos y localidades
-    });
+      categoria: categoriaParam,
+      page: 1,
+      pageSize: 12,
+    }, true, true, 'list'); // 👈 Pasamos 'list' también al fallback
+
+    propiedades = fallbackResult.propiedades;
+    totalPropiedades = fallbackResult.totalPropiedades;
+    totalPages = fallbackResult.totalPages;
   }
 
   return {
     propiedades,
+    totalPropiedades,
+    currentPage: page,
+    totalPages,
     localidades,
     subtipos,
-    esFallback 
+    esFallback
   };
-
 }

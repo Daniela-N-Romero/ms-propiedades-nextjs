@@ -6,6 +6,8 @@ import { PropertyCard } from "@/features/propiedades";
 import { ContactoFormGeneral } from "@/features/contacto";
 import BannerTasacion from "@/features/contacto/components/tasacion/banner-tasacion";
 
+export const revalidate = 3600;
+
 export default async function HomePage() {
 
   // 🔌 Traemos todas las zonas y localidades de Postgres en crudo

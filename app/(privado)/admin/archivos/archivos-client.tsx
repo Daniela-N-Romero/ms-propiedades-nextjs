@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { formatNumberWithDots } from '@/lib/utils-formatting';
 
 interface PropiedadArchivo {
@@ -19,43 +20,74 @@ interface PropiedadArchivo {
   imagenes: { url: string }[];
   superficieTotal: number | null;
   superficieCubierta: number | null;
-  caracteristicas: Record<string, any> | null;
+  caracteristicas?: Record<string, any> | null;
   deletedAt?: Date | null;
 }
 
-export function ArchivosClient({ propiedades }: { propiedades: PropiedadArchivo[] }) {
+interface ArchivosClientProps {
+  propiedades: PropiedadArchivo[];
+  currentPage: number;
+  totalPages: number;
+}
+
+export function ArchivosClient({ propiedades, currentPage, totalPages }: ArchivosClientProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedForPrint, setSelectedForPrint] = useState<PropiedadArchivo | null>(null);
+
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Cambiar de página manteniendo los filtros
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', newPage.toString());
+    router.push(`/admin/archivos?${params.toString()}`);
+  };
 
   // BÚSQUEDA ROBUSTA POR MULTI-PALABRAS CLAVE (TOKENS)
   const filtered = propiedades.filter((p) => {
     if (p.deletedAt) return false; 
     if (!searchTerm.trim()) return true;
 
-    // 1. Unificamos todo el texto de la propiedad en un solo String de búsqueda
     const fullContent = `
       ${p.titulo} 
       ${p.direccionPersonalizada || ''} 
       ${p.zona?.nombre || ''} 
-      ${p.zona?.padre?.nombre || ''} 
       ${p.tipoInmueble?.nombre || ''} 
       ${p.categoria}
       ${p.moneda}
       ${p.precio}
     `.toLowerCase();
 
-    // 2. Dividimos lo que escribió el usuario por espacios (ej: "ezeiza 3000" -> ["ezeiza", "3000"])
     const searchTokens = searchTerm.toLowerCase().trim().split(/\s+/);
-
-    // 3. Verificamos que TODAS las palabras ingresadas estén en alguna parte del texto
     return searchTokens.every((token) => fullContent.includes(token));
   });
 
   const handlePrintColega = (propiedad: PropiedadArchivo) => {
     setSelectedForPrint(propiedad);
-    setTimeout(() => {
-      window.print();
-    }, 300);
+
+    // Si la propiedad no tiene imágenes, imprimimos directo
+    if (!propiedad.imagenes || propiedad.imagenes.length === 0) {
+      setTimeout(() => window.print(), 200);
+      return;
+    }
+
+    // Precargamos las imágenes en memoria para garantizar que no salgan "rotas" en la ficha
+    const imagePromises = propiedad.imagenes.map((img) => {
+      return new Promise((resolve) => {
+        const imageObj = new window.Image();
+        imageObj.src = img.url;
+        imageObj.onload = resolve;
+        imageObj.onerror = resolve; // Si falla una imagen, no bloquea la impresión
+      });
+    });
+
+    // Esperamos a que todas las fotos se descarguen antes de disparar la ventana de impresión
+    Promise.all(imagePromises).then(() => {
+      setTimeout(() => {
+        window.print();
+      }, 300);
+    });
   };
 
   return (
@@ -84,12 +116,12 @@ export function ArchivosClient({ propiedades }: { propiedades: PropiedadArchivo[
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="🔍 Buscar por título, dirección o zona..."
+          placeholder="🔍 Buscar en esta página por título, dirección o zona..."
           className="w-full p-3 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500"
         />
       </div>
 
-      {/* LISTADO DE PROPIEDADES CON THUMBNAIL Y PRECIO FORMATEADO */}
+      {/* LISTADO DE PROPIEDADES */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:hidden">
         {filtered.map((p) => {
           const portada = p.imagenes && p.imagenes.length > 0 ? p.imagenes[0].url : '/images/placeholder.png';
@@ -97,7 +129,6 @@ export function ArchivosClient({ propiedades }: { propiedades: PropiedadArchivo[
           return (
             <div key={p.id} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3 flex flex-col justify-between">
               <div className="flex gap-4 items-start">
-                {/* THUMBNAIL DE LA PROPIEDAD */}
                 <div className="relative w-24 h-24 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
                   <Image
                     src={portada}
@@ -108,7 +139,6 @@ export function ArchivosClient({ propiedades }: { propiedades: PropiedadArchivo[
                   />
                 </div>
 
-                {/* DETALLES DE LA PROPIEDAD */}
                 <div className="space-y-1 flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md truncate">
@@ -156,18 +186,42 @@ export function ArchivosClient({ propiedades }: { propiedades: PropiedadArchivo[
         })}
       </div>
 
-      {/* PLANTILLA DE IMPRESIÓN "FICHA BLANCA PARA COLEGAS" (SOLO VISIBLE AL IMPRIMIR) */}
+      {/* CONTROLES DE PAGINACIÓN */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-sm print:hidden">
+          <button
+            type="button"
+            disabled={currentPage <= 1}
+            onClick={() => handlePageChange(currentPage - 1)}
+            className="px-4 py-2 text-xs font-bold rounded-xl border border-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 transition"
+          >
+            ← Anterior
+          </button>
+
+          <span className="text-xs font-bold text-slate-600">
+            Página {currentPage} de {totalPages}
+          </span>
+
+          <button
+            type="button"
+            disabled={currentPage >= totalPages}
+            onClick={() => handlePageChange(currentPage + 1)}
+            className="px-4 py-2 text-xs font-bold rounded-xl border border-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 transition"
+          >
+            Siguiente →
+          </button>
+        </div>
+      )}
+
+      {/* PLANTILLA DE IMPRESIÓN (SIN CAMBIOS) */}
       {selectedForPrint && (
         <div className="hidden print:block p-8 bg-white text-slate-900 space-y-6">
-          {/* 🔴 ESTILO PARA ELIMINAR ENCABEZADOS Y PIES DE PÁGINA DEL NAVEGADOR (FECHA, HORA, TITULO) */}
           <style>{`
-                @media print {
-                 @page { margin: 0mm; padding-top: 15mm; padding-bottom: 15mm }
-                }`
-          }
-          </style>
+            @media print {
+              @page { margin: 0mm; padding-top: 15mm; padding-bottom: 15mm }
+            }
+          `}</style>
 
-          {/* HEADER / TITULO DE LA FICHA */}
           <div className="border-b-2 border-slate-800 pb-4 flex justify-between items-end">
             <div>
               <span className="text-xs uppercase font-bold text-slate-500">Ficha Informativa / Inmueble</span>
@@ -184,7 +238,6 @@ export function ArchivosClient({ propiedades }: { propiedades: PropiedadArchivo[
             </div>
           </div>
 
-          {/* BLOQUE DE UBICACIÓN COMPLETA */}
           <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-1">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">📍 Ubicación y Zona</h3>
             <p className="text-sm font-bold text-slate-800">
@@ -201,7 +254,6 @@ export function ArchivosClient({ propiedades }: { propiedades: PropiedadArchivo[
             </p>
           </div>
 
-          {/* SUPERFICIES DESTACADAS */}
           {(selectedForPrint.superficieTotal || selectedForPrint.superficieCubierta) && (
             <div className="grid grid-cols-2 gap-4">
               {selectedForPrint.superficieTotal && (
@@ -223,31 +275,6 @@ export function ArchivosClient({ propiedades }: { propiedades: PropiedadArchivo[
             </div>
           )}
 
-          {/* CARACTERÍSTICAS TÉCNICAS Y ESPECÍFICAS */}
-          {selectedForPrint.caracteristicas && Object.keys(selectedForPrint.caracteristicas).length > 0 && (
-            <div className="space-y-2">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                🛠️ Características y Servicios
-              </h3>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                {Object.entries(selectedForPrint.caracteristicas).map(([key, val]) => {
-                  if (!val || val === false) return null;
-                  return (
-                    <div key={key} className="p-2 rounded-lg bg-slate-50 border border-slate-200 flex justify-between">
-                      <span className="font-semibold text-slate-600 capitalize">
-                        {key.replace(/([A-Z])/g, ' $1').trim()}:
-                      </span>
-                      <span className="font-bold text-slate-900">
-                        {typeof val === 'boolean' ? 'Sí' : String(val)}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* DESCRIPCIÓN DETALLADA */}
           <div className="space-y-2">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">📝 Descripción</h3>
             <p className="text-xs leading-relaxed whitespace-pre-line text-slate-700">
@@ -270,7 +297,6 @@ export function ArchivosClient({ propiedades }: { propiedades: PropiedadArchivo[
               </div>
             </div>
           )}
-
         </div>
       )}
     </div>

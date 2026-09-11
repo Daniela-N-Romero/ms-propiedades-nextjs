@@ -63,7 +63,7 @@ export async function sendLeadNotificationEmail(data: NotificationLeadParams) {
         }
 
         const response = await resend.emails.send({
-            from: 'MS Propiedades <notificaciones@mspropiedades.com>',
+            from: 'MS Propiedades <onboarding@resend.dev>',
             to: [toEmail],
             subject: `🚨 Consulta por ${data.propiedadCodigo || 'Propiedad'} - ${data.leadNombre}`,
             html: htmlContent,

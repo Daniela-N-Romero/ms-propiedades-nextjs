@@ -44,9 +44,10 @@ export default function PropertyCard({ propiedad }: PropertyCardProps) {
           src={portadaUrl}
           alt={`Propiedad ${propiedad.titulo} en ${propiedad.zona?.nombre || ''}`}
           fill
+          loading="eager"      
+          fetchPriority="high"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
-          loading="lazy"
         />
       </div>
 

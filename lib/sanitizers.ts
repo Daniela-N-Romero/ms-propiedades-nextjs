@@ -1,8 +1,29 @@
 import type { Zona, Propiedad } from '@prisma-client';
 import type { ZonaServer, PropiedadServer } from '@/types/server-data';
 
-// Saneador de Zonas (incluyendo padres/hijos si vienen en el include)
-export function sanearZona(zona: Zona & { padre?: Zona | null }): ZonaServer {
+/**
+ * Convierte campos de tipo Decimal (Prisma) a Number (JS) de forma segura.
+ * Sirve para propiedades individuales o parciales (Cards, Listas, Mapas).
+ */
+export function sanearPropiedad(p: any) {
+  if (!p) return null;
+
+  return {
+    ...p,
+    precio: p.precio ? Number(p.precio) : 0,
+    latitud: p.latitud ? Number(p.latitud) : null,
+    longitud: p.longitud ? Number(p.longitud) : null,
+    superficieTotal: p.superficieTotal ? Number(p.superficieTotal) : null,
+    superficieCubierta: p.superficieCubierta ? Number(p.superficieCubierta) : null,
+  };
+}
+
+/**
+ * Sanear Zonas (evita errores con Decimal en lat/lng de zonas si las hay)
+ */
+export function sanearZona(zona: any) {
+  if (!zona) return null;
+
   return {
     ...zona,
     latitud: zona.latitud ? Number(zona.latitud) : null,
@@ -11,30 +32,18 @@ export function sanearZona(zona: Zona & { padre?: Zona | null }): ZonaServer {
   };
 }
 
-// Saneador de Propiedades
-export function sanearPropiedad(propiedad: Propiedad): PropiedadServer {
-  return {
-    ...propiedad,
-    precio: Number(propiedad.precio),
-    superficieTotal: propiedad.superficieTotal ? Number(propiedad.superficieTotal) : null,
-    superficieCubierta: propiedad.superficieCubierta ? Number(propiedad.superficieCubierta) : null,
-    latitud: propiedad.latitud ? Number(propiedad.latitud) : null,
-    longitud: propiedad.longitud ? Number(propiedad.longitud) : null,
-  };
-}
+/**
+ * Sanear objetos complejos con relaciones (para vistas de Detalle/Fichas)
+ */
+export function sanearPropiedadCompleta(prop: any) {
+  if (!prop) return null;
 
-// Saneador de Propiedad Completa con Relaciones
-export function sanearPropiedadCompleta(prop: any): any {
   return {
     ...sanearPropiedad(prop),
     zona: prop.zona ? sanearZona(prop.zona) : null,
-    tipoInmueble: prop.tipoInmueble || null,
-    agente: prop.agente || null,
-    propietario: prop.propietario || null,
-    colega: prop.colega || null,
-    imagenes: prop.imagenes || [],
   };
 }
+
 
 export function sanearParaServer<T>(objeto: T): T {
   if (!objeto) return objeto;

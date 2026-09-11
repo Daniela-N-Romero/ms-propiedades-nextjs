@@ -51,7 +51,8 @@ export default async function MapaPrivadoAdminPage({ searchParams }: MapaPrivado
     : search.localidad ? [Number(search.localidad)] : undefined;
 
   // Consulta paralela con los filtros del admin aplicados
-  const [propiedadesRaw, todasLocalidades, todosSubtipos] = await Promise.all([
+  
+  const [searchResult, todasLocalidades, todosSubtipos] = await Promise.all([
     searchPropiedades({
       categoria: search.categoria,
       mercadoSlug: search.mercado,
@@ -64,12 +65,12 @@ export default async function MapaPrivadoAdminPage({ searchParams }: MapaPrivado
       supCubMin: search.supCubMin ? Number(search.supCubMin) : undefined,
       supCubMax: search.supCubMax ? Number(search.supCubMax) : undefined,
       localidades,
-    }, false, false), // false para isPublishedOnly y false para isNotUnlisted, ya que queremos ver todas las propiedades en el admin
+    }, false, false, 'map'), // false para isPublishedOnly y false para isNotUnlisted, ya que queremos ver todas las propiedades en el admin
     getLocalidadesActivasPorTipo(search.mercado || undefined),
     getSubtiposPorTipoMercado(search.mercado || undefined),
   ]);
 
-  const propiedadesMapa = propiedadesRaw
+  const propiedadesMapa = searchResult.propiedades
     .filter((p: any) => p.latitud && p.longitud)
     .map((p: any) => ({
       id: p.id,
@@ -92,7 +93,6 @@ export default async function MapaPrivadoAdminPage({ searchParams }: MapaPrivado
       colegaTel: p.colega?.telefono,
     }));
 
-    
         const colegas = await getColegas();
         const propietarios = await getPropietarios();
 

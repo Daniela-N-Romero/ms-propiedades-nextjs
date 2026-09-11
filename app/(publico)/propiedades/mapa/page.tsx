@@ -39,7 +39,7 @@ export default async function MapaPage({ searchParams }: MapaPageProps) {
     : search.localidad ? [Number(search.localidad)] : undefined;
 
   // Buscamos las propiedades segun search
-  const [propiedadesRaw, todasLocalidades, todosSubtipos] = await Promise.all([
+  const [searchResults, todasLocalidades, todosSubtipos] = await Promise.all([
     searchPropiedades({
       categoria: search.categoria,
       mercadoSlug: mercadoActual,
@@ -52,7 +52,7 @@ export default async function MapaPage({ searchParams }: MapaPageProps) {
       supCubMin: search.supCubMin ? Number(search.supCubMin) : undefined,
       supCubMax: search.supCubMax ? Number(search.supCubMax) : undefined,
       localidades,
-    }),
+    }, true, true, 'map'),
     getLocalidadesActivasPorTipo(mercadoActual),
     getSubtiposPorTipoMercado(mercadoActual),
   ]);
@@ -65,7 +65,7 @@ export default async function MapaPage({ searchParams }: MapaPageProps) {
   const zoomInicial = search.zoom ? Number(search.zoom) : 11;
 
   // 4. Mapeamos las propiedades que tienen ubicación
-  const propiedadesConUbicacion = propiedadesRaw
+  const propiedadesConUbicacion = searchResults.propiedades
     .filter((p: any) => {
       const lat = Number(p.latitud);
       const lng = Number(p.longitud);
