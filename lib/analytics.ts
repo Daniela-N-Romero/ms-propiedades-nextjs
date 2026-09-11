@@ -8,6 +8,7 @@ interface PropertyTrackData {
     precio: number;
     moneda: string;
     slug: string;
+    permitMetaAd?: boolean;
 }
 
 
@@ -20,8 +21,7 @@ export const trackViewProperty = (propiedad: PropertyTrackData | PropertyFullDat
         const moneda = propiedad.moneda === 'USD' ? 'USD' : 'ARS';
         const precio = Number(propiedad.precio) || 0;
 
-
-        // 1. Capa para GTM / Google Analytics
+        // 1. Capa para GTM / Google Analytics (SÍ SE ENVÍA SIEMPRE)
         if ((window as any).dataLayer) {
             (window as any).dataLayer.push({
                 event: 'view_item',
@@ -35,8 +35,8 @@ export const trackViewProperty = (propiedad: PropertyTrackData | PropertyFullDat
             });
         }
 
-        // 2. Envío directo al Píxel de Meta
-        if (typeof (window as any).fbq === 'function') {
+        // 2. Envío directo al Píxel de Meta (SOLO SI permitMetaAd NO ES FALSE)
+        if (typeof (window as any).fbq === 'function' && propiedad.permitMetaAd !== false) {
             (window as any).fbq('track', 'ViewContent', {
                 content_type: 'home_listing',
                 content_ids: [codigo],
