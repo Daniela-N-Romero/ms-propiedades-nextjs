@@ -18,7 +18,7 @@ interface PropertyTrackData {
 export const trackViewProperty = (propiedad: PropertyTrackData | PropertyFullData) => {
     if (typeof window !== 'undefined') {
         const codigo = propiedad.codigo?.trim();
-        const moneda = propiedad.moneda === 'USD' ? 'USD' : 'ARS';
+        const moneda = propiedad.moneda === 'ARS' ? 'ARS' : 'USD';
         const precio = Number(propiedad.precio) || 0;
 
         // 1. Capa para GTM / Google Analytics (SÍ SE ENVÍA SIEMPRE)
@@ -52,7 +52,7 @@ export const trackViewProperty = (propiedad: PropertyTrackData | PropertyFullDat
  */
 export const trackWhatsAppClick = (propiedad: PropertyTrackData) => {
     if (typeof window !== 'undefined') {
-        const moneda = propiedad.moneda === 'USD' ? 'USD' : 'ARS';
+        const moneda = propiedad.moneda === 'ARS' ? 'ARS' : 'USD';
         const precio = Number(propiedad.precio) || 0;
 
         // GTM / Google Analytics
@@ -200,6 +200,8 @@ export const trackDownloadPDF = (codigo: string, titulo: string) => {
             (window as any).dataLayer.push({
                 event: 'file_download',
                 custom_data: {
+                    currency: 'USD',
+                    value: 1,
                     file_extension: 'pdf',
                     file_name: `Ficha-${codigo}.pdf`,
                     content_ids: [codigo],
@@ -212,6 +214,8 @@ export const trackDownloadPDF = (codigo: string, titulo: string) => {
         // 2. Meta Pixel (Evento estándar 'Contact' o personalizado)
         if (typeof (window as any).fbq === 'function') {
             (window as any).fbq('track', 'Contact', {
+                currency: 'USD',
+                value: 1,
                 content_category: 'Descarga PDF',
                 content_ids: [codigo],
                 content_name: titulo
