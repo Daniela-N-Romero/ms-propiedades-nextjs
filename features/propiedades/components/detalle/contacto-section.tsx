@@ -5,6 +5,7 @@ import ContactoCard from "./propiedad-contacto-form/contacto-card";
 import { styles } from "./contacto-section.styles";
 import { useWhatsAppButtons } from "../../hooks/use-whatsapp-buttons";
 import WhatsAppFloatingButton from "./propiedad-wpp-buttons/whatsapp-floating-button";
+import { trackDownloadPDF } from "@/lib/analytics";
 
 
 interface ContactoSectionProps {
@@ -60,6 +61,7 @@ export default function ContactoSection({
                 {pdfUrl && (
                     <a
                         href={pdfUrl ? pdfUrl : `/api/properties/${propiedadId}/pdf`} //cambiar cuando el generador de pdf funcione mejor
+                        onClick={() => trackDownloadPDF(codigo, titulo)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={styles.btnPdf}

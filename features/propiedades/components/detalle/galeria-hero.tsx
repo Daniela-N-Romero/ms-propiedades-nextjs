@@ -5,6 +5,7 @@ import { CustomImage } from '@/components/ui/custom-image';
 import { styles } from './galeria.styles';
 import type { Imagen } from '@prisma-client';
 import { AccionesPropiedad } from './acciones-propiedad';
+import { trackDownloadPDF } from '@/lib/analytics';
 
 interface GaleriaHeroProps {
   titulo: string;
@@ -107,6 +108,7 @@ export default function GaleriaHero({
           <p className="mr-3 max-w-50">
               <a
               href={pdfUrl ? pdfUrl : `/api/properties/${propiedadId}/pdf`}
+              onClick={() => trackDownloadPDF(codigo, titulo)}
               target="_blank"
               rel="noopener noreferrer"
               className={styles.btnPdf}

@@ -189,3 +189,33 @@ export const trackHomeSearch = (filtros: { categoria?: string; subtipo?: string;
         });
     }
 };
+
+/**
+ * Registra cuando un usuario hace clic en "Descargar Ficha PDF"
+ */
+export const trackDownloadPDF = (codigo: string, titulo: string) => {
+    if (typeof window !== 'undefined') {
+        // 1. Google Analytics / GTM
+        if ((window as any).dataLayer) {
+            (window as any).dataLayer.push({
+                event: 'file_download',
+                custom_data: {
+                    file_extension: 'pdf',
+                    file_name: `Ficha-${codigo}.pdf`,
+                    content_ids: [codigo],
+                    content_name: titulo,
+                    content_category: 'Ficha PDF'
+                }
+            });
+        }
+
+        // 2. Meta Pixel (Evento estándar 'Contact' o personalizado)
+        if (typeof (window as any).fbq === 'function') {
+            (window as any).fbq('track', 'Contact', {
+                content_category: 'Descarga PDF',
+                content_ids: [codigo],
+                content_name: titulo
+            });
+        }
+    }
+};
