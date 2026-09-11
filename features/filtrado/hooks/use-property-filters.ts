@@ -8,7 +8,7 @@ export function usePropertyFilters() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // 🔑 Capturamos el estado de transición del servidor
+  // Capturamos el estado de transición del servidor
   const [isPending, startTransition] = useTransition();
 
   // 1. Obtener estados actuales de la URL 
@@ -26,11 +26,16 @@ export function usePropertyFilters() {
     supCubMax: searchParams.get('supCubMax') || '',
     localidades: searchParams.getAll('localidad'),
     ordenar: searchParams.get('ordenar') || '',
-    totalActivos: Object.keys(Object.fromEntries(searchParams.entries())).filter(k => k !== 'ordenar').length
+    // Excluimos 'ordenar' y 'page' del conteo de filtros activos
+    totalActivos: Object.keys(Object.fromEntries(searchParams.entries())).filter(
+      k => k !== 'ordenar' && k !== 'page'
+    ).length
   };
 
   // Helper centralizado con startTransition y scroll: false
   const navigateWithFilters = (params: URLSearchParams) => {
+    // 🔴 RESETEA LA PAGINACIÓN A LA PÁGINA 1 CADA VEZ QUE SE MODIFICA UN FILTRO
+    params.delete('page');
     startTransition(() => {
       router.push(`${pathname}?${params.toString()}`, { scroll: false });
     });
