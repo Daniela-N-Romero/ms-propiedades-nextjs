@@ -93,7 +93,7 @@ export const trackWhatsAppClickGeneral = (origen: 'Header' | 'Footer' = 'Footer'
                 event: 'contact',
                 custom_data: {
                     currency: 'USD', // Agregamos la divisa requerida por Meta
-                    value: 0,        // Asignamos un valor numérico (0 si no aplica)
+                    value: 1,        
                     content_category: 'WhatsApp General',
                     content_name: `Clic WhatsApp desde ${origen}`
                 }
@@ -104,7 +104,7 @@ export const trackWhatsAppClickGeneral = (origen: 'Header' | 'Footer' = 'Footer'
         if (typeof (window as any).fbq === 'function') {
             (window as any).fbq('track', 'Contact', {
                 currency: 'USD',
-                value: 0,
+                value: 1,
                 content_category: 'WhatsApp General',
                 content_name: `Clic WhatsApp desde ${origen}`
             });
@@ -115,14 +115,16 @@ export const trackWhatsAppClickGeneral = (origen: 'Header' | 'Footer' = 'Footer'
 /**
  * Registra cuando un usuario completa con éxito el formulario de contacto integrado
  */
-export const trackFormLead = (codigo: string, titulo: string) => {
+export const trackFormLead = (codigo: string, titulo: string, precio: number = 1) => {
     if (typeof window !== 'undefined') {
+        const valorReal = precio > 0 ? precio : 1; // Debe ser superior a 0
+
         if ((window as any).dataLayer) {
             (window as any).dataLayer.push({
                 event: 'generate_lead',
                 custom_data: {
                     currency: 'USD',
-                    value: 0,
+                    value: valorReal,
                     content_category: 'Formulario Ficha Propiedad',
                     content_ids: [codigo],
                     content_name: titulo
@@ -133,7 +135,7 @@ export const trackFormLead = (codigo: string, titulo: string) => {
         if (typeof (window as any).fbq === 'function') {
             (window as any).fbq('track', 'Lead', {
                 currency: 'USD',
-                value: 0,
+                value: valorReal,
                 content_category: 'Formulario Ficha Propiedad',
                 content_ids: [codigo],
                 content_name: titulo
@@ -146,18 +148,30 @@ export const trackFormLead = (codigo: string, titulo: string) => {
  * Registra cuando un usuario completa con éxito el formulario de contacto integrado al HomePage
  */
 export const trackFormLeadGeneral = () => {
-    if (typeof window !== 'undefined' && (window as any).dataLayer) {
-        (window as any).dataLayer.push({
-            event: 'generate_lead',
-            custom_data: {
+    if (typeof window !== 'undefined') {
+        // 1. Envío a GTM
+        if ((window as any).dataLayer) {
+            (window as any).dataLayer.push({
+                event: 'generate_lead',
+                custom_data: {
+                    currency: 'USD',
+                    value: 1, // Se asigna un valor > 0 para evitar el error de Meta
+                    content_category: 'Formulario de Contacto General',
+                    content_name: 'Formulario Home / Contacto General'
+                }
+            });
+        }
+
+        // 2. Envío directo al Píxel de Meta
+        if (typeof (window as any).fbq === 'function') {
+            (window as any).fbq('track', 'Lead', {
                 currency: 'USD',
-                value: 0,
+                value: 1, // Meta requiere value > 0 cuando se activa este aviso
                 content_category: 'Formulario de Contacto General',
                 content_name: 'Formulario Home / Contacto General'
-            }
-        });
+            });
+        }
     }
-
 };
 
 /**
