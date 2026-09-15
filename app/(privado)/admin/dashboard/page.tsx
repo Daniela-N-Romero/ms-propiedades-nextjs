@@ -54,24 +54,52 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<number | null>(null);
 
+  // Estados de Paginación Servidor
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+
   // Filtros de estado
   const [activeTab, setActiveTab] = useState<'activas' | 'papelera'>('activas');
-  const [currentSourceFilter, setCurrentSourceFilter] = useState<'ms_propia' | 'colega'>('ms_propia');
+  const [currentSourceFilter, setCurrentSourceFilter] = useState<'all' | 'ms_propia' | 'colega'>('ms_propia');
+  const [mercadoFilter, setMercadoFilter] = useState<string>('industrial'); // 'industrial' | 'comercial' | 'residencial'
   const [missingMedia, setMissingMedia] = useState<'all' | 'no_images' | 'no_video' | 'no_pdf'>('all');
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [groupBy, setGroupBy] = useState<'none' | 'tipo' | 'categoria' | 'zona'>('tipo');
   const [sortBy, setSortBy] = useState('updatedAt_desc');
   const [isExcelModalOpen, setIsExcelModalOpen] = useState(false);
 
-  // Cargar propiedades de la API
+  // Debounce para el input de búsqueda (espera 400ms tras dejar de tipear)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1); // Resetea a la página 1 al buscar
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // Cargar propiedades de la API con Filtros + Paginación Server-Side
   const fetchPropiedades = async () => {
     try {
       setLoading(true);
-      // Agregamos no-store para forzar a la API a traer datos frescos
-      const res = await fetch(`/api/properties?tab=${activeTab}`, { cache: 'no-store' });
+      const queryParams = new URLSearchParams({
+        tab: activeTab,
+        page: page.toString(),
+        limit: '25',
+        source: currentSourceFilter,
+        search: debouncedSearch,
+        mercado: mercadoFilter,
+        missingMedia: missingMedia,
+        sortBy: sortBy,
+      });
+
+      const res = await fetch(`/api/properties?${queryParams.toString()}`);
       if (res.ok) {
         const data = await res.json();
-        setPropiedades(data);
+        setPropiedades(data.propiedades || []);
+        setTotalPages(data.totalPages || 1);
+        setTotal(data.total || 0);
       }
     } catch (err) {
       console.error('Error cargando propiedades:', err);
@@ -82,23 +110,17 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchPropiedades();
+  }, [activeTab, page, currentSourceFilter, mercadoFilter, debouncedSearch, missingMedia, sortBy]);
 
-    const onFocus = () => fetchPropiedades();
-    window.addEventListener('focus', onFocus);
-    return () => window.removeEventListener('focus', onFocus);
-  }, [activeTab]);
-
-  // Resetear filtros al cambiar entre 'activas' y 'papelera'
+  // Resetear filtros y página al cambiar entre 'activas' y 'papelera'
   useEffect(() => {
     setSearch('');
-    setMissingMedia('all');
-  }, [activeTab]);
-
+    setDebouncedSearch('');
+    setPage(1);
+  }, [activeTab, currentSourceFilter]);
 
   const getZonaJerarquia = (prop: PropiedadAdmin) => {
-
     const styles = `font-bold ${prop.zona?.padre?.padreId ? '' : 'bg-yellow-500 px-2 py-1 rounded-lg text-[10px] font-spartan uppercase tracking-wider'}`;
-    // Imprimimos la zona como texto puro para ver qué llega exactamente
     return (
       <p className={styles}>{prop.zona?.padre?.padreId ? `📍 ${prop.zona.nombre}` : '⚠️ INCOMPLETA'}</p>
     );
@@ -122,7 +144,6 @@ export default function DashboardPage() {
           prev.map((p) => (p.id === id ? { ...p, isPublished: !currentStatus } : p))
         );
       } else {
-        // 🚨 Muestra la modal explicativa si el backend rechaza la publicación (Status 400)
         showAlert(
           data.error || 'No se pudo cambiar el estado de la propiedad.',
           {
@@ -262,98 +283,6 @@ export default function DashboardPage() {
     });
   };
 
-  // Lógica unificada de filtrado, faltantes y ordenamiento en el cliente
-  const filteredAndSorted = useMemo(() => {
-    return propiedades
-      .filter((prop) => {
-        // 1. Origen (Cartera Propia vs Colega)
-        const isColega = prop.origen === 'fromColleague' || Boolean(prop.colegaId);
-        if (currentSourceFilter === 'colega' && !isColega) return false;
-        if (currentSourceFilter === 'ms_propia' && isColega) return false;
-
-        // 2. Filtro de Búsqueda
-        if (search.trim()) {
-          const q = search.toLowerCase();
-          const matchTitulo = prop.titulo.toLowerCase().includes(q);
-          const matchCodigo = prop.codigo.toLowerCase().includes(q);
-          const matchZona = prop.zona?.nombre.toLowerCase().includes(q);
-          if (!matchTitulo && !matchCodigo && !matchZona) return false;
-        }
-
-        // 3. Filtros de Faltantes / Calidad
-        const hasCustomVideo = Boolean(prop.videoUrl && prop.videoUrl !== links.videoIndustrialDefault);
-        const hasImages = Boolean(prop.imagenes && prop.imagenes.length > 0 && prop.imagenes[0].url !== '/images/placeholder.jpg' && prop.imagenes[0].url !== '/images/placeholder.png');
-        const hasPdf = Boolean(prop.pdfUrl);
-
-        if (missingMedia === 'no_images' && hasImages) return false;
-        if (missingMedia === 'no_video' && hasCustomVideo) return false;
-        if (missingMedia === 'no_pdf' && hasPdf) return false;
-
-        return true;
-      })
-      .sort((a, b) => {
-        const [field, direction] = sortBy.split('_');
-
-        if (field === 'updatedAt') {
-          const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
-          const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
-          return direction === 'asc' ? dateA - dateB : dateB - dateA;
-        }
-
-        if (field === 'precio') {
-          return direction === 'asc' ? a.precio - b.precio : b.precio - a.precio;
-        }
-
-        if (field === 'titulo') {
-          return direction === 'asc' ? a.titulo.localeCompare(b.titulo) : b.titulo.localeCompare(a.titulo);
-        }
-
-        return 0;
-      });
-  }, [propiedades, currentSourceFilter, search, missingMedia, sortBy, links.videoIndustrialDefault]);
-
-  // Agrupamiento dinámico
-  const groupedProperties = useMemo(() => {
-    if (groupBy === 'none') return { 'Todas las Propiedades': filteredAndSorted };
-
-    return filteredAndSorted.reduce((acc, prop) => {
-      let key = 'Sin Categoría';
-      if (groupBy === 'tipo') key = prop.tipoInmueble?.nombre || 'General';
-      if (groupBy === 'categoria') key = prop.categoria.toUpperCase();
-      if (groupBy === 'zona') key = prop.zona?.nombre || 'Sin Zona';
-
-      if (!acc[key]) acc[key] = [];
-      acc[key].push(prop);
-      return acc;
-    }, {} as Record<string, PropiedadAdmin[]>);
-  }, [filteredAndSorted, groupBy]);
-
-  const mercadosDisponibles = useMemo(() => {
-    const map = new Map<string, { id: string | number; nombre: string }>();
-
-    propiedades.forEach((prop) => {
-      // Si la propiedad tiene un mercado padre (ej: Industrial, Comercial)
-      const padre = prop.tipoInmueble?.padre;
-      if (padre) {
-        const nombre = padre.slug.toUpperCase(); // O el nombre si lo tenés
-        if (!map.has(nombre)) {
-          map.set(nombre, {
-            id: padre.slug, // Usamos el slug como ID único
-            nombre: padre.slug.charAt(0).toUpperCase() + padre.slug.slice(1),
-          });
-        }
-      } else if (prop.tipoInmueble?.nombre) {
-        // Fallback con el tipo directo
-        const nombre = prop.tipoInmueble.nombre;
-        if (!map.has(nombre)) {
-          map.set(nombre, { id: nombre, nombre });
-        }
-      }
-    });
-
-    return Array.from(map.values());
-  }, [propiedades]);
-
   return (
     <div className="min-h-screen bg-slate-100 pb-12">
       {/* HEADER SUPERIOR */}
@@ -365,7 +294,6 @@ export default function DashboardPage() {
             </Link>
             <h1 className="text-lg font-spartan font-bold">Dashboard de Propiedades</h1>
           </div>
-          {/* BOTÓN PARA EXPORTAR EXCEL */}
           <button
             onClick={() => setIsExcelModalOpen(true)}
             className="ml-auto mr-2 px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-spartan font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center gap-2 cursor-pointer"
@@ -400,27 +328,33 @@ export default function DashboardPage() {
             </button>
           </div>
 
-          <div className="flex gap-1 bg-brand-dark/20 rounded-xl w-full md:w-auto shadow-lg">
+          <div className="flex gap-1 bg-slate-200 p-1 rounded-xl w-full md:w-auto shadow-inner">
             <button
-              onClick={() => setCurrentSourceFilter('ms_propia')}
-              className={`flex-1 md:flex-none px-4 py-2 rounded-lg font-spartan font-bold text-[11px] uppercase tracking-wider transition-all ${currentSourceFilter === 'ms_propia' ? 'bg-green-900 text-white shadow-xs' : 'text-slate-600'}`}
+              onClick={() => { setCurrentSourceFilter('all'); setPage(1); }}
+              className={`px-3 py-1.5 rounded-lg font-spartan font-bold text-[11px] uppercase tracking-wider transition-all ${currentSourceFilter === 'all' ? 'bg-brand-dark text-white shadow-xs' : 'text-slate-600'}`}
+            >
+              Todas
+            </button>
+            <button
+              onClick={() => { setCurrentSourceFilter('ms_propia'); setPage(1); }}
+              className={`px-3 py-1.5 rounded-lg font-spartan font-bold text-[11px] uppercase tracking-wider transition-all ${currentSourceFilter === 'ms_propia' ? 'bg-emerald-700 text-white shadow-xs' : 'text-slate-600'}`}
             >
               🏢 Cartera Propia
             </button>
             <button
-              onClick={() => setCurrentSourceFilter('colega')}
-              className={`flex-1 md:flex-none px-4 py-2 rounded-lg font-spartan font-bold text-[11px] uppercase tracking-wider transition-all ${currentSourceFilter === 'colega' ? 'bg-green-900 text-white shadow-xs' : 'text-slate-600 '}`}
+              onClick={() => { setCurrentSourceFilter('colega'); setPage(1); }}
+              className={`px-3 py-1.5 rounded-lg font-spartan font-bold text-[11px] uppercase tracking-wider transition-all ${currentSourceFilter === 'colega' ? 'bg-emerald-700 text-white shadow-xs' : 'text-slate-600'}`}
             >
               🤝 De Colegas
             </button>
           </div>
         </div>
 
-        {/* BARRA DE CONTROLES (BÚSQUEDA, FALTANTES, AGRUPAR, ORDENAR) */}
+        {/* BARRA DE FILTROS RÁPIDOS */}
         <div className="bg-slate-300 p-4 rounded-2xl border border-slate-300 shadow-sm grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-brand-dark">
           <div>
             <label className="block text-[10px] font-bold font-spartan uppercase mb-1">
-              Buscar por Nombre / Código:
+              Buscar por Nombre / Código / Zona:
             </label>
             <input
               type="search"
@@ -433,6 +367,22 @@ export default function DashboardPage() {
 
           <div>
             <label className="block text-[10px] font-bold font-spartan uppercase mb-1">
+              Mercado:
+            </label>
+            <select
+              value={mercadoFilter}
+              onChange={(e) => { setMercadoFilter(e.target.value); setPage(1); }}
+              className="w-full px-3 py-2 border border-slate-400 rounded-xl text-xs bg-slate-50 focus:bg-white outline-none focus:border-brand-dark"
+            >
+              <option value="">Todos los mercados</option>
+              <option value="industrial">🏭 Industrial</option>
+              <option value="comercial">🏢 Comercial</option>
+              <option value="residencial">🏡 Residencial</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-bold font-spartan uppercase mb-1">
               Faltantes / Calidad:
             </label>
             <select
@@ -441,25 +391,9 @@ export default function DashboardPage() {
               className="w-full px-3 py-2 border border-slate-400 rounded-xl text-xs bg-slate-50 focus:bg-white outline-none focus:border-brand-dark"
             >
               <option value="all">Todas las propiedades</option>
-              <option value="no_images">⚠️ Sin Fotos (Placeholder)</option>
-              <option value="no_video">🎥 Sin Video Propio</option>
-              <option value="no_pdf">📄 Sin PDF Adjunto</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-[10px] font-bold font-spartan uppercase mb-1">
-              Agrupar por:
-            </label>
-            <select
-              value={groupBy}
-              onChange={(e) => setGroupBy(e.target.value as any)}
-              className="w-full px-3 py-2 border border-slate-400 rounded-xl text-xs bg-slate-50 focus:bg-white outline-none focus:border-brand-dark"
-            >
-              <option value="none">Sin agrupar</option>
-              <option value="tipo">Tipo de Inmueble</option>
-              <option value="categoria">Categoría (Venta/Alquiler)</option>
-              <option value="zona">Localidad / Zona</option>
+              <option value="no_images">⚠️ Sin Fotos</option>
+              <option value="no_video">🎥 Sin Video</option>
+              <option value="no_pdf">📄 Sin PDF</option>
             </select>
           </div>
 
@@ -474,9 +408,6 @@ export default function DashboardPage() {
             >
               <option value="updatedAt_desc">Última modificación (Recientes)</option>
               <option value="updatedAt_asc">Última modificación (Antiguos)</option>
-              <option value="precio_asc">Precio (menor a mayor)</option>
-              <option value="precio_desc">Precio (mayor a menor)</option>
-              <option value="titulo_asc">Nombre (A-Z)</option>
             </select>
           </div>
         </div>
@@ -487,9 +418,9 @@ export default function DashboardPage() {
             <div className="p-12 text-center text-slate-400 text-xs font-semibold animate-pulse">
               📍 Cargando listado de propiedades...
             </div>
-          ) : Object.keys(groupedProperties).length === 0 ? (
+          ) : propiedades.length === 0 ? (
             <div className="p-12 text-center text-slate-400 text-xs font-semibold">
-              {activeTab === 'papelera' ? 'La papelera de reciclaje está vacía.' : 'No se encontraron propiedades registradas con estos filtros.'}
+              {activeTab === 'papelera' ? 'La papelera de reciclaje está vacía.' : 'No se encontraron propiedades registadas.'}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -510,177 +441,160 @@ export default function DashboardPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs">
-                  {Object.entries(groupedProperties).map(([groupName, props]) => (
-                    <Fragment key={groupName}>
-                      {groupBy !== 'none' && (
-                        <tr className="bg-slate-100/70 border-y border-slate-200">
-                          <td colSpan={11} className="p-2.5 px-4 font-spartan font-bold text-slate-700 uppercase tracking-wider text-[13px]">
-                            {groupName} ({props.length})
-                          </td>
-                        </tr>
+                  {propiedades.map((prop) => (
+                    <tr key={prop.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="p-3 w-16">
+                        <img
+                          src={prop.imagenes?.[0]?.url || '/images/placeholder.jpg'}
+                          alt=""
+                          className="w-12 h-12 object-cover rounded-lg bg-slate-100 border border-slate-200"
+                        />
+                      </td>
+                      <td className="p-3 font-semibold max-w-2xs">
+                        {prop.isPublished ? (
+                          <Link
+                            href={`/propiedades/${prop.slug}`}
+                            target="_blank"
+                            className="text-blue-700 hover:text-amber-600 font-bold flex items-center gap-1 leading-tight"
+                          >
+                            {prop.titulo}
+                            <span className="font-extrabold text-[18px]">👆</span>
+                          </Link>
+                        ) : (
+                          <span className="text-slate-700 font-extrabold leading-tight block">{prop.titulo}</span>
+                        )}
+                        <span className="text-[10px] font-mono text-slate-400 block mt-0.5">REF: {prop.codigo}</span>
+                      </td>
+                      <td className="p-3 font-semibold text-slate-800">
+                        {getZonaJerarquia(prop)}
+                      </td>
+                      <td className="p-3 font-extrabold text-slate-900">
+                        {formatPrecio(prop.precio, prop.moneda)}
+                      </td>
+                      <td className="p-3 font-semibold text-slate-600">
+                        <p className="capitalize">{prop.tipoInmueble?.nombre}</p>
+                        <span className={`text-[10px] uppercase text-slate-800 p-1 rounded-lg ${prop.categoria === 'venta' ? 'bg-cyan-300/50' : 'bg-brand-orange/50'}`}>
+                          {prop.categoria}
+                        </span>
+                      </td>
+                      {activeTab === 'activas' && (
+                        <td className="px-4 py-3 text-center">
+                          <StarButton propiedadId={prop.id} initialIsFeatured={prop.isDestacada} />
+                        </td>
                       )}
-                      {props.map((prop) => (
-                        <tr key={prop.id} className="hover:bg-slate-50 transition-colors">
-                          <td className="p-3 w-16">
-                            <img
-                              src={prop.imagenes?.[0]?.url || '/images/placeholder.jpg'}
-                              alt=""
-                              className="w-12 h-12 object-cover rounded-lg bg-slate-100 border border-slate-200"
-                            />
-                          </td>
-                          <td className="p-3 font-semibold max-w-2xs">
-                            {prop.isPublished ? (
-                              <Link
-                                href={`/propiedades/${prop.slug}`}
-                                target="_blank"
-                                className="text-blue-700 hover:text-amber-600 font-bold flex items-center gap-1 leading-tight"
-                              >
-                                {prop.titulo}
-                                <span className="font-extrabold text-[18px]">👆</span>
-
-                              </Link>
-                            ) : (
-                              <span className="text-slate-700 font-extrabold leading-tight block">{prop.titulo}</span>
-                            )}
-                            <span className="text-[10px] font-mono text-slate-400 block mt-0.5">REF: {prop.codigo}</span>
-                            {!prop.propietarioId && !prop.colegaId && (
-                              <span className="inline-block mt-1 bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-md">
-                                ⚠️ {prop.origen === 'own' ? 'Propietario' :'Colega'} no asignado
-                              </span>
-                            )}
-                          </td>
-                          <td className="p-3 font-semibold text-slate-800">
-                            {getZonaJerarquia(prop)}
-                          </td>
-                          <td className="p-3 font-extrabold text-slate-900">
-                            {formatPrecio(prop.precio, prop.moneda)}
-                          </td>
-                          <td className="p-3 font-semibold text-slate-600">
-                            <p className="capitalize">{prop.tipoInmueble?.nombre}</p>
-                            <span className={`text-[10px] uppercase text-slate-800 p-1 rounded-lg ${prop.categoria === 'venta' ? 'bg-cyan-300/50' : 'bg-brand-orange/50'}`}>
-                              {prop.categoria}
-                            </span>
-                          </td>
-                          {activeTab === 'activas' && (
-                            <td className="px-4 py-3 text-center">
-                              <StarButton propiedadId={prop.id} initialIsFeatured={prop.isDestacada} />
-                            </td>
-                          )}
-                          <td className="p-3 text-center">
-                            {/* Verificación de Video Propio contra el default */}
-                            {prop.videoUrl && prop.videoUrl !== links.videoIndustrialDefault ? '✔️' : '❌'}
-                          </td>
-                          <td className="p-3 text-center">
-                            {prop.pdfUrl ? '✔️' : '❌'}
-                          </td>
-                          {/* 1. COLUMNA DE ESTADO (Publicada / Borrador) */}
-                          <td className="p-3 text-center">
+                      <td className="p-3 text-center">
+                        {prop.videoUrl && prop.videoUrl !== links.videoIndustrialDefault ? '✔️' : '❌'}
+                      </td>
+                      <td className="p-3 text-center">
+                        {prop.pdfUrl ? '✔️' : '❌'}
+                      </td>
+                      <td className="p-3 text-center">
+                        <button
+                          onClick={() => togglePublishStatus(prop.id, prop.isPublished)}
+                          disabled={activeTab === 'papelera'}
+                          className={`px-3 py-1 rounded-full text-[10px] font-bold font-spartan uppercase tracking-wider text-white transition-all disabled:opacity-50 ${prop.isPublished ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-amber-500 hover:bg-amber-600'
+                            }`}
+                        >
+                          {prop.isPublished ? 'Publicada' : 'Borrador'}
+                        </button>
+                      </td>
+                      <td className="p-3 text-center">
+                        <button
+                          onClick={() => toggleUnlistedStatus(prop.id, Boolean(prop.isUnlisted))}
+                          disabled={activeTab === 'papelera'}
+                          className={`p-1.5 rounded-lg text-base transition-all border ${prop.isUnlisted ? 'bg-indigo-100 border-indigo-300 text-indigo-700' : 'bg-slate-100 border-slate-200 text-slate-400'
+                            }`}
+                        >
+                          {prop.isUnlisted ? '🔒' : '🌎'}
+                        </button>
+                      </td>
+                      <td className="p-3 text-right space-x-1 min-w-35">
+                        {activeTab === 'activas' ? (
+                          <>
                             <button
-                              onClick={() => togglePublishStatus(prop.id, prop.isPublished)}
-                              disabled={activeTab === 'papelera'}
-                              className={`px-3 py-1 rounded-full text-[10px] font-bold font-spartan uppercase tracking-wider text-white transition-all disabled:opacity-50 ${prop.isPublished
-                                ? 'bg-emerald-500 hover:bg-emerald-600'
-                                : 'bg-amber-500 hover:bg-amber-600'
+                              type="button"
+                              onClick={(e) => copyToClipboard(e, prop)}
+                              disabled={!prop.isPublished}
+                              className={`px-1 py-1 text-[15px] font-bold rounded-lg transition-all inline-block ${prop.isPublished ? (copiedId === prop.id ? 'bg-emerald-600 text-white' : 'bg-slate-200 hover:bg-blue-400') : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                                 }`}
                             >
-                              {prop.isPublished ? 'Publicada' : 'Borrador'}
+                              {copiedId === prop.id ? '✅' : prop.isPublished ? '🔗' : '🚫'}
                             </button>
-                          </td>
-
-                          {/* 2. NUEVA COLUMNA DE VISIBILIDAD / PRIVACIDAD CON CANDADOS */}
-                          <td className="p-3 text-center">
-                            <button
-                              onClick={() => toggleUnlistedStatus(prop.id, Boolean(prop.isUnlisted))}
-                              disabled={activeTab === 'papelera'}
-                              title={
-                                prop.isUnlisted
-                                  ? 'Propiedad Privada (Solo accesible por link)'
-                                  : 'Propiedad Pública (Visible en buscador y Google)'
-                              }
-                              className={`p-1.5 rounded-lg text-base transition-all border ${prop.isUnlisted
-                                ? 'bg-indigo-100 border-indigo-300 text-indigo-700 hover:bg-indigo-200' // Candado activo (Privada)
-                                : 'bg-slate-100 border-slate-200 text-slate-400 hover:bg-slate-200'
-                                }`}
+                            <Link
+                              href={`/admin/${prop.id}/editar`}
+                              className="px-1 border border-slate-300 bg-slate-200 hover:bg-blue-400 py-1 text-[15px] font-bold rounded-lg transition-colors inline-block"
                             >
-                              {prop.isUnlisted ? '🔒' : '🌎'}
+                              ✏️
+                            </Link>
+                            <button
+                              onClick={() => handleSoftDelete(prop.id)}
+                              className="px-1 border border-slate-300 bg-slate-200 hover:bg-blue-400 py-1 text-[15px] font-bold rounded-lg transition-colors inline-block"
+                            >
+                              🗑️
                             </button>
-                          </td>
-
-
-                          <td className="p-3 text-right space-x-1 min-w-35">
-                            {activeTab === 'activas' ? (
-                              <>
-                                <button
-                                  type="button"
-                                  onClick={(e) => copyToClipboard(e, prop)}
-                                  disabled={!prop.isPublished}
-                                  title={prop.isPublished ? 'Copiar enlace de la ficha' : 'Propiedad en Borrador (Link no disponible)'}
-                                  className={`px-1 py-1 text-[15px] font-bold rounded-lg transition-all inline-block ${prop.isPublished
-                                    ? copiedId === prop.id
-                                      ? 'bg-emerald-600 text-white' // Feedback al copiar
-                                      : 'bg-slate-200 hover:bg-blue-400'
-                                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                                    }`}
-                                >
-                                  {copiedId === prop.id ? '✅' : prop.isPublished ? '🔗' : '🚫'}
-                                </button>
-                                <Link
-                                  href={`/admin/${prop.id}/editar`}
-                                  className="px-1 border border-slate-300 bg-slate-200 hover:bg-blue-400 py-1 text-[15px] font-bold rounded-lg transition-colors inline-block"
-                                >
-                                  ✏️
-                                </Link>
-                                <button
-                                  onClick={() => handleSoftDelete(prop.id)}
-                                  title="Mover a Papelera"
-                                  className="px-1 border border-slate-300 bg-slate-200 hover:bg-blue-400 py-1 text-[15px] font-bold rounded-lg transition-colors inline-block"
-                                >
-                                  🗑️
-                                </button>
-                                <button
-                                  onClick={() => handleDuplicate(prop.id)}
-                                  title="Duplicar Propiedad"
-                                  className="px-1 border border-slate-300 bg-slate-200 hover:bg-blue-400 py-1 text-[15px] font-bold rounded-lg transition-colors inline-block"
-                                >
-                                  📋
-                                </button>
-                              </>
-                            ) : (
-                              <>
-                                <button
-                                  onClick={() => handleRestore(prop.id)}
-                                  title="Restaurar Propiedad"
-                                  className="px-2 py-1.5 bg-emerald-300 hover:bg-emerald-500 text-emerald-900 text-[15px] font-bold rounded-lg transition-colors inline-block"
-                                >
-                                  ♻️
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteProperty(prop.id, prop.titulo)}
-                                  title="Eliminar Definitivamente"
-                                  className="px-2 py-1.5 bg-red-400 hover:bg-red-600 text-white text-[15px] font-bold rounded-lg transition-colors inline-block"
-                                >
-                                  ❌
-                                </button>
-
-                              </>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </Fragment>
+                            <button
+                              onClick={() => handleDuplicate(prop.id)}
+                              className="px-1 border border-slate-300 bg-slate-200 hover:bg-blue-400 py-1 text-[15px] font-bold rounded-lg transition-colors inline-block"
+                            >
+                              📋
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => handleRestore(prop.id)}
+                              className="px-2 py-1.5 bg-emerald-300 hover:bg-emerald-500 text-emerald-900 text-[15px] font-bold rounded-lg transition-colors inline-block"
+                            >
+                              ♻️
+                            </button>
+                            <button
+                              onClick={() => handleDeleteProperty(prop.id, prop.titulo)}
+                              className="px-2 py-1.5 bg-red-400 hover:bg-red-600 text-white text-[15px] font-bold rounded-lg transition-colors inline-block"
+                            >
+                              ❌
+                            </button>
+                          </>
+                        )}
+                      </td>
+                    </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           )}
+
+          {/* CONTROLES DE PAGINACIÓN */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between p-4 bg-slate-50 border-t border-slate-200">
+              <span className="text-xs font-spartan font-bold text-slate-600">
+                Mostrando página {page} de {totalPages} ({total} propiedades en total)
+              </span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="px-4 py-2 bg-white border border-slate-300 rounded-xl text-xs font-spartan font-bold text-brand-dark uppercase tracking-wider hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                >
+                  ← Anterior
+                </button>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                  className="px-4 py-2 bg-white border border-slate-300 rounded-xl text-xs font-spartan font-bold text-brand-dark uppercase tracking-wider hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                >
+                  Siguiente →
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-      {/* MODAL DE EXPORTACIÓN */}
+
       <ExportExcelModal
         isOpen={isExcelModalOpen}
         onClose={() => setIsExcelModalOpen(false)}
         activeTab={activeTab}
-        mercados={mercadosDisponibles}
+        mercados={[]}
       />
 
       <AlertModal
@@ -691,7 +605,6 @@ export default function DashboardPage() {
         type={alertState.type}
       />
 
-      {/* COMPONENTE MODAL DE CONFIRMACIÓN */}
       <ConfirmModal
         isOpen={confirmState.isOpen}
         onClose={closeConfirm}
