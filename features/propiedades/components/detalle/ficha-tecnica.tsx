@@ -1,141 +1,180 @@
-import { formatPrecio } from '@/lib/utils-formatting';
-import { styles } from './ficha-tecnica.styles';
-import { ICONOS_CARACTERISTICAS } from '@/types/caracteristicas';
+import { formatPrecio } from "@/lib/utils-formatting";
+import { styles } from "./ficha-tecnica.styles";
+import { ICONOS_CARACTERISTICAS } from "@/types/caracteristicas";
 
 interface FichaTecnicaProps {
-  precio: number;
-  moneda: string;
-  financiacion?: string | null;
-  superficieTotal: number | null;
-  superficieCubierta: number | null;
-  descripcion: string | null;
-  caracteristicas?: Record<string, any> | null;
-  subtipoNombre?: string;
+	precio: number;
+	moneda: string;
+	financiacion?: string | null;
+	superficieTotal: number | null;
+	superficieCubierta: number | null;
+	descripcion: string | null;
+	caracteristicas?: Record<string, any> | null;
+	subtipoNombre?: string;
 }
 
 export default function FichaTecnica({
-  precio,
-  moneda,
-  financiacion,
-  superficieTotal,
-  superficieCubierta,
-  descripcion,
-  caracteristicas,
-  subtipoNombre
+	precio,
+	moneda,
+	financiacion,
+	superficieTotal,
+	superficieCubierta,
+	descripcion,
+	caracteristicas,
+	subtipoNombre,
 }: FichaTecnicaProps) {
+	const formatCamelCase = (str: string) => {
+		return str
+			.replace(/([A-Z])/g, " $1")
+			.replace(/^./, (s) => s.toUpperCase())
+			.trim();
+	};
 
-  /* 1. Mapeo formateador por defecto */
-  const formatCamelCase = (str: string) => {
-    return str
-      .replace(/([A-Z])/g, ' $1') // Agrega espacio antes de mayúsculas ("almaLlena" -> "alma Llena")
-      .replace(/^./, (s) => s.toUpperCase()) // Pone la primera letra en mayúscula ("Alma Llena")
-      .trim();
-  };
+	const caracteristicasValidas = Object.entries(caracteristicas || {}).filter(
+		([key, value]) => {
+			if (key === "bano" && caracteristicas?.banos !== undefined) return false;
+			if (value === null || value === undefined || value === "") return false;
+			if (typeof value === "boolean") return value === true;
+			if (typeof value === "number") return value > 0;
+			if (typeof value === "object" && value !== null) {
+				const obj = value as Record<string, any>;
+				if (obj.custom) return Boolean(obj.label);
+				return (
+					obj.valor !== undefined && obj.valor !== "" && obj.valor !== null
+				);
+			}
+			return true;
+		},
+	);
 
-  /* 2. Filtrar solo las características con valores reales/verdaderos */
-  const caracteristicasValidas = Object.entries(caracteristicas || {}).filter(
-    ([_, value]) => {
-      if (value === null || value === undefined || value === '') return false;
-      if (typeof value === 'boolean') return value === true; // Oculta si es false
-      if (typeof value === 'number') return value > 0;
-      return true;
-    }
-  );
+	return (
+		<div className="space-y-8">
+			{/* BARRA HIGHLIGHTS */}
+			<div className={styles.highlightsContainer}>
+				<div className={styles.highlightItem}>
+					<span className={styles.highlightLabel}>Valor de la Propiedad</span>
+					<span className={styles.highlightPrice}>
+						{formatPrecio(precio, moneda)}
+						{financiacion && (
+							<span className="inline-block mt-1 text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">
+								💳 {financiacion}
+							</span>
+						)}
+					</span>
+				</div>
 
-  return (
-    <div className="space-y-8">
+				<div className={styles.highlightItem}>
+					<span className={styles.highlightLabel}>Superficie Total</span>
+					<span className={styles.highlightValue}>
+						{superficieTotal
+							? `${superficieTotal.toLocaleString("es-AR")} m²`
+							: "Consultar"}
+					</span>
+				</div>
 
-      {/* 1️⃣ BARRA DE DESTACADOS (HIGHLIGHTS BAR) */}
-      <div className={styles.highlightsContainer}>
+				<div className={styles.highlightItem}>
+					<span className={styles.highlightLabel}>Superficie Cubierta</span>
+					<span className={styles.highlightValue}>
+						{superficieCubierta
+							? `${superficieCubierta.toLocaleString("es-AR")} m²`
+							: "Consultar"}
+					</span>
+				</div>
 
-        {/* VALOR / PRECIO */}
-        <div className={styles.highlightItem}>
-          <span className={styles.highlightLabel}>Valor de la Propiedad</span>
-          <span className={styles.highlightPrice}>
-            {formatPrecio(precio, moneda)}
-            {financiacion && (
-            <span className="inline-block mt-1 text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">
-              💳 {financiacion}
-            </span>
-          )}
-          </span>
-        </div>
+				<div className={styles.highlightItem}>
+					<span className={styles.highlightLabel}>Tipo de Inmueble</span>
+					<span className={styles.highlightValue}>
+						{subtipoNombre || "Industrial"}
+					</span>
+				</div>
+			</div>
 
-        {/* SUPERFICIE TOTAL */}
-        <div className={styles.highlightItem}>
-          <span className={styles.highlightLabel}>Superficie Total</span>
-          <span className={styles.highlightValue}>
-            {superficieTotal ? `${superficieTotal.toLocaleString('es-AR')} m²` : 'Consultar'}
-          </span>
-        </div>
+			{/* DICCIONARIO DE CARACTERÍSTICAS */}
+			{caracteristicasValidas.length > 0 && (
+				<div>
+					<h3 className={styles.sectionTitle}>Equipamiento y Servicios</h3>
+					<div className={styles.featuresGrid}>
+						{caracteristicasValidas.map(([key, value]) => {
+							let label = "";
+							let icon = "✔";
+							let valorFormateado = "";
 
-        {/* SUPERFICIE CUBIERTA */}
-        <div className={styles.highlightItem}>
-          <span className={styles.highlightLabel}>Superficie Cubierta</span>
-          <span className={styles.highlightValue}>
-            {superficieCubierta ? `${superficieCubierta.toLocaleString('es-AR')} m²` : 'Consultar'}
-          </span>
-        </div>
+							const valObj =
+								typeof value === "object" && value !== null
+									? (value as Record<string, any>)
+									: null;
 
-        {/* TIPO DE INMUEBLE */}
-        <div className={styles.highlightItem}>
-          <span className={styles.highlightLabel}>Tipo de Inmueble</span>
-          <span className={styles.highlightValue}>
-            {subtipoNombre || 'Industrial'}
-          </span>
-        </div>
+							// A. Si es una característica PERSONALIZADA
+							if (valObj && valObj.custom) {
+								label = valObj.label;
+								icon = valObj.icon || "✨";
+							} else {
+								const metaKey =
+									key === "oficinasM2"
+										? "oficinas"
+										: key === "bano"
+											? "banos"
+											: key;
+								const meta = ICONOS_CARACTERISTICAS[metaKey] || {
+									label: formatCamelCase(key),
+									icon: "✔",
+								};
+								label = meta.label;
+								icon = meta.icon;
 
-      </div>
+								// B. Formato Híbrido { modo: 'm2' | 'cant', valor: 50 }
+								if (valObj) {
+									const modo = valObj.modo || "cant";
+									const val = valObj.valor;
+									if (val !== undefined && val !== "") {
+										valorFormateado = `: ${val} ${modo === "m2" ? "m²" : modo === "cant" && Number(val) === 1 ? "" : ""}`;
+									}
+								}
+								// C. Selects (Ej: Potencia T1/T2/T3)
+								else if (
+									typeof value === "string" &&
+									key === "potenciaElectrica"
+								) {
+									valorFormateado = `: ${value}`;
+								}
+								// D. Antiguos Numéricos
+								else if (
+									typeof value === "number" ||
+									typeof value === "string"
+								) {
+									valorFormateado = `: ${value}`;
+									if (key.toLowerCase().includes("altura")) {
+										valorFormateado += " m";
+									} else if (key === "oficinasM2") {
+										valorFormateado += " m²";
+									}
+								}
+							}
 
-      {/* DICCIONARIO DE CARACTERÍSTICAS TÉCNICAS (Solo si existen) */}
-      {caracteristicasValidas.length > 0 && (
-        <div>
-          <h3 className={styles.sectionTitle}>Equipamiento y Servicios</h3>
-          <div className={styles.featuresGrid}>
-            {caracteristicasValidas.map(([key, value]) => {
-              // Mapeo o fallback elegante
-              const meta = ICONOS_CARACTERISTICAS[key] || {
-                label: formatCamelCase(key),
-                icon: '✔',
-              };
+							return (
+								<div key={key} className={styles.featureCard}>
+									<span className={styles.featureIcon}>{icon}</span>
+									<span className={styles.featureLabel}>
+										{label}
+										{typeof value !== "boolean" && valorFormateado}
+									</span>
+								</div>
+							);
+						})}
+					</div>
+				</div>
+			)}
 
-              // Formatear cómo se muestra el valor según su tipo
-              let valorFormateado = '';
-              if (typeof value === 'number' || typeof value === 'string') {
-                // Si el label ya contiene la descripción no repetimos, sino agregamos el valor
-                valorFormateado = `: ${value}`;
-                if (key.toLowerCase().includes('altura')) {
-                  valorFormateado += ' m';
-                } else if (key.toLowerCase().includes('m2')) {
-                  valorFormateado += ' m²';
-                }
-              }
-
-              return (
-                <div key={key} className={styles.featureCard}>
-                  <span className={styles.featureIcon}>{meta.icon}</span>
-                  <span className={styles.featureLabel}>
-                    {meta.label}
-                    {typeof value !== 'boolean' && valorFormateado}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* MEMORIA DESCRIPTIVA */}
-      {descripcion && (
-        <div className="mb-6">
-          <h3 className={styles.sectionTitle}>Descripción General</h3>
-          <div className={styles.descriptionText}>
-            {descripcion}
-          </div>
-          <p className="mt-3 text-slate-500 font-bold">MS PROPIEDADES INDUSTRIALES - Matías Settecerze Col. 1219</p>
-        </div>
-      )}
-
-    </div>
-  );
+			{/* DESCRIPCIÓN */}
+			{descripcion && (
+				<div className="mb-6">
+					<h3 className={styles.sectionTitle}>Descripción General</h3>
+					<div className={styles.descriptionText}>{descripcion}</div>
+					<p className="mt-3 text-slate-500 font-bold">
+						MS PROPIEDADES INDUSTRIALES - Matías Settecerze Col. 1219
+					</p>
+				</div>
+			)}
+		</div>
+	);
 }
