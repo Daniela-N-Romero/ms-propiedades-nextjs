@@ -6,6 +6,8 @@ interface ConfigContextType {
   links: any;
   propiedadId: string | number | null;
   setPropiedadId: (id: string | number | null) => void;
+  propuestaId: string | number | null;
+  setPropuestaId: (id: string | number | null) => void;
 }
 
 const ConfigContext = createContext<ConfigContextType | null>(null);
@@ -19,9 +21,9 @@ export function ConfigProvider({
 }) {
  // Añadimos el estado interno para guardar el ID de forma segura en memoria
   const [propiedadId, setPropiedadId] = useState<string | number | null>(null);
-
+  const [propuestaId, setPropuestaId] = useState<string | number | null>(null);
   return (
-    <ConfigContext.Provider value={{ links, propiedadId, setPropiedadId }}>
+    <ConfigContext.Provider value={{ links, propiedadId, setPropiedadId, propuestaId, setPropuestaId }}>
       {children}
     </ConfigContext.Provider>
   );
@@ -36,5 +38,10 @@ export const useContactLinks = () => {
 export const useAdminConfig = () => {
   const context = useContext(ConfigContext);
   if (!context) throw new Error('useAdminConfig debe usarse dentro de ConfigProvider');
-  return { propiedadId: context.propiedadId, setPropiedadId: context.setPropiedadId };
+  return { 
+    propiedadId: context.propiedadId, 
+    setPropiedadId: context.setPropiedadId,
+    propuestaId: context.propuestaId,
+    setPropuestaId: context.setPropuestaId
+  };
 };

@@ -11,11 +11,12 @@ interface AdminBannerProps {
 export default function AdminBanner({ isAdmin }: AdminBannerProps) {
     const pathname = usePathname();
 
-    const { propiedadId } = useAdminConfig(); // Leemos el ID seguro en memoria
+    const { propiedadId, propuestaId } = useAdminConfig(); // Leemos el ID seguro en memoria
 
     if (!isAdmin) return null;
 
     const esPaginaPropiedad = pathname.includes("/propiedades/");
+    const esPaginaPropuesta = pathname.includes("/propuestas/");
 
     // BANNER DE EDICIÓN: Si estamos en una propiedad y el ID ya fue registrado internamente
     if (esPaginaPropiedad && propiedadId) {
@@ -34,24 +35,24 @@ export default function AdminBanner({ isAdmin }: AdminBannerProps) {
         );
     }
 
-    //     const esPaginaPropuesta = pathname.includes("/propuestas/");
-
-    // // BANNER DE EDICIÓN: Si estamos en una propiedad y el ID ya fue registrado internamente
-    // if (esPaginaPropuesta && propuestaSlug) {
-    //     return (
-    //         <div className="bg-amber-300/90 text-center px-3 py-3 font-bold sticky top-0 z-1000 shadow-lg flex flex-col sm:flex-row justify-between text-xs items-center gap-2">
-    //             <span>Modo Vista Previa: Sesión de Administrador activa.</span>
-    //             <span>
-    //                 <Link
-    //                     href={`/admin/propuestas/${propuestaSlug}/editar/`}
-    //                     className="bg-blue-500 text-white px-3 py-1 rounded-sm font-bold transition-all shadow-md hover:bg-blue-800"
-    //                 >
-    //                     ✏️ Editar esta Propuesta
-    //                 </Link>
-    //             </span>
-    //         </div>
-    //     );
-    // }
+    // BANNER DE EDICIÓN: Si estamos en una propiedad y el ID ya fue registrado internamente
+    if (esPaginaPropuesta && propuestaId) {
+        console.log("es pagina propuesta:", esPaginaPropiedad)
+        console.log("propuestaId:", propuestaId)
+        return (
+            <div className="bg-amber-300/90 text-center px-3 py-3 font-bold sticky top-0 z-1000 shadow-lg flex flex-col sm:flex-row justify-between text-xs items-center gap-2">
+                <span>Modo Vista Previa: Sesión de Administrador activa.</span>
+                <span>
+                    <Link
+                        href={`/admin/propuestas/${propuestaId}/editar/`}
+                        className="bg-blue-500 text-white px-3 py-1 rounded-sm font-bold transition-all shadow-md hover:bg-blue-800"
+                    >
+                        ✏️ Editar esta Propuesta
+                    </Link>
+                </span>
+            </div>
+        );
+    }
 
     // BANNER GENERAL: Para el resto de las páginas públicas del sitio
     return (
