@@ -70,6 +70,7 @@ export const getZonasActivas = cache(async () => {
 export async function getLocalidadesActivasPorTipo(mercadoSlug: string, categoria?: string) {
 const wherePropiedad: any = {
     isPublished: true,
+    isUnlisted: false,
   };
 
   if (mercadoSlug && mercadoSlug !== 'todas') {
@@ -93,13 +94,49 @@ const wherePropiedad: any = {
         some: wherePropiedad // Que tengan al menos 1 propiedad publicada con estos criterios
       }
     },
-    include: {
-    padre: {
-      include: {
-        padre: true, 
+    select: {
+        id: true,
+        nombre: true,
+        padreId: true,
+        padre: {
+          select: {
+            id: true,
+            nombre: true,
+            padreId: true,
+            padre: {
+              select: {
+                id: true,
+                nombre: true,
+              },
+            },
+          },
+        },
       },
+    orderBy: [
+      { padre: { nombre: 'asc' } },
+      { nombre: 'asc' }
+    ]
+  });
+
+  return localidades.map(sanearZona);
+}
+
+// Trae localidades con jerarquía completa que tengan AL MENOS 1 propiedad (pública, borrador o privada)
+export async function getLocalidadesConPropiedadesAdmin() {
+  const localidades = await prisma.zona.findMany({
+    where: {
+      padreId: { not: null },
+      propiedades: {
+        some: {} // Con que exista la propiedad en la BBDD, incluye la localidad
+      }
     },
-  },
+    include: {
+      padre: {
+        include: {
+          padre: true // 🟢 Carga la MacroZona para no romper las categorías del panel
+        }
+      }
+    },
     orderBy: [
       { padre: { nombre: 'asc' } },
       { nombre: 'asc' }

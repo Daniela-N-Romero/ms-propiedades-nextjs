@@ -43,10 +43,12 @@ export default function CrearPropuestaPage() {
   const [itemsSeleccionados, setItemsSeleccionados] = useState<ItemSeleccionado[]>([]);
 
   useEffect(() => {
-    fetch("/api/properties")
+    fetch("/api/properties?tab=activas&limit=1000")
       .then((res) => res.json())
       .then((data) => {
-        if (Array.isArray(data)) setPropiedadesBD(data);
+        if (data && Array.isArray(data.propiedades)) {
+          setPropiedadesBD(data.propiedades);
+        }
       })
       .catch((err) => console.error("Error al cargar propiedades:", err));
   }, []);

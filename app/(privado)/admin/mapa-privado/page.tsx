@@ -1,6 +1,6 @@
 import { getColegas, getPropietarios } from '@/backend/services/admin-catalogos.service';
 import { searchPropiedades, getSubtiposPorTipoMercado } from '@/backend/services/property.service';
-import { getLocalidadesActivasPorTipo } from '@/backend/services/zone.service';
+import { getLocalidadesConPropiedadesAdmin } from '@/backend/services/zone.service';
 import MapaAdminResultsView from '@/features/mapa/components/mapa-admin-results-view';
 import Link from 'next/link';
 
@@ -66,7 +66,7 @@ export default async function MapaPrivadoAdminPage({ searchParams }: MapaPrivado
       supCubMax: search.supCubMax ? Number(search.supCubMax) : undefined,
       localidades,
     }, false, false, 'map'), // false para isPublishedOnly y false para isNotUnlisted, ya que queremos ver todas las propiedades en el admin
-    getLocalidadesActivasPorTipo(search.mercado || undefined),
+    getLocalidadesConPropiedadesAdmin(),
     getSubtiposPorTipoMercado(search.mercado || undefined),
   ]);
 
