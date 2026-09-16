@@ -100,6 +100,8 @@ export async function GET(request: Request) {
           isPublished: true,
           isUnlisted: true,
           isDestacada: true,
+          permitMetaAd: true,  
+          imagenMetaUrl: true,
           origen: true,
           videoUrl: true,
           pdfUrl: true,

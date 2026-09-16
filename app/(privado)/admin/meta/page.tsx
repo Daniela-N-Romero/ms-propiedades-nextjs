@@ -38,16 +38,17 @@ export default function PublicidadAdminPage() {
     fetchPropiedades();
   }, []);
 
-  const fetchPropiedades = async () => {
+const fetchPropiedades = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/properties?tab=activas', { cache: 'no-store' });
+      // Pedimos limit=1000 para traer las propiedades activas para el feed de Meta
+      const res = await fetch('/api/properties?tab=activas&limit=1000', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
-        setPropiedades(data);
+        setPropiedades(data.propiedades || []);
       }
     } catch (err) {
-      console.error(err);
+      console.error('Error cargando propiedades para Meta:', err);
     } finally {
       setLoading(false);
     }
