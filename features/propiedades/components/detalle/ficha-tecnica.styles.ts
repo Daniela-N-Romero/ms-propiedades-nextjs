@@ -1,7 +1,7 @@
 export const styles = {
   // Highlights Bar )
   highlightsContainer: "bg-white rounded-2xl p-6 shadow-sm border border-slate-100 my-6 grid grid-cols-2 md:grid-cols-4 gap-3 divide-y md:divide-y-0 md:divide-x divide-slate-100",
-  highlightItem: "pt-4 md:pt-0 md:pl-6 first:pt-0 first:pl-0 flex flex-col justify-center",
+  highlightItem: "md:pt-0 md:pl-6 first:pt-0 first:pl-0 flex flex-col justify-start md:justify-center",
   highlightLabel: "text-xs font-spartan font-bold text-slate-400 uppercase tracking-wider mb-1",
   highlightValue: "text-xl md:text-2xl font-extrabold text-slate-900",
   highlightPrice: "text-xl md:text-2xl font-extrabold text-brand-green",

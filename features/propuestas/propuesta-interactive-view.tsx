@@ -123,6 +123,14 @@ export default function PropuestaInteractiveView({
                     <span className="text-gray-500 block">Valor / m²:</span>
                     <span className="font-bold text-emerald-600">{prop.precioM2}</span>
                   </div>
+                  <div>
+                    <span className="text-gray-500 block">Superficie total:</span>
+                    <span className="font-semibold text-slate-800">{prop.supTerreno}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500 block">Superficie cubierta:</span>
+                    <span className="font-semibold text-slate-800">{prop.supCubierta}</span>
+                  </div>
                 </div>
 
                 <div className="space-y-1.5 text-xs mb-3">
