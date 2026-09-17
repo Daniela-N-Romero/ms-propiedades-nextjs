@@ -38,35 +38,35 @@ function isValidLatLng(latOrCoords: any, lng?: any): boolean {
 }
 function MapController({ coords }: { coords: [number, number] }) {
   const map = useMap();
-  const lastCoordsRef = useRef<string>("");
 
   useEffect(() => {
-    if (!isValidLatLng(coords[0], coords[1])) return;
+    if (!map || !isValidLatLng(coords[0], coords[1])) return;
 
-    const coordsKey = `${coords[0]}-${coords[1]}`;
-    // Evitamos re-ejecutar el reposicionamiento si son exactamente las mismas coordenadas
-    if (lastCoordsRef.current === coordsKey) return;
+    const container = map.getContainer();
 
-    const timer = setTimeout(() => {
-      try {
-        if (!map) return;
-        map.invalidateSize();
+    const handleResize = () => {
+      // 1. Corregimos primero las dimensiones internas del mapa
+      map.invalidateSize();
 
-        // 🔑 Usamos setView de manera segura. Evita los micro-frames de flyTo que crashean en unproject()
-        const targetLat = Number(coords[0]);
-        const targetLng = Number(coords[1]);
-
-        if (!isNaN(targetLat) && !isNaN(targetLng)) {
-          map.setView([targetLat, targetLng], 12, { animate: false });
-          lastCoordsRef.current = coordsKey;
+      // 2. Esperamos al siguiente frame de renderizado del navegador para centrar
+      requestAnimationFrame(() => {
+        if (map && isValidLatLng(coords[0], coords[1])) {
+          map.setView([Number(coords[0]), Number(coords[1])], 12, { animate: false });
         }
-      } catch (err) {
-        console.warn("⚠️ [MapController Handled Warning]:", err);
-      }
-    }, 250);
+      });
+    };
 
-    return () => clearTimeout(timer);
-  }, [coords, map]);
+    // Usamos el ResizeObserver para detectar visibilidad y cambios de tamaño
+    const resizeObserver = new ResizeObserver(() => {
+      handleResize();
+    });
+
+    resizeObserver.observe(container);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [map, coords]);
 
   return null;
 }
