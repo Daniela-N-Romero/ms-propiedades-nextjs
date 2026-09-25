@@ -67,6 +67,7 @@ export default function PropertyForm({
     defaultValues: initialData
       ? {
         titulo: initialData.titulo,
+        slug: initialData.slug,
         categoria: initialData.categoria,
         origen: initialData.origen,
         precio: initialData.precio,
@@ -97,6 +98,7 @@ export default function PropertyForm({
       }
       : {
         titulo: '',
+        slug: '',
         categoria: '' as any,
         origen: '' as any,
         precio: '' as any,

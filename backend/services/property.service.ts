@@ -229,8 +229,9 @@ export async function searchPropiedades(
   isNotUnlisted: boolean = true,
   mode: SearchMode = 'full' // 'full' por defecto para retrocompatibilidad
 ) {
-  const queryWhere: any = {};
-
+  const queryWhere: any = {
+  deletedAt: null, // Garantiza que jamás traiga propiedades eliminadas en público o mapa
+};
   if (isPublishedOnly) {
     queryWhere.isPublished = true;
   }

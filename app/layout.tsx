@@ -38,7 +38,7 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col">
         <ConfigProvider links={links}>
           <NextTopLoader
-          color="#f97316" // Tu color naranja de marca (brand-orange)
+          color="#f97316" 
           initialPosition={0.08}
           crawlSpeed={200}
           height={3}

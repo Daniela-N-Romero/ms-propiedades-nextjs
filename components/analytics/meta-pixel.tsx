@@ -42,7 +42,7 @@ export default function MetaPixel() {
           `,
         }}
       />
-      {/* 💡 Al envolver en Suspense, Next.js no falla durante el prerender del build */}
+      {/* Al envolver en Suspense, Next.js no falla durante el prerender del build */}
       <Suspense fallback={null}>
         <MetaPixelTracker />
       </Suspense>

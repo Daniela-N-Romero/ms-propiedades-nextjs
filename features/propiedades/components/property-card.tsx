@@ -35,7 +35,7 @@ export default function PropertyCard({ propiedad }: PropertyCardProps) {
 
         {/* 💳 BADGE FLOTANTE DE FINANCIACIÓN (SOBRE LA FOTO) */}
         {propiedad.financiacion && (
-          <span className="absolute bottom-2 left-2 right-2 z-10 bg-green-600/60 backdrop-blur-xs text-white text-[8px] font-extrabold uppercase tracking-wide px-1 py-0.5 rounded-md text-center">
+          <span className="absolute bottom-2 left-2 right-2 z-10 bg-green-600/60 backdrop-blur-xs text-white text-[8px] font-extrabold uppercase tracking-wide px-0.5 py-0.5 rounded-md text-center">
             💳 {propiedad.financiacion}
           </span>
         )}

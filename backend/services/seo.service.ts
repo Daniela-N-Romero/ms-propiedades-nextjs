@@ -20,7 +20,7 @@ export function buildPropertyMetadata(propiedad: PropertyFullData | null): Metad
   return {
     title: tituloSEO,
     description: descripcionSEO,
-    // 🔒 CONTROL DE GOOGLE Y BUSCADORES (SI ES PRIVADA / UNLISTED)
+    //  CONTROL DE GOOGLE Y BUSCADORES (SI ES PRIVADA / UNLISTED)
     robots: propiedad.isUnlisted
       ? { index: false, follow: false }
       : { index: true, follow: true },
