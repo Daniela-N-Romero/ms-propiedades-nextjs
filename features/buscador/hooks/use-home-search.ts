@@ -15,29 +15,29 @@ export function useHomeSearch(zonasDB: ZonaServer[] = []) {
   }, [zonasDB]);
 
   const [zonaSelected, setZonaSelected] = useState<string>('');
-  const [localidadesFiltradas, setLocalidadesFiltradas] = useState<ZonaServer[]>([]);
-  const [localidadSelected, setLocalidadSelected] = useState<string>('');
+  const [partidosFiltrados, setPartidosFiltrados] = useState<ZonaServer[]>([]);
+  const [partidosSelected, setPartidosSelected] = useState<string[]>([]);
   const [categoriaSelected, setCategoriaSelected] = useState<string>('');
   const [subtipoSelected, setSubtipoSelected] = useState<string>('');
 
   // 2. Manejo de selección de zonas e hijas
   useEffect(() => {
     if (!zonaSelected) {
-      setLocalidadesFiltradas([]);
-      setLocalidadSelected('');
+      setPartidosFiltrados([]);
+      setPartidosSelected([]);
       return;
     }
 
     // Buscamos las hijas comparando Numbers
     const hijas = (zonasDB || []).filter(z => Number(z.padreId) === Number(zonaSelected));
-    
-    setLocalidadesFiltradas(hijas);
+
+    setPartidosFiltrados(hijas);
   }, [zonaSelected, zonasDB]);
 
   // Handler para cambiar de zona (limpia la localidad en el evento de usuario)
   const handleZonaChange = (id: string) => {
     setZonaSelected(id);
-    setLocalidadSelected('');
+    setPartidosSelected([]);
   };
 
   // 3. Manejo de submit
@@ -53,17 +53,30 @@ export function useHomeSearch(zonasDB: ZonaServer[] = []) {
       params.set('subtipo', subtipoSelected);
     }
 
-    if (localidadSelected) {
-      params.set('localidad', localidadSelected);
-    } else if (zonaSelected) {
-      localidadesFiltradas.forEach(loc => params.append('localidad', String(loc.id)));
+    //Enviamos el indicador de Zona si existe
+    if (zonaSelected) {
+      params.set('zona', zonaSelected);
     }
+
+    //Traducimos los partidos seleccionados a los IDs de sus Localidades Hijas
+    if (partidosSelected.length > 0) {
+      const localidadesHijasIds = zonasDB
+        .filter(z => partidosSelected.includes(String(z.padreId))) // Encuentra las localidades cuyo padreId es un Partido seleccionado
+        .map(z => z.id);
+
+      if (localidadesHijasIds.length > 0) {
+      // Enviamos cada localidad como parámetro repetido o por coma
+      localidadesHijasIds.forEach(id => params.append('localidad', String(id)));
+      }
+    }
+
+    router.push(`/propiedades?${params.toString()}`);
 
     trackHomeSearch({
       categoria: categoriaSelected,
       subtipo: subtipoSelected,
       zonaLabel: zonaSelected,
-      localidadLabel: localidadSelected
+      localidadLabel: partidosSelected.join(',')
     });
 
     router.push(`/propiedades?mercado=industrial&${params.toString()}`);
@@ -71,13 +84,13 @@ export function useHomeSearch(zonasDB: ZonaServer[] = []) {
 
   return {
     zonasPadre,
-    localidadesFiltradas,
+    partidosFiltrados,
     zonaSelected,
-    localidadSelected,
+    partidosSelected,
     categoriaSelected,
     subtipoSelected,
     setZonaSelected: handleZonaChange, // Usamos la función envuelta
-    setLocalidadSelected,
+    setPartidosSelected,
     setCategoriaSelected,
     setSubtipoSelected,
     handleSubmit

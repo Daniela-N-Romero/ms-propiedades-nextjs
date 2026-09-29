@@ -11,7 +11,7 @@ export const revalidate = 3600;
 export default async function HomePage() {
 
   // 🔌 Traemos todas las zonas y localidades de Postgres en crudo
-  const zonas = await getZonasActivas();
+  const zonas = await getZonasActivas("industrial");
   const destacadas = await getDestacadas();
   const subtiposIndustrial = await getSubtiposPorTipoMercado("industrial");
 

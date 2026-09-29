@@ -1,3 +1,4 @@
+import { prisma } from "@/backend/db";
 import { getSubtiposPorTipoMercado, searchPropiedades } from "@/backend/services/property.service";
 import { getLocalidadesActivasPorTipo } from "@/backend/services/zone.service";
 
@@ -12,11 +13,34 @@ export async function renderPageByPropertyType({ searchParams, mercadoSlug }: Re
 
   // 1. Mapeamos las variables de la URL
   let localidadesIds: number[] = [];
-  if (params.localidad) {
-    localidadesIds = Array.isArray(params.localidad)
-      ? params.localidad.map(Number)
-      : [Number(params.localidad)];
+  // 1. Si viene el parámetro 'zona', buscamos todas sus localidades descendientes
+if (params.zona) {
+  const zonaId = Number(params.zona);
+  if (!isNaN(zonaId)) {
+    const localidadesDeZona = await prisma.zona.findMany({
+      where: {
+        OR: [
+          { padreId: zonaId }, // Si es partido directo
+          { padre: { padreId: zonaId } } // Si es localidad nieta de la MacroZona
+        ]
+      },
+      select: { id: true }
+    });
+    localidadesIds = localidadesDeZona.map(l => l.id);
   }
+}
+
+// 2. Si vienen localidades/partidos específicos en la URL
+if (params.localidad) {
+  const rawLocs = Array.isArray(params.localidad) ? params.localidad : [params.localidad];
+  const idsDirectos = rawLocs
+    .flatMap(item => String(item).split(','))
+    .map(str => Number(str.trim()))
+    .filter(num => !isNaN(num) && num > 0);
+
+  // Si ya había localidades de la zona, hacemos la intersección o sumamos
+  localidadesIds = idsDirectos.length > 0 ? idsDirectos : localidadesIds;
+}
 
   const categoriaParam = typeof params.categoria === 'string' ? params.categoria : undefined;
   let subtiposSlugs: string[] = [];

@@ -52,20 +52,40 @@ export async function getZonasTodas() {
 
 // GET ZONAS Y LOCALIDADES PARA PROPIEDADES CON PUBLISHED: TRUE
 //[Padres e Hijas + Publicadas]
-export const getZonasActivas = cache(async () => {
-  try {
+export const getZonasActivas = cache(async (mercado?:string) => {
+try {
+    const wherePropiedad: any = {
+      isPublished: true,
+      isUnlisted: false,
+    };
+    if (mercado) {
+      wherePropiedad.tipoInmueble = {
+        OR: [
+          { slug: { equals: mercado, mode: 'insensitive' as const } },
+          { padre: { slug: { equals: mercado, mode: 'insensitive' as const } } }
+        ]   
+    };
+    }
     const zonas = await prisma.zona.findMany({
-      orderBy: { nombre: 'asc' },
+    where: {
+        OR: [
+          // 1. Zonas Principales
+          { padreId: null, hijas: { some: { hijas: { some: { propiedades: { some: wherePropiedad } } } } } },
+          // 2. Partidos
+          { padreId: { not: null }, hijas: { some: { propiedades: { some: wherePropiedad } } } },
+          // 3. Localidades directas
+          { propiedades: { some: wherePropiedad } }
+        ]
+      },
+      orderBy: { nombre: 'asc' }
     });
 
-    // Nos aseguramos de devolver el array saneado
     return sanearParaServer(zonas) as unknown as ZonaServer[];
   } catch (error) {
-    console.error('Error al traer zonas:', error);
+    console.error('Error al traer zonas activas:', error);
     return [];
   }
 });
-
 //[Solo Hijas + Publicadas + Filtra por Tipo/Categoría]
 export async function getLocalidadesActivasPorTipo(mercadoSlug: string, categoria?: string) {
 const wherePropiedad: any = {

@@ -26,6 +26,7 @@ export function usePropertyFilters() {
     supCubMax: searchParams.get('supCubMax') || '',
     localidades: searchParams.getAll('localidad'),
     ordenar: searchParams.get('ordenar') || '',
+    zona: searchParams.get('zona') || '',
     // Excluimos 'ordenar' y 'page' del conteo de filtros activos
     totalActivos: Object.keys(Object.fromEntries(searchParams.entries())).filter(
       k => k !== 'ordenar' && k !== 'page'
@@ -34,8 +35,7 @@ export function usePropertyFilters() {
 
   // Helper centralizado con startTransition y scroll: false
   const navigateWithFilters = (params: URLSearchParams) => {
-    // 🔴 RESETEA LA PAGINACIÓN A LA PÁGINA 1 CADA VEZ QUE SE MODIFICA UN FILTRO
-    params.delete('page');
+    params.delete('page'); // Resetea la paginación al cambiar filtros
     startTransition(() => {
       router.push(`${pathname}?${params.toString()}`, { scroll: false });
     });
@@ -56,21 +56,53 @@ export function usePropertyFilters() {
     navigateWithFilters(params);
   };
 
-  // 3. Función para filtros múltiples (Checkboxes)
+// 3. Toggle de un elemento individual en array (Corregido y Atómico)
   const toggleArrayFilter = (key: string, id: string, isChecked: boolean) => {
     const params = new URLSearchParams(searchParams.toString());
     const currentValues = params.getAll(key);
-    
+
+    let updatedValues: string[];
     if (isChecked) {
-      params.append(key, id);
+      updatedValues = Array.from(new Set([...currentValues, id]));
     } else {
-      params.delete(key);
-      currentValues.filter(v => v !== id).forEach(v => params.append(key, v));
+      updatedValues = currentValues.filter(v => v !== id);
     }
+
+    // Reemplazamos atómicamente todos los valores de esa clave
+    params.delete(key);
+    updatedValues.forEach(val => params.append(key, val));
+
     navigateWithFilters(params);
   };
 
-  // 4. Limpiar todos los filtros
+  // 4. Set masivo de un array (Para marcar/desmarcar partidos completos)
+  const setArrayFilter = (key: string, idsToToggle: string[], isChecked: boolean) => {
+    const params = new URLSearchParams(searchParams.toString());
+    const currentValues = params.getAll(key);
+
+    let updatedValues: string[];
+    if (isChecked) {
+      updatedValues = Array.from(new Set([...currentValues, ...idsToToggle]));
+    } else {
+      updatedValues = currentValues.filter(v => !idsToToggle.includes(v));
+    }
+
+    // Reemplazamos atómicamente todos los valores
+    params.delete(key);
+    updatedValues.forEach(val => params.append(key, val));
+
+    navigateWithFilters(params);
+  };
+
+  const clearZonaAndLocalidades = () => {
+  const params = new URLSearchParams(searchParams.toString());
+  params.delete('zona');
+  params.delete('localidad');
+  params.delete('partido');
+  navigateWithFilters(params);
+};
+
+  // 5. Limpiar todos los filtros
   const clearAllFilters = () => {
     startTransition(() => {
       router.push(pathname, { scroll: false });
@@ -82,6 +114,8 @@ export function usePropertyFilters() {
     isPending,
     setFilter,
     toggleArrayFilter,
+    setArrayFilter,
+    clearZonaAndLocalidades,
     clearAllFilters
   };
 }

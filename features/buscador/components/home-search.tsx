@@ -12,13 +12,13 @@ const searchProps = useHomeSearch(zonasDB);
   return (
     <SearchView 
       zonasPadre={searchProps.zonasPadre}
-      localidadesFiltradas={searchProps.localidadesFiltradas}
+      localidadesFiltradas={searchProps.partidosFiltrados}
       zonaSelected={searchProps.zonaSelected}
-      localidadSelected={searchProps.localidadSelected}
+      partidosSelected={searchProps.partidosSelected}
       categoriaSelected={searchProps.categoriaSelected}
       subtipoSelected={searchProps.subtipoSelected}
       onZonaChange={searchProps.setZonaSelected}
-      onLocalidadChange={searchProps.setLocalidadSelected}
+      onPartidosChange={searchProps.setPartidosSelected}
       onCategoriaChange={searchProps.setCategoriaSelected}
       onSubtipoChange={searchProps.setSubtipoSelected}
       onSubmit={searchProps.handleSubmit}
