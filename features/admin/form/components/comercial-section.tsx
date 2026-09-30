@@ -6,8 +6,8 @@ import { useFormContext } from "react-hook-form";
 import { PropertyFormValues } from "@/features/admin/form/schemas/property-schema";
 import { formatNumberWithDots, parseRawNumber } from "@/lib/utils-formatting";
 import { getInputClass, getSelectClass } from "../utils/form-utils";
-import { PropietarioModal } from "../modals/propietario-modal";
-import { ColegaModal } from "../modals/colega-modal";
+import { PropietarioModal } from "../../../propietarios/components/propietario-modal";
+import { ColegaModal } from "../../../colegas/components/colega-modal";
 import type { TipoInmueble, Agente, Propietario, Colega } from "@prisma-client";
 import { DynamicFeaturesSection } from "./dynamic-features-section";
 

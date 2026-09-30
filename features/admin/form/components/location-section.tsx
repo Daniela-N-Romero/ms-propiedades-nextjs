@@ -4,7 +4,7 @@ import { useFormContext, useWatch } from 'react-hook-form';
 import { PropertyFormValues } from '@/features/admin/form/schemas/property-schema';
 import { getInputClass, getSelectClass } from '../utils/form-utils';
 import { LocationPicker } from './location-picker';
-import { ZonaModal } from '../modals/zona-modal';
+import { ZonaModal } from '../../../zonas/components/zona-modal';
 import type { ZonaServer } from '@/types/server-data';
 
 interface LocationSectionProps {

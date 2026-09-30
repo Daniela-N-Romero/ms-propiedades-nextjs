@@ -1,57 +1,31 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { createZonaAction } from '../actions/catalogos-actions';
+import { useZonaModal } from '../hooks/use-zona-modal';
+import type { ZonaModel } from '@/prisma/generated/models/Zona';
 
 interface ZonaModalProps {
   isOpen: boolean;
   onClose: () => void;
   tipo: 'region' | 'partido' | 'localidad';
   padreId?: number | null;
-  onCreated: (nuevaZona: { id: number; nombre: string; padreId?: number | null }) => void;
+  onCreated: (nuevaZona: ZonaModel) => void;
 }
 
 export function ZonaModal({ isOpen, onClose, tipo, padreId, onCreated }: ZonaModalProps) {
-  const [mounted, setMounted] = useState(false);
-  const [nombre, setNombre] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const {
+    mounted,
+    nombre,
+    setNombre,
+    isSubmitting,
+    error,
+    handleSubmit,
+  } = useZonaModal(isOpen, padreId, onClose, onCreated);
 
   if (!isOpen || !mounted) return null;
 
   const tituloTipo =
     tipo === 'region' ? 'Región Principal' : tipo === 'partido' ? 'Partido / Comuna' : 'Localidad';
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setError(null);
-    setIsSubmitting(true);
-
-    const result = await createZonaAction({
-      nombre,
-      padreId: padreId || null,
-    });
-
-    setIsSubmitting(false);
-
-    if (result.success && result.zona) {
-      onCreated({
-        id: result.zona.id,
-        nombre: result.zona.nombre,
-        padreId: result.zona.padreId,
-      });
-      setNombre('');
-      onClose();
-    } else {
-      setError(result.error || 'Error al guardar la ubicación.');
-    }
-  };
 
   const modalContent = (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
@@ -63,7 +37,7 @@ export function ZonaModal({ isOpen, onClose, tipo, padreId, onCreated }: ZonaMod
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 font-bold text-lg"
+            className="text-slate-400 hover:text-slate-600 font-bold text-lg cursor-pointer"
           >
             ✕
           </button>
@@ -100,14 +74,14 @@ export function ZonaModal({ isOpen, onClose, tipo, padreId, onCreated }: ZonaMod
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition"
+              className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 text-xs font-bold bg-brand-orange text-white rounded-xl hover:bg-orange-600 transition shadow-xs disabled:opacity-50"
+              className="px-4 py-2 text-xs font-bold bg-brand-orange text-white rounded-xl hover:bg-orange-600 transition shadow-xs disabled:opacity-50 cursor-pointer"
             >
               {isSubmitting ? 'Guardando...' : 'Guardar y Seleccionar'}
             </button>
