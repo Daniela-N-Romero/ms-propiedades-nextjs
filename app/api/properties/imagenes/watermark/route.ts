@@ -15,8 +15,14 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    let fullImageUrl = imageUrl;
+    if (imageUrl.startsWith('/')) {
+      const origin = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+      fullImageUrl = `${origin}${imageUrl}`;
+    }
+
     // 1. Descargamos la imagen original (.webp, .png, .jpg) desde Supabase
-    const imageRes = await fetch(imageUrl);
+    const imageRes = await fetch(fullImageUrl);
     if (!imageRes.ok) {
       return NextResponse.redirect(imageUrl, 302);
     }

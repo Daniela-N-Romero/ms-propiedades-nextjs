@@ -2,9 +2,9 @@
 'use client';
 
 import { useState } from 'react';
-import { uploadPdfClean } from '@/lib/supabase/upload-pdf';
 import { useAlertModal } from '@/components/hooks/use-alert-modal';
 import { AlertModal } from '@/components/ui/alert-modal';
+import { uploadPdfAction } from '@/actions/upload-pdf-action';
 
 interface PdfUploaderProps {
   pdfUrl?: string | null;
@@ -19,21 +19,27 @@ export function PdfUploader({ pdfUrl, onChange }: PdfUploaderProps) {
   const { alertState, showAlert, closeAlert } = useAlertModal();
   
   const processPdfFile = async (file: File) => {
-    if (!file) return;
+  if (!file) return;
 
-    if (file.type !== 'application/pdf') {
-      showAlert('Por favor selecciona un archivo en formato PDF válido.', {type:'warning'});
-      return;
-    }
+  if (file.type !== 'application/pdf') {
+    showAlert('Por favor selecciona un archivo en formato PDF válido.', { type: 'warning' });
+    return;
+  }
 
-    setIsUploading(true);
-    const url = await uploadPdfClean(file);
-    setIsUploading(false);
+  setIsUploading(true);
+  
+  // Recibimos el objeto resultado { success: boolean, url?: string, error?: string }
+  const result = await uploadPdfAction(file);
+  
+  setIsUploading(false);
 
-    if (url) {
-      onChange(url);
-    }
-  };
+  // Verificamos que se haya subido con éxito y extraemos la URL limpia
+  if (result.success && result.url) {
+    onChange(result.url); // Ahora le pasamos únicamente la cadena de texto con la URL
+  } else {
+    showAlert(result.error || 'No se pudo subir el PDF.', { type: 'error' });
+  }
+};
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

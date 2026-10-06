@@ -2,18 +2,24 @@
 
 import { useState, useRef } from 'react';
 import Image from 'next/image';
-import { uploadImagen, deleteImagenFromStorage } from '@/lib/supabase/upload-image';
+import { uploadImagenAction } from '@/actions/upload-action';
+import { deleteImagenAction } from '@/actions/delete-action';
 
 interface MetaImageUploaderProps {
   value?: string | null;
   onChange: (url: string | null) => void;
-  galleryImages?: string[];
+  galleryImages?: any[];
   isLoadingGallery?: boolean;
 }
 
 export function MetaImageUploader({ value, onChange, galleryImages = [], isLoadingGallery = false }: MetaImageUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [selectedToCrop, setSelectedToCrop] = useState<string | null>(null);
+
+  const cleanGalleryUrls = galleryImages.map((img) => {
+    if (typeof img === 'string') return img;
+    return img?.url;
+  }).filter(Boolean);
 
   // Estados para el encuadre 1:1
   const [zoom, setZoom] = useState<number>(1);
@@ -31,9 +37,9 @@ export function MetaImageUploader({ value, onChange, galleryImages = [], isLoadi
   };
 
   const handleRemove = async () => {
-    if (value && value.includes('supabase.co')) {
-      await deleteImagenFromStorage(value);
-    }
+  if (value) {
+    await deleteImagenAction(value);
+  }
     onChange(null);
   };
 
@@ -45,11 +51,17 @@ export function MetaImageUploader({ value, onChange, galleryImages = [], isLoadi
     try {
       const img = new window.Image();
       img.crossOrigin = 'anonymous';
-      img.src = selectedToCrop;
 
       await new Promise((resolve, reject) => {
         img.onload = resolve;
-        img.onerror = reject;
+        img.onerror = () => {
+          // Fallback si crossOrigin es bloqueado por el servidor remoto
+          const fallbackImg = new window.Image();
+          fallbackImg.onload = resolve;
+          fallbackImg.onerror = reject;
+          fallbackImg.src = selectedToCrop;
+        };
+        img.src = selectedToCrop;
       });
 
       const canvas = document.createElement('canvas');
@@ -82,10 +94,15 @@ export function MetaImageUploader({ value, onChange, galleryImages = [], isLoadi
       canvas.toBlob(async (blob) => {
         if (!blob) return;
         const croppedFile = new File([blob], `meta-crop-${Date.now()}.webp`, { type: 'image/webp' });
-        const uploadedUrl = await uploadImagen(croppedFile);
 
-        if (uploadedUrl) {
-          onChange(uploadedUrl);
+        const formData = new FormData();
+        formData.append('file', croppedFile);
+
+        const res = await uploadImagenAction(formData);
+
+        if (res.success && res.data) {
+          // Salva a imagen limpia para Meta
+          onChange(res.data.url);
           setSelectedToCrop(null);
         }
         setIsUploading(false);
@@ -155,14 +172,14 @@ export function MetaImageUploader({ value, onChange, galleryImages = [], isLoadi
                 ))}
               </div>
             </div>
-          ) : galleryImages.length > 0 ? (
+          ) : cleanGalleryUrls.length > 0 ? (
             /* SI YA HAY FOTOS MUESTRA EL CARRUSEL */
             <div>
               <p className="text-[11px] font-bold text-slate-600 mb-1.5">
-                O elegí una foto cargada para recortar en 1:1 ({galleryImages.length} disponibles):
+                O elegí una foto cargada para recortar en 1:1 ({cleanGalleryUrls.length} disponibles):
               </p>
               <div className="flex gap-2 overflow-x-auto pb-2">
-                {galleryImages.map((imgUrl, i) => (
+                {cleanGalleryUrls.map((imgUrl, i) => (
                   <button
                     key={`${imgUrl}-${i}`}
                     type="button"

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { toggleDestacadaAction } from '../actions/toggle-destacada';
+import { toggleDestacadaAction } from '@/actions/propiedades-actions';
 import { useAlertModal } from '@/components/hooks/use-alert-modal';
 import { AlertModal } from '@/components/ui/alert-modal';
 

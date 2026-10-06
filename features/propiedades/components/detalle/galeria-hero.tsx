@@ -31,11 +31,11 @@ export default function GaleriaHero({
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Si no hay fotos cargadas en el array, usamos un placeholder elegante
-  const fotosDisplay = imagenes && imagenes.length > 0
+  // Si no hay fotos cargadas en el array, usamos un placeholder 
+  const fotosDisplay: Imagen[] = imagenes && imagenes.length > 0
     ? imagenes
     : [
-      { id: 0, url: '/images/placeholder.png', orden: 0, propiedadId: 0 }
+      { id: 0, url: '/images/placeholder.png', urlWatermark: null, orden: 0, propiedadId: 0 }
     ];
 
 
@@ -73,12 +73,16 @@ export default function GaleriaHero({
     };
   }, [isLightboxOpen, nextPhoto, prevPhoto]);
 
-  const getWatermarkUrl = (originalUrl: string) => {
-    if (!originalUrl || originalUrl.startsWith('/images/placeholder')) {
-      return originalUrl;
+    const getWatermarkUrl = (img: Imagen) => {
+    if (!img) return '/images/placeholder.png';
+    
+    if (img.urlWatermark) {
+      console.log("Usando URL con marca de agua:", img.urlWatermark);
+      return img.urlWatermark;
     }
-
-    return `/api/properties/imagenes/watermark?url=${encodeURIComponent(originalUrl)}`;
+    
+    console.log("Usando URL original:", img.url);
+    return img.url || '/images/placeholder.png';
   };
 
   return (
@@ -130,7 +134,7 @@ export default function GaleriaHero({
           onClick={() => openLightboxAt(0)}
         >
           <CustomImage
-            src={getWatermarkUrl(fotosDisplay[0].url)}
+            src={getWatermarkUrl(fotosDisplay[0])}
             alt={titulo}
             fill
             preload={true}
@@ -149,7 +153,7 @@ export default function GaleriaHero({
               onClick={() => openLightboxAt(idx + 1)}
             >
               <CustomImage
-                src={getWatermarkUrl(img.url)}
+                src={getWatermarkUrl(img)}
                 alt={`${titulo} - foto ${idx + 2}`}
                 fill
                 unoptimized
@@ -198,7 +202,7 @@ export default function GaleriaHero({
 
             <div className="relative w-full h-full max-w-5xl max-h-[80vh]">
               <CustomImage
-                src={getWatermarkUrl(fotosDisplay[currentIndex].url)}
+                src={getWatermarkUrl(fotosDisplay[currentIndex])}
                 alt={titulo}
                 fill
                 priority
@@ -226,7 +230,7 @@ export default function GaleriaHero({
                   }`}
               >
                 <CustomImage
-                  src={getWatermarkUrl(img.url)}
+                  src={getWatermarkUrl(img)}
                   alt="thumb"
                   fill
                   unoptimized

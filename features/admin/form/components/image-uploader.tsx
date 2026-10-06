@@ -2,11 +2,17 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { uploadImagen, deleteImagenFromStorage } from '@/lib/supabase/upload-image';
+import { uploadImagenAction } from '@/actions/upload-action';
+import { deleteImagenAction } from '@/actions/delete-action';
+
+export interface ImagenGaleriaItem {
+  url: string;
+  urlClean?: string;
+}
 
 interface ImageUploaderProps {
-  imagenes: string[];
-  onChange: (urls: string[]) => void;
+  imagenes: (string | ImagenGaleriaItem)[];
+  onChange: (urls: (string | ImagenGaleriaItem)[]) => void;
   error?: string;
   onUploadingChange?: (isUploading: boolean) => void;
 }
@@ -18,35 +24,44 @@ export function ImageUploader({ imagenes, onChange, error, onUploadingChange }: 
 
 // Procesar archivos (tanto por input click como por Drag & Drop)
   const processFiles = async (fileList: File[]) => {
-    if (!fileList || fileList.length === 0) return;
+  if (!fileList || fileList.length === 0) return;
 
-    // Filtrar solo imágenes
-    const validImages = fileList.filter((f) => f.type.startsWith('image/'));
-    if (validImages.length === 0) return;
+  const validImages = fileList.filter((f) => f.type.startsWith('image/'));
+  if (validImages.length === 0) return;
 
-    setIsUploading(true);
-    onUploadingChange?.(true);
+  setIsUploading(true);
+  onUploadingChange?.(true);
 
-    const uploadedUrls: string[] = [];
+  const newImages: { url: string; urlClean?: string }[] = [];
 
-    for (let i = 0; i < validImages.length; i++) {
-      const file = validImages[i];
-      setUploadProgress(`Comprimiendo y subiendo ${i + 1} de ${validImages.length}...`);
+  for (let i = 0; i < validImages.length; i++) {
+    const file = validImages[i];
+    setUploadProgress(`Aplicando marca de agua y subiendo ${i + 1} de ${validImages.length}...`);
 
-      const url = await uploadImagen(file);
-      if (url) {
-        uploadedUrls.push(url);
-      }
+    const formData = new FormData();
+    formData.append('file', file);
+
+    // Invocación directa a la Server Action
+    const res = await uploadImagenAction(formData);
+
+    if (res.success && res.data) {
+      newImages.push(res.data);
+    } else {
+      console.error('Error en subida:', res.error);
     }
+  }
 
-    // Filtrar placeholder previo si existía
-    const prevImages = imagenes.filter((img) => img !== '/images/placeholder.png');
-    onChange([...prevImages, ...uploadedUrls]);
+  const prevImages = imagenes.filter((img) => {
+      const url = typeof img === 'string' ? img : img.url;
+      return url !== '/images/placeholder.png';
+    });
+    
+  onChange([...prevImages, ...newImages]);
 
-    setIsUploading(false);
-    onUploadingChange?.(false);
-    setUploadProgress(null);
-  };
+  setIsUploading(false);
+  onUploadingChange?.(false);
+  setUploadProgress(null);
+};
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -80,12 +95,11 @@ export function ImageUploader({ imagenes, onChange, error, onUploadingChange }: 
   };
 
   const handleRemove = async (indexToRemove: number) => {
-    const urlToRemove = imagenes[indexToRemove];
+    const itemToRemove = imagenes[indexToRemove];
+    const urlToRemove = typeof itemToRemove === 'string' ? itemToRemove : itemToRemove.url;;
     
     // Si es una imagen subida a Supabase, la borramos del bucket
-    if (urlToRemove.includes('supabase.co')) {
-      await deleteImagenFromStorage(urlToRemove);
-    }
+    await deleteImagenAction(urlToRemove);
 
     const updated = imagenes.filter((_, idx) => idx !== indexToRemove);
     onChange(updated.length > 0 ? updated : []);
@@ -152,13 +166,13 @@ export function ImageUploader({ imagenes, onChange, error, onUploadingChange }: 
           </label>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            {imagenes.map((url, idx) => {
+            {imagenes.map((item, idx) => {
               const isPortada = idx === 0;
-              const displayUrl = url;
+              const displayUrl = typeof item === 'string' ? item : item.url;
 
               return (
                 <div
-                  key={`${url}-${idx}`}
+                  key={`${displayUrl}-${idx}`}
                   className={`relative group aspect-square rounded-xl overflow-hidden border-2 shadow-sm ${
                     isPortada ? 'border-brand-orange ring-2 ring-orange-200' : 'border-slate-200 bg-slate-100'
                   }`}

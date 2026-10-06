@@ -21,6 +21,14 @@ z.preprocess((val) => {
     return Number(clean);
   }, z.number({ message: msg }));
 
+  const imagenItemSchema = z.union([
+    z.string(),
+    z.object({
+      url: z.string(),
+      urlWatermark: z.string().optional().nullable(),
+    }),
+  ]);
+
 // ----------------------------------------------------
 // 1. SCHEMA PARA BORRADOR (Validación laxa/mínima)
 // ----------------------------------------------------
@@ -54,7 +62,7 @@ export const draftPropertySchema = z.object({
   isDestacada: z.boolean().default(false),
   notasPrivadas: z.string().optional(),
   caracteristicas: z.record(z.string(), z.any()).optional(),
-  imagenes: z.array(z.string()).default([]),
+  imagenes: z.array(imagenItemSchema).default([]),
   permitMetaAd: z.boolean().default(false),
   imagenMetaUrl: z.string().optional().nullable(),
 });
@@ -110,7 +118,7 @@ export const basePublishPropertySchema = z.object({
   permitMetaAd: z.boolean().default(false),
   imagenMetaUrl: z.string().optional().nullable(),
   imagenes: z
-    .array(z.string())
+    .array(imagenItemSchema)
     .min(1, 'Debe incluir al menos una imagen o la imagen por defecto'),
 })
 

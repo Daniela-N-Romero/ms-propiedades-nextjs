@@ -37,11 +37,15 @@ export function generarCodigoRef(prop: any): string {
     .substring(0, 3)
     .toUpperCase();
 
-  // Generamos un hash/sufijo alfanumérico único basado en el ID original
-  // El ID directo asegura que NO haya duplicados entre los 98 inmuebles
-  const hashUnico = (prop.id + 1000).toString(36).toUpperCase();
+  // Generar combinación única (Letras y números aleatorios de 3 caracteres)
+  // Ej: "A8", "XZ9", "Y3B" o usando un hash basado en ID/Timestamp
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let randomSuffix = '';
+  for (let i = 0; i < 3; i++) {
+    randomSuffix += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
 
-  return `${prefijo}-${loc}-${hashUnico}`;
+  return `${prefijo}-${loc}-${randomSuffix}`;
 }
 
 
@@ -74,4 +78,23 @@ export function parseRawNumber(val: string): number {
   const clean = val.replace(/\./g, '').replace(',', '.');
   const parsed = parseFloat(clean);
   return isNaN(parsed) ? 0 : parsed;
+}
+
+export function formatearExpensas(
+  valor?: number | null,
+  modalidad?: string | null
+): string | null {
+  if (!valor || valor <= 0) return null;
+
+  switch (modalidad) {
+    case 'USD':
+      return `USD ${valor.toLocaleString('es-AR')}`;
+    case 'USD_M2':
+      return `USD ${valor} / m²`;
+    case 'ARS_M2':
+      return `$ ${valor.toLocaleString('es-AR')} / m²`;
+    case 'ARS':
+    default:
+      return `$ ${valor.toLocaleString('es-AR')}`;
+  }
 }

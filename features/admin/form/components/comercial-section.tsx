@@ -228,7 +228,7 @@ export function ComercialSection({
 						</span>
 					)}
 				</div>
-
+					
 				<div className="col-span-2">
 					<label className="block text-xs font-bold text-slate-700 mb-1">
 						💳 Financiación / Facilidades de Pago (Opcional)

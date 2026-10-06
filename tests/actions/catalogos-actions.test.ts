@@ -1,10 +1,23 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, vi, expect, beforeEach } from 'vitest';
 import { saveColegaAction } from '@/actions/colegas-actions';
 import { savePropietarioAction } from '@/actions/propietarios-actions';
 import { saveZonaAction } from '@/actions/zonas-actions';
 
+// SILENCIAR REVALIDATEPATH DE NEXT.JS DENTRO DE LOS TESTS
+vi.mock('next/cache', () => ({
+  revalidatePath: vi.fn(),
+}));
+
+
 describe('Pruebas de Server Actions de Catálogos de Creación en Modals de Formulario de Propiedades', () => {
   
+    // SILENCIAR CONSOLE.ERROR Y CONSOLE.LOG TEMPORALMENTE DURANTE LOS TESTS
+  beforeEach(() => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+  });
+
+
   // 1. COLEGA: Validación de Inmobiliaria
   it('saveColegaAction debe rechazar la creación si falta la inmobiliaria', async () => {
     const res = await saveColegaAction({

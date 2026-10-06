@@ -1,20 +1,188 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../../prisma/generated"
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider = "postgresql"
 }
 
-// ==========================================
-// 1. ENUMS (Tipados estrictos)
-// ==========================================
+model TipoInmueble {
+  id          Int            @id @default(autoincrement())
+  nombre      String         @db.VarChar(100)
+  slug        String         @unique @db.VarChar(100)
+  padreId     Int?           @map("padre_id")
+  propiedades Propiedad[]
+  padre       TipoInmueble?  @relation("JerarquiaTipoInmueble", fields: [padreId], references: [id])
+  hijas       TipoInmueble[] @relation("JerarquiaTipoInmueble")
+
+  @@map("tipos_inmueble")
+}
+
+model Zona {
+  id          Int         @id @default(autoincrement())
+  nombre      String      @db.VarChar(100)
+  padreId     Int?        @map("padre_id")
+  latitud     Decimal?    @db.Decimal(9, 6)
+  longitud    Decimal?    @db.Decimal(9, 6)
+  propiedades Propiedad[]
+  padre       Zona?       @relation("ZonaJerarquia", fields: [padreId], references: [id])
+  hijas       Zona[]      @relation("ZonaJerarquia")
+
+  @@map("zonas")
+}
+
+model Propietario {
+  id            Int         @id @default(autoincrement())
+  nombre        String      @db.VarChar(100)
+  apellido      String?     @db.VarChar(100)
+  telefono      String?     @db.VarChar(50)
+  email         String?     @db.VarChar(150)
+  notasPrivadas String?     @map("notas_privadas")
+  propiedades   Propiedad[]
+
+  @@map("propietarios")
+}
+
+model Colega {
+  id            Int         @id @default(autoincrement())
+  nombre        String      @db.VarChar(100)
+  apellido      String      @db.VarChar(100)
+  inmobiliaria  String      @db.VarChar(150)
+  telefono      String?     @db.VarChar(50)
+  email         String?     @db.VarChar(150)
+  notasPrivadas String?     @map("notas_privadas")
+  propiedades   Propiedad[]
+
+  @@map("colegas")
+}
+
+model Agente {
+  id           Int          @id @default(autoincrement())
+  nombre       String       @db.VarChar(100)
+  apellido     String       @db.VarChar(100)
+  telefono     String?      @db.VarChar(50)
+  email        String       @unique @db.VarChar(150)
+  passwordHash String       @map("password_hash") @db.VarChar(255)
+  rol          UserRoleEnum @default(agente)
+  propiedades  Propiedad[]
+
+  @@map("agentes")
+}
+
+model Propiedad {
+  id                     Int                 @id @default(autoincrement())
+  codigo                 String              @unique @db.VarChar(50)
+  titulo                 String              @db.VarChar(255)
+  slug                   String              @unique @db.VarChar(255)
+  direccionPersonalizada String?             @map("direccion_personalizada") @db.VarChar(255)
+  superficieTotal        Decimal?            @map("superficie_total") @db.Decimal(12, 2)
+  superficieCubierta     Decimal?            @map("superficie_cubierta") @db.Decimal(12, 2)
+  origen                 OrigenPropiedadEnum @default(own)
+  categoria              TipoOperacionEnum
+  precio                 Decimal             @db.Decimal(12, 2)
+  moneda                 MonedaEnum          @default(USD)
+  descripcion            String?
+  videoUrl               String?             @map("video_url") @db.VarChar(255)
+  pdfUrl                 String?             @map("pdf_url") @db.VarChar(255)
+  latitud                Decimal?            @db.Decimal(9, 6)
+  longitud               Decimal?            @db.Decimal(9, 6)
+  isPublished            Boolean             @default(false) @map("is_published")
+  isDestacada            Boolean             @default(false) @map("is_destacada")
+  notasPrivadas          String?             @map("notas_privadas")
+  caracteristicas        Json?               @map("caracteristicas_especificas")
+  createdAt              DateTime            @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt              DateTime            @default(now()) @map("updated_at") @db.Timestamp(6)
+  tipoInmuebleId         Int                 @map("tipo_inmueble_id")
+  zonaId                 Int                 @map("zona_id")
+  propietarioId          Int?                @map("propietario_id")
+  colegaId               Int?                @map("colega_id")
+  agenteId               Int                 @map("agente_id")
+  deletedAt              DateTime?           @map("deleted_at") @db.Timestamp(6)
+  isUnlisted             Boolean             @default(false)
+  financiacion           String?             @db.VarChar(255)
+  imagenMetaUrl          String?             @map("imagen_meta_url") @db.VarChar(255)
+  permitMetaAd           Boolean             @default(false) @map("permit_meta_ad")
+  propuestas             PropuestaItem[]
+  imagenes               Imagen[]
+  leads                  Lead[]
+  agente                 Agente              @relation(fields: [agenteId], references: [id])
+  colega                 Colega?             @relation(fields: [colegaId], references: [id])
+  propietario            Propietario?        @relation(fields: [propietarioId], references: [id])
+  tipoInmueble           TipoInmueble        @relation(fields: [tipoInmuebleId], references: [id])
+  zona                   Zona                @relation(fields: [zonaId], references: [id])
+
+  @@index([deletedAt])
+  @@map("propiedades")
+}
+
+model Imagen {
+  id          Int       @id @default(autoincrement())
+  url         String                           // URL limpia original (se usa en todo el sitio por defecto)
+  urlWatermark String?   @map("url_watermark") // URL procesada con marca de agua (solo para la vista detalle)
+  orden       Int       @default(0)
+  propiedadId Int       @map("propiedad_id")
+  propiedad   Propiedad @relation(fields: [propiedadId], references: [id], onDelete: Cascade)
+
+  @@map("imagenes")
+}
+
+model Lead {
+  id          Int            @id @default(autoincrement())
+  nombre      String         @db.VarChar(100)
+  apellido    String?        @db.VarChar(100)
+  email       String         @db.VarChar(150)
+  telefono    String?        @db.VarChar(50)
+  mensaje     String?
+  origen      String         @default("ficha_propiedad") @db.VarChar(50)
+  estado      LeadStatusEnum @default(nuevo)
+  propiedadId Int?           @map("propiedad_id")
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  propiedad   Propiedad?     @relation(fields: [propiedadId], references: [id])
+
+  @@index([email])
+  @@index([propiedadId])
+  @@map("leads")
+}
+
+model configuracionEmpresa {
+  id                     Int      @id @default(1)
+  email                  String   @db.VarChar(150)
+  telefono               String   @db.VarChar(50)
+  whatsapp               String   @db.VarChar(50)
+  direccion              String   @db.VarChar(255)
+  instagram              String   @db.VarChar(255)
+  facebook               String   @db.VarChar(255)
+  linkedin               String   @db.VarChar(255)
+  updatedAt              DateTime @updatedAt
+  videoIndustrialDefault String   @default("https://www.youtube.com/embed/lLOIMzl-7_Q") @db.VarChar(255)
+}
+
+model PropuestaComercial {
+  id                 String          @id @default(cuid())
+  clienteNombre      String
+  clienteEmpresa     String?
+  slug               String          @unique
+  puntoInteresNombre String
+  puntoInteresLat    Float
+  puntoInteresLng    Float
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  items              PropuestaItem[]
+}
+
+model PropuestaItem {
+  id                   String             @id @default(cuid())
+  propuestaId          String
+  propiedadId          Int
+  esPrioritaria        Boolean            @default(false)
+  notaLogistica        String?
+  tiempoEstimadoString String?
+  orden                Int                @default(0)
+  propiedad            Propiedad          @relation(fields: [propiedadId], references: [id])
+  propuesta            PropuestaComercial @relation(fields: [propuestaId], references: [id], onDelete: Cascade)
+}
 
 enum TipoOperacionEnum {
   venta
@@ -41,216 +209,4 @@ enum LeadStatusEnum {
 enum UserRoleEnum {
   admin
   agente
-}
-
-// ==========================================
-// 2. MODELOS (Tablas)
-// ==========================================
-
-model TipoInmueble {
-  id          Int            @id @default(autoincrement())
-  nombre      String         @db.VarChar(100) // "Industrial", "Nave Industrial", "Galpón"
-  slug        String         @unique @db.VarChar(100) // "industrial", "nave-industrial", "galpon"
-  padreId     Int?           @map("padre_id")
-
-  // Relación auto-referenciada (Padre/Hijos)
-  padre       TipoInmueble?  @relation("JerarquiaTipoInmueble", fields: [padreId], references: [id], onDelete: SetNull)
-  hijas       TipoInmueble[] @relation("JerarquiaTipoInmueble")
-
-  // Relación con Propiedades
-  propiedades Propiedad[]
-
-  @@map("tipos_inmueble")
-}
-
-model Zona {
-  id          Int         @id @default(autoincrement())
-  nombre      String      @db.VarChar(100)
-  padreId     Int?        @map("padre_id")
-  latitud     Decimal?    @db.Decimal(9, 6)
-  longitud    Decimal?    @db.Decimal(9, 6)
-
-  // Relación auto-referenciada (Padre/Hijos)
-  padre       Zona?       @relation("ZonaJerarquia", fields: [padreId], references: [id], onDelete: SetNull)
-  hijas       Zona[]      @relation("ZonaJerarquia")
-
-  // Relación inversa con propiedades
-  propiedades Propiedad[]
-
-  @@map("zonas")
-}
-
-model Propietario {
-  id            Int         @id @default(autoincrement())
-  nombre        String      @db.VarChar(100)
-  apellido      String?      @db.VarChar(100)
-  telefono      String?     @db.VarChar(50)
-  email         String?     @db.VarChar(150)
-  notasPrivadas String?     @map("notas_privadas") @db.Text
-
-  propiedades   Propiedad[]
-
-  @@map("propietarios")
-}
-
-model Colega {
-  id            Int         @id @default(autoincrement())
-  nombre        String      @db.VarChar(100)
-  apellido      String      @db.VarChar(100)
-  inmobiliaria  String      @db.VarChar(150)
-  telefono      String?     @db.VarChar(50)
-  email         String?     @db.VarChar(150)
-  notasPrivadas String?     @map("notas_privadas") @db.Text
-
-  propiedades   Propiedad[]
-
-  @@map("colegas")
-}
-
-model Agente {
-  id           Int          @id @default(autoincrement())
-  nombre       String       @db.VarChar(100)
-  apellido     String       @db.VarChar(100)
-  telefono     String?      @db.VarChar(50)
-  email        String       @unique @db.VarChar(150)
-  passwordHash String       @map("password_hash") @db.VarChar(255)
-  rol          UserRoleEnum @default(agente)
-
-  propiedades  Propiedad[]
-
-  @@map("agentes")
-}
-
-model Propiedad {
-  id                    Int                 @id @default(autoincrement())
-  codigo                String              @unique @db.VarChar(50) 
-  titulo                String              @db.VarChar(255)
-  slug                  String              @unique @db.VarChar(255)
-  direccionPersonalizada String?            @map("direccion_personalizada") @db.VarChar(255)
-  superficieTotal       Decimal?            @map("superficie_total") @db.Decimal(12, 2)
-  superficieCubierta    Decimal?            @map("superficie_cubierta") @db.Decimal(12, 2)
-  origen                OrigenPropiedadEnum @default(own)
-  categoria             TipoOperacionEnum
-  precio                Decimal             @db.Decimal(12, 2)
-  moneda                MonedaEnum          @default(USD)
-  financiacion          String?             @db.VarChar(255)
-  descripcion           String?             @db.Text
-  videoUrl              String?             @map("video_url") @db.VarChar(255)
-  pdfUrl                String?             @map("pdf_url") @db.VarChar(255)
-  latitud               Decimal?            @db.Decimal(9, 6)
-  longitud              Decimal?            @db.Decimal(9, 6)
-  isPublished           Boolean             @default(false) @map("is_published")
-  isUnlisted            Boolean             @default(false)
-  isDestacada           Boolean             @default(false) @map("is_destacada") 
-  notasPrivadas         String?             @map("notas_privadas") @db.Text
-  caracteristicas       Json?               @map("caracteristicas_especificas")
-  permitMetaAd          Boolean             @default(false) @map("permit_meta_ad")
-  imagenMetaUrl         String?             @map("imagen_meta_url") @db.VarChar(255)
-  deletedAt             DateTime?           @map("deleted_at") @db.Timestamp
-  createdAt             DateTime            @default(now()) @map("created_at") @db.Timestamp
-  updatedAt             DateTime            @default(now()) @map("updated_at") @db.Timestamp
-
-  // Claves Foráneas y Relaciones
-
-  tipoInmuebleId        Int                 @map("tipo_inmueble_id")
-  tipoInmueble          TipoInmueble        @relation(fields: [tipoInmuebleId], references: [id], onDelete: Restrict)
-
-  zonaId                Int                 @map("zona_id")
-  zona                  Zona                @relation(fields: [zonaId], references: [id], onDelete: Restrict)
-  
-  propietarioId         Int?                @map("propietario_id")
-  propietario           Propietario?        @relation(fields: [propietarioId], references: [id], onDelete: SetNull)
-  
-  colegaId              Int?                @map("colega_id")
-  colega                Colega?             @relation(fields: [colegaId], references: [id], onDelete: SetNull)
-  
-  agenteId              Int                 @map("agente_id")
-  agente                Agente              @relation(fields: [agenteId], references: [id], onDelete: Restrict)
-
-  // Relaciones inversas hacia las hijas
-  imagenes              Imagen[]
-  leads                 Lead[]
-  propuestas            PropuestaItem[]
-
-  @@index([deletedAt])
-  @@map("propiedades")
-}
-
-model Imagen {
-  id          Int       @id @default(autoincrement())
-  url         String    @db.VarChar(255)
-  orden       Int       @default(0)
-  
-  propiedadId Int       @map("propiedad_id")
-  propiedad   Propiedad @relation(fields: [propiedadId], references: [id], onDelete: Cascade)
-
-  @@map("imagenes")
-}
-
-model Lead {
-  id          Int            @id @default(autoincrement())
-  nombre      String         @db.VarChar(100)
-  apellido    String?        @db.VarChar(100)
-  email       String         @db.VarChar(150)
-  telefono    String?        @db.VarChar(50)
-  mensaje     String?        @db.Text
-  origen      String    @default("ficha_propiedad") @db.VarChar(50) // 'ficha_propiedad', 'contacto_general', 'tasacion'
-  estado      LeadStatusEnum @default(nuevo)
-
-  propiedadId Int?           @map("propiedad_id")
-  propiedad   Propiedad?     @relation(fields: [propiedadId], references: [id], onDelete: SetNull)
-
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  @@index([email])
-  @@index([propiedadId])
-  
-  @@map("leads")
-}
-
-model configuracionEmpresa {
-  id                        Int      @id @default(1) // Siempre habrá 1 solo registro (ID: 1)
-  email                     String   @db.VarChar(150)
-  telefono                  String   @db.VarChar(50)
-  whatsapp                  String   @db.VarChar(50)
-  direccion                 String   @db.VarChar(255)
-  instagram                 String   @db.VarChar(255)
-  facebook                  String   @db.VarChar(255)
-  linkedin                  String   @db.VarChar(255)
-  videoIndustrialDefault    String   @db.VarChar(255) @default("https://www.youtube.com/embed/lLOIMzl-7_Q")
-  updatedAt                 DateTime @updatedAt
-}
-
-model PropuestaComercial {
-  id              String   @id @default(cuid())
-  clienteNombre   String
-  clienteEmpresa  String?
-  slug            String   @unique // URL amigable: /propuesta/cliente-x
-  
-  // Punto de Interés / Destino de la carga
-  puntoInteresNombre String   // ej: "Neuquén Capital", "Puerto de Buenos Aires", "Ezeiza"
-  puntoInteresLat    Float
-  puntoInteresLng    Float
-  
-  // Propiedades incluidas en la propuesta (Relación muchos a muchos)
-  items           PropuestaItem[]
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-}
-
-model PropuestaItem {
-  id            String             @id @default(cuid())
-  propuestaId   String
-  propuesta     PropuestaComercial @relation(fields: [propuestaId], references: [id], onDelete: Cascade)
-  
-  propiedadId   Int
-  propiedad     Propiedad          @relation(fields: [propiedadId], references: [id])
-  
-  // Campos personalizados por propuesta
-  esPrioritaria Boolean            @default(false)
-  notaLogistica String?            // ej: "Ahorro de 2hs de peajes por salir directo a RN 3"
-  tiempoEstimadoString String?     // ej: "~11 hs / 1.040 km"
-  orden         Int                @default(0)
 }
