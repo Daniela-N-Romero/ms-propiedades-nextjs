@@ -1,7 +1,8 @@
 import { getStorageProvider } from '@/backend/services/storage/storage.factory';
 import { aplicarMarcaDeAgua } from '@/backend/lib/watermark';
 import crypto from 'crypto';
-import sharp from 'sharp';
+import { createCanvas, loadImage } from '@napi-rs/canvas';
+
 
 function getRandomHash(): string {
   return crypto.randomBytes(2).toString('hex');
