@@ -8,9 +8,14 @@ function getRandomHash(): string {
 }
 
 async function convertToWebP(fileBuffer: Buffer): Promise<Buffer> {
-  return await sharp(fileBuffer)
-      .webp({ quality: 85 })
-      .toBuffer();
+  const img = await loadImage(fileBuffer);
+  const canvas = createCanvas(img.width, img.height);
+  const ctx = canvas.getContext('2d');
+  
+  ctx.drawImage(img, 0, 0, img.width, img.height);
+  
+  // Exporta a WebP en buffer con calidad optimizada al 85%
+  return await canvas.encode('webp', 85);
 }
 
 function generateUniqueFilename(): string {

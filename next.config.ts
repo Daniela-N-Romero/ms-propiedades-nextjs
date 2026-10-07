@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
-  serverExternalPackages: ['@napi-rs/canvas', 'sharp'],
+  serverExternalPackages: ['@napi-rs/canvas'],
   experimental: {
     serverActions: {
       bodySizeLimit: '20mb',
