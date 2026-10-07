@@ -138,7 +138,7 @@ export function ComercialSection({
 						render={({ field }) => (
 							<select
 								disabled={!selectedMercadoId || isPending}
-								value={field.value ?? 0} // 👈 Enlazamos el estado dinámico de React Hook Form
+								value={field.value ?? 0} // Enlazamos el estado dinámico de React Hook Form
 								className={getSelectClass(!!errors.tipoInmuebleId)}
 								onChange={(e) => {
 									const selectedId = Number(e.target.value);
@@ -492,7 +492,7 @@ export function ComercialSection({
 									<option value="">⚠️ Sin Asignar / Desconocido</option>
 									{listaColegas.map((c) => (
 										<option key={c.id} value={c.id}>
-											{c.nombre} {c.inmobiliaria ? `(${c.inmobiliaria})` : ""}
+											{`${c.inmobiliaria} ${c.nombre ? ` - ${c.nombre}` : "" }`}
 										</option>
 									))}
 								</select>

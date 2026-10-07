@@ -46,8 +46,8 @@ model Propietario {
 
 model Colega {
   id            Int         @id @default(autoincrement())
-  nombre        String      @db.VarChar(100)
-  apellido      String      @db.VarChar(100)
+  nombre        String?      @db.VarChar(100)
+  apellido      String?      @db.VarChar(100)
   inmobiliaria  String      @db.VarChar(150)
   telefono      String?     @db.VarChar(50)
   email         String?     @db.VarChar(150)
