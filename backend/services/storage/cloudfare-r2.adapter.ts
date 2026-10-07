@@ -30,13 +30,13 @@ export class CloudflareR2Adapter implements IStorageProvider {
   }
 
   async uploadFile(file: Buffer, filename: string, mimeType: string): Promise<UploadResult> {
-    const fileKey = `propiedades/${Date.now()}_${filename.replace(/\s+/g, '_')}`;
+    const fileKey = filename; 
 
     // Enviamos el comando de subida a Cloudflare
     await this.s3Client.send(
       new PutObjectCommand({
         Bucket: this.bucketName,
-        Key: fileKey,
+        Key: filename,
         Body: file,
         ContentType: mimeType,
       })

@@ -15,9 +15,10 @@ interface ImageUploaderProps {
   onChange: (urls: (string | ImagenGaleriaItem)[]) => void;
   error?: string;
   onUploadingChange?: (isUploading: boolean) => void;
+  folderId?: string; 
 }
 
-export function ImageUploader({ imagenes, onChange, error, onUploadingChange }: ImageUploaderProps) {
+export function ImageUploader({ imagenes, onChange, error, onUploadingChange, folderId }: ImageUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
@@ -40,7 +41,8 @@ export function ImageUploader({ imagenes, onChange, error, onUploadingChange }: 
 
     const formData = new FormData();
     formData.append('file', file);
-
+    formData.append('folderId', folderId);
+    
     // Invocación directa a la Server Action
     const res = await uploadImagenAction(formData);
 

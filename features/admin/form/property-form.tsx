@@ -11,6 +11,7 @@ import { StatusSection } from './components/status-section';
 
 import type { ZonaServer, PropertyFullData } from '@/types/server-data';
 import type { TipoInmueble, Agente, Propietario, Colega } from '@prisma-client';
+import { useRef } from 'react';
 
 interface PropertyFormProps {
   initialData?: PropertyFullData | null;
@@ -62,6 +63,10 @@ export default function PropertyForm({
   });
 
   const totalErrors = Object.keys(form.formState.errors).length;
+
+  const folderIdRef = useRef<string>(
+    initialData?.id ? initialData.id.toString() : `propiedad-${crypto.randomUUID().slice(0, 8)}`
+  );
 
   return (
     <FormProvider {...form}>
@@ -137,7 +142,7 @@ export default function PropertyForm({
         />
 
         {/* BLOQUE 3: MULTIMEDIA */}
-        <MultimediaSection />
+        <MultimediaSection propertyId={folderIdRef.current} />
 
         {/* NUEVO BLOQUE 4: ESTADO Y NOTAS PRIVADAS */}
         <StatusSection />

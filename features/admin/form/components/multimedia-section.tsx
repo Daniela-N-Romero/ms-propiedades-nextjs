@@ -8,9 +8,11 @@ import { PdfUploader } from './pdf-uploader';
 import { MetaImageUploader } from './meta-image-uploader';
 import { useState } from 'react';
 
-interface MultimediaSectionProps { }
+interface MultimediaSectionProps {
+  propertyId: string;
+}
 
-export function MultimediaSection({ }: MultimediaSectionProps) {
+export function MultimediaSection({ propertyId }: MultimediaSectionProps) {
   const { register, control, formState: { errors } } = useFormContext<PropertyFormValues>();
   const [isGalleryUploading, setIsGalleryUploading] = useState(false);
   // Suscripción en tiempo real a las imágenes subidas en la galería
@@ -38,6 +40,7 @@ export function MultimediaSection({ }: MultimediaSectionProps) {
           control={control}
           render={({ field }) => (
             <ImageUploader
+              folderId={propertyId}
               imagenes={field.value || []}
               onChange={field.onChange}
               error={errors.imagenes?.message}
@@ -57,6 +60,7 @@ export function MultimediaSection({ }: MultimediaSectionProps) {
         control={control}
         render={({ field }) => (
           <MetaImageUploader
+            folderId={propertyId}
             value={field.value}
             onChange={field.onChange}
             galleryImages={imagenesGaleria}

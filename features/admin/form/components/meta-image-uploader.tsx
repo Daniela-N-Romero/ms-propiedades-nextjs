@@ -10,9 +10,10 @@ interface MetaImageUploaderProps {
   onChange: (url: string | null) => void;
   galleryImages?: any[];
   isLoadingGallery?: boolean;
+  folderId?: string; 
 }
 
-export function MetaImageUploader({ value, onChange, galleryImages = [], isLoadingGallery = false }: MetaImageUploaderProps) {
+export function MetaImageUploader({ value, onChange, galleryImages = [], isLoadingGallery = false, folderId }: MetaImageUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [selectedToCrop, setSelectedToCrop] = useState<string | null>(null);
 
@@ -97,6 +98,7 @@ export function MetaImageUploader({ value, onChange, galleryImages = [], isLoadi
 
         const formData = new FormData();
         formData.append('file', croppedFile);
+        formData.append('folderId', folderId);
 
         const res = await uploadImagenAction(formData);
 

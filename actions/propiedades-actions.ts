@@ -73,7 +73,6 @@ export async function savePropertyAction(
       revalidatePath('/');
       revalidatePath('/propiedades', 'layout');
 
-      console.log(`✅ Propiedad guardada con éxito [${modo}] (ID: ${propertyId})`);
       return { success: true, propertyId };
 
     } else {
@@ -121,7 +120,6 @@ export async function savePropertyAction(
       revalidatePath('/');
       revalidatePath('/propiedades');
 
-      console.log(`✅ Nueva propiedad creada con éxito [${modo}] (ID: ${nuevaPropiedad.id}, Código: ${codigoRef})`);
       return { success: true, propertyId: nuevaPropiedad.id };
     }
   } catch (error: any) {
