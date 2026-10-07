@@ -32,6 +32,8 @@ export default function ContactoSection({
 }: ContactoSectionProps) {
 
     const { whatsAppUrl, handleWhatsAppClick } = useWhatsAppButtons({ codigo, slug, titulo, precio, moneda, agente });
+    
+    const agenteRole = agente.nombre === "Matías" ? "Martillero Público - CMYCP Col.1219" : "Asesora Comercial — MS Propiedades";
 
     return (
         <>
@@ -45,7 +47,7 @@ export default function ContactoSection({
                     </div>
                     <div>
                         <h4 className={styles.agentName}>{agente.nombre} {agente.apellido}</h4>
-                        <p className={styles.agentRole}>Asesor Comercial — MS Propiedades</p>
+                        <p className={styles.agentRole}>{agenteRole}</p>
                     </div>
                 </div>
 

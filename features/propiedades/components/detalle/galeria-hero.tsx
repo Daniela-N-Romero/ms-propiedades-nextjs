@@ -77,11 +77,9 @@ export default function GaleriaHero({
     if (!img) return '/images/placeholder.png';
     
     if (img.urlWatermark) {
-      console.log("Usando URL con marca de agua:", img.urlWatermark);
       return img.urlWatermark;
     }
     
-    console.log("Usando URL original:", img.url);
     return img.url || '/images/placeholder.png';
   };
 
