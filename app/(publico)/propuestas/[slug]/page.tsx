@@ -40,6 +40,15 @@ export default async function PropuestaDinamicaPage({ params }: Props) {
 
 		// Calculamos el valor por m² si existen precio y superficie cubierta
 		let precioM2Calculado = "Consulte";
+		if (p.precio && p.superficieTotal && Number(p.superficieTotal) > 0) {
+			const m2 = Number(p.superficieTotal);
+			const precioNum = Number(p.precio);
+			const valorM2 = (precioNum / m2).toLocaleString("es-AR", {
+				maximumFractionDigits: 2,
+			});
+			precioM2Calculado = `${p.moneda} ${valorM2} / m²`;
+		}
+		
 		if (p.precio && p.superficieCubierta && Number(p.superficieCubierta) > 0) {
 			const m2 = Number(p.superficieCubierta);
 			const precioNum = Number(p.precio);
@@ -49,14 +58,6 @@ export default async function PropuestaDinamicaPage({ params }: Props) {
 			precioM2Calculado = `${p.moneda} ${valorM2} / m²`;
 		}
 
-		if (p.precio && p.superficieTotal && Number(p.superficieTotal) > 0) {
-			const m2 = Number(p.superficieTotal);
-			const precioNum = Number(p.precio);
-			const valorM2 = (precioNum / m2).toLocaleString("es-AR", {
-				maximumFractionDigits: 2,
-			});
-			precioM2Calculado = `${p.moneda} ${valorM2} / m²`;
-		}
 
 		return {
 			id: String(p.id), // Convertimos el ID numérico a string
