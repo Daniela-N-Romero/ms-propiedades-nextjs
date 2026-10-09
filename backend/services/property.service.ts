@@ -428,7 +428,6 @@ export async function getPropiedadById(propertyId: number) {
       tipoInmueble: { include: { padre: true } },
       agente: true,
       imagenes: { orderBy: { orden: 'asc' } },
-      status: true,
     }
   });
   if (!propiedad) return null;
