@@ -57,6 +57,7 @@ export const draftPropertySchema = z.object({
   colegaId: coerceOptionalNumber(),
   videoUrl: z.string().optional(),
   pdfUrl: z.string().optional(),
+  status: z.string().optional(),
   isPublished: z.boolean().default(false),
   isUnlisted: z.boolean().default(false),
   isDestacada: z.boolean().default(false),
@@ -108,6 +109,7 @@ export const basePublishPropertySchema = z.object({
   videoUrl: z.string().optional(),
   pdfUrl: z.string().optional(),
 
+  status: z.enum(['disponible','alquilada','reservada', 'vendida']).default('disponible'),
   isPublished: z.boolean().default(true),
   isUnlisted: z.boolean().default(false),
   isDestacada: z.boolean().default(false),

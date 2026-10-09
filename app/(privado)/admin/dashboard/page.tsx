@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { formatPrecio } from '@/lib/utils-formatting';
 import { Fragment } from 'react';
+import { toggleStatusAction } from '@/actions/propiedades-actions';
+import { EstadoPropiedadEnum } from '@/prisma/generated/enums';
 import StarButton from '@/features/admin/form/components/star-button';
 import { useContactLinks } from '@/providers/config-provider';
 import { ExportExcelModal } from '@/features/admin/form/components/export-excel-modal';
@@ -11,6 +13,7 @@ import { useAlertModal } from '@/components/hooks/use-alert-modal';
 import { useConfirmModal } from '@/components/hooks/use-confirm-modal';
 import { ConfirmModal } from '@/components/ui/confirm-modal';
 import { AlertModal } from '@/components/ui/alert-modal';
+import { PropertyActionsMenu } from '@/features/admin/dashboard/components/property-actions-menu';
 
 interface ZonaNodo {
   id: number;
@@ -26,6 +29,7 @@ interface PropiedadAdmin {
   slug: string;
   precio: number;
   moneda: string;
+  status: EstadoPropiedadEnum;
   isPublished: boolean;
   isUnlisted: boolean;
   isDestacada: boolean;
@@ -159,6 +163,29 @@ export default function DashboardPage() {
       });
     }
   };
+
+  //Cabiar status de propiedad
+  // Cambiar el estado comercial de la propiedad (Disponible, Reservada, Alquilada, Vendida)
+  const handleStatusChange = async (id: number, newStatus: EstadoPropiedadEnum) => {
+    try {
+      // 1. Cambio visual instantáneo en el cliente
+      setPropiedades((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, status: newStatus } : p))
+      );
+
+      // 2. Ejecutar la Server Action
+      const res = await toggleStatusAction(id, newStatus);
+
+      if (!res.success) {
+        showAlert('Error al actualizar el estado en la BBDD', { type: 'error' });
+        fetchPropiedades(); // Revertir si hubo error
+      }
+    } catch (err) {
+      console.error('Error enviando nuevo status:', err);
+      fetchPropiedades();
+    }
+  };
+
 
   // Toggle rápido de propiedad Privada / Pública
   const toggleUnlistedStatus = async (id: number, currentStatus: boolean) => {
@@ -437,7 +464,7 @@ export default function DashboardPage() {
                     <th className="p-3 text-center">PDF</th>
                     <th className="p-3 text-center">Estado</th>
                     <th className="p-3 text-center">Visibilidad</th>
-                    <th className="p-3 text-center min-w-45">Acciones</th>
+                    <th className="p-3 text-center">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs">
@@ -508,53 +535,18 @@ export default function DashboardPage() {
                           {prop.isUnlisted ? '🔒' : '🌎'}
                         </button>
                       </td>
-                      <td className="p-3 text-right space-x-1 min-w-35">
-                        {activeTab === 'activas' ? (
-                          <>
-                            <button
-                              type="button"
-                              onClick={(e) => copyToClipboard(e, prop)}
-                              disabled={!prop.isPublished}
-                              className={`px-1 py-1 text-[15px] font-bold rounded-lg transition-all inline-block ${prop.isPublished ? (copiedId === prop.id ? 'bg-emerald-600 text-white' : 'bg-slate-200 hover:bg-blue-400') : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                                }`}
-                            >
-                              {copiedId === prop.id ? '✅' : prop.isPublished ? '🔗' : '🚫'}
-                            </button>
-                            <Link
-                              href={`/admin/${prop.id}/editar`}
-                              className="px-1 border border-slate-300 bg-slate-200 hover:bg-blue-400 py-1 text-[15px] font-bold rounded-lg transition-colors inline-block"
-                            >
-                              ✏️
-                            </Link>
-                            <button
-                              onClick={() => handleSoftDelete(prop.id)}
-                              className="px-1 border border-slate-300 bg-slate-200 hover:bg-blue-400 py-1 text-[15px] font-bold rounded-lg transition-colors inline-block"
-                            >
-                              🗑️
-                            </button>
-                            <button
-                              onClick={() => handleDuplicate(prop.id)}
-                              className="px-1 border border-slate-300 bg-slate-200 hover:bg-blue-400 py-1 text-[15px] font-bold rounded-lg transition-colors inline-block"
-                            >
-                              📋
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <button
-                              onClick={() => handleRestore(prop.id)}
-                              className="px-2 py-1.5 bg-emerald-300 hover:bg-emerald-500 text-emerald-900 text-[15px] font-bold rounded-lg transition-colors inline-block"
-                            >
-                              ♻️
-                            </button>
-                            <button
-                              onClick={() => handleDeleteProperty(prop.id, prop.titulo)}
-                              className="px-2 py-1.5 bg-red-400 hover:bg-red-600 text-white text-[15px] font-bold rounded-lg transition-colors inline-block"
-                            >
-                              ❌
-                            </button>
-                          </>
-                        )}
+                      <td className="p-3 text-center">
+                        <PropertyActionsMenu
+                          prop={prop}
+                          activeTab={activeTab}
+                          copiedId={copiedId}
+                          onCopyUrl={(e) => copyToClipboard(e, prop)}
+                          onStatusChange={handleStatusChange}
+                          onSoftDelete={handleSoftDelete}
+                          onDuplicate={handleDuplicate}
+                          onRestore={handleRestore}
+                          onDeletePermanent={handleDeleteProperty}
+                        />
                       </td>
                     </tr>
                   ))}

@@ -1,4 +1,4 @@
-import type { Zona, Propiedad, TipoInmueble, Agente, Propietario, Colega, Imagen } from '@prisma-client';
+import type { Zona, Propiedad, TipoInmueble, Agente, Propietario, Colega, Imagen, EstadoPropiedadEnum } from '@prisma-client';
 
 // 1. ZONA SANEADA
 export type ZonaServer = Omit<Zona, 'latitud' | 'longitud'> & {
@@ -28,6 +28,7 @@ export type PropertyFullData = PropiedadServer & {
   propietario?: Propietario | null;
   colega?: Colega | null;
   imagenes: Imagen[];
+  status: EstadoPropiedadEnum;
 };
 
 //4. PROPIETARIO PARA SERVER = 

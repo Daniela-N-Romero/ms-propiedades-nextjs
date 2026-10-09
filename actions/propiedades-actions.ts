@@ -3,6 +3,7 @@
 import { prisma } from '@/backend/db';
 import { PropertyFormValues } from '@/features/admin/form/schemas/property-schema';
 import { generarCodigoRef, parseRawNumber, slugify } from '@/lib/utils-formatting';
+import { EstadoPropiedadEnum } from '@/prisma/generated/enums';
 import { revalidatePath } from 'next/cache';
 
 // ==========================================
@@ -154,6 +155,26 @@ export async function toggleDestacadaAction(id: number, currentIsFeatured: boole
   }
 }
 
+export async function toggleStatusAction(id: number, newStatus: EstadoPropiedadEnum) {
+  try {
+    const updated = await prisma.propiedad.update({
+      where: { id },
+      data: { status: newStatus, updatedAt: new Date() },
+    });
+
+    revalidatePath('/admin/dashboard');
+    revalidatePath('/api/properties');
+    revalidatePath('/propiedades');
+    revalidatePath('/');
+
+    return { success: true, isFeatured: updated.isDestacada };
+  } catch (error) {
+    console.error('Error al cambiar estado de destacada:', error);
+    return { success: false, error: 'No se pudo actualizar la propiedad' };
+  }
+}
+
+
 
 
 // ==========================================
@@ -233,6 +254,7 @@ function construirPropertyData(values: PropertyFormValues) {
 
     videoUrl: values.videoUrl || null,
     pdfUrl: values.pdfUrl || null,
+    status: values.status || 'disponible',
     isPublished: Boolean(values.isPublished),
     isUnlisted: Boolean(values.isUnlisted),
     isDestacada: Boolean(values.isDestacada),

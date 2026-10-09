@@ -324,12 +324,13 @@ export async function searchPropiedades(
         propietarioId: true,
         colegaId: true,
         direccionPersonalizada: true,
+        status: true,
         zona: { select: { nombre: true } },
         imagenes: {
           take: 1,
           orderBy: { orden: 'asc' },
           select: { url: true }
-        }
+        },
       },
       orderBy: [{ isDestacada: 'desc' }, queryOrderBy],
     });
@@ -366,6 +367,7 @@ export async function searchPropiedades(
           isDestacada: true,
           superficieTotal: true,
           superficieCubierta: true,
+          status: true,
           zona: { select: { nombre: true } },
           tipoInmueble: { select: { nombre: true } },
           imagenes: {
@@ -425,7 +427,8 @@ export async function getPropiedadById(propertyId: number) {
       },
       tipoInmueble: { include: { padre: true } },
       agente: true,
-      imagenes: { orderBy: { orden: 'asc' } }
+      imagenes: { orderBy: { orden: 'asc' } },
+      status: true,
     }
   });
   if (!propiedad) return null;
@@ -523,6 +526,7 @@ export async function getPropiedadesSimilares(
           orderBy: { orden: 'asc' },
           select: { url: true }
         },
+        status: true,
       },
     });
 
@@ -560,6 +564,7 @@ export async function getPropiedadesSimilares(
         superficieTotal: true,
         superficieCubierta: true,
         zona: { select: { nombre: true } },
+        status: true,
         tipoInmueble: { select: { nombre: true, padre: { select: { slug: true } } } },
         imagenes: {
           take: 1,

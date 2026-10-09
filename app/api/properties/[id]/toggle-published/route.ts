@@ -51,6 +51,7 @@ export async function PUT(
         colegaId: propiedad.colegaId ? Number(propiedad.colegaId) : null,
         videoUrl: propiedad.videoUrl ?? '',
         pdfUrl: propiedad.pdfUrl ?? '',
+        status: propiedad.status,
         isPublished: true,
         isUnlisted: propiedad.isUnlisted ?? false,
         isDestacada: propiedad.isDestacada ?? false,

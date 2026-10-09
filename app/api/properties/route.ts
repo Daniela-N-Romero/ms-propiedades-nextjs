@@ -97,6 +97,7 @@ export async function GET(request: Request) {
           slug: true,
           precio: true,
           moneda: true,
+          status: true,
           isPublished: true,
           isUnlisted: true,
           isDestacada: true,

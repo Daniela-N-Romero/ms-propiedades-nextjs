@@ -87,6 +87,7 @@ model Propiedad {
   pdfUrl                 String?             @map("pdf_url") @db.VarChar(255)
   latitud                Decimal?            @db.Decimal(9, 6)
   longitud               Decimal?            @db.Decimal(9, 6)
+  status                 EstadoPropiedadEnum @default(disponible)
   isPublished            Boolean             @default(false) @map("is_published")
   isDestacada            Boolean             @default(false) @map("is_destacada")
   notasPrivadas          String?             @map("notas_privadas")
@@ -197,6 +198,13 @@ enum MonedaEnum {
 enum OrigenPropiedadEnum {
   own
   fromColleague
+}
+
+enum EstadoPropiedadEnum {
+  disponible
+  reservada
+  alquilada
+  vendida
 }
 
 enum LeadStatusEnum {

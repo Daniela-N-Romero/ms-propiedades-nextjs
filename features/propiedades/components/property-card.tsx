@@ -39,6 +39,7 @@ export default function PropertyCard({ propiedad }: PropertyCardProps) {
             💳 {propiedad.financiacion}
           </span>
         )}
+        
 
         <CustomImage
           src={portadaUrl}
@@ -48,6 +49,7 @@ export default function PropertyCard({ propiedad }: PropertyCardProps) {
           fetchPriority="high"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+          propiedadStatus={propiedad.status}
         />
       </div>
 

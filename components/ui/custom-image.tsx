@@ -2,11 +2,24 @@
 
 import { useState } from 'react';
 import Image, { ImageProps } from 'next/image';
+import { EstadoBadge } from './estado-badge';
+import type { EstadoPropiedadEnum } from '@/prisma/generated/client'
 
-export function CustomImage(props: ImageProps) {
+interface CustomImageProps extends ImageProps {
+  propiedadStatus?: EstadoPropiedadEnum | string;
+}
+
+export function CustomImage({
+  propiedadStatus,
+  className = '',
+  onLoad,
+  ...imageProps
+}: CustomImageProps) {
+
+  console.log(propiedadStatus)
   const [isLoaded, setIsLoaded] = useState(false);
 
-  return (
+return (
 <div className={`relative w-full h-full overflow-hidden flex items-center justify-center ${!isLoaded ? 'bg-slate-100' : ''} `}>
       {/* CAPA DE LOADING: SPINNER + ÍCONO */}
       {!isLoaded && (
@@ -21,7 +34,7 @@ export function CustomImage(props: ImageProps) {
 
       {/* IMAGEN PRINCIPAL */}
       <Image
-        {...props}
+        {...imageProps}
         onLoad={(e) => {
           // Si la imagen ya completó su descarga o vino de caché
           const imgElement = e.currentTarget as HTMLImageElement;
@@ -29,10 +42,13 @@ export function CustomImage(props: ImageProps) {
             setIsLoaded(true);
           }
         }}
-        className={`${props.className || ''} transition-opacity duration-300 ${
+        className={`${className || ''} transition-opacity duration-300 ${
           isLoaded ? 'opacity-100' : 'opacity-0'
         }`}
       />
+
+      <EstadoBadge status={propiedadStatus}/>
+      
     </div>
   );
 }
