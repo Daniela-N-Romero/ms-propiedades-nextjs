@@ -17,13 +17,13 @@ export function EstadoBadge({ status, className = '' }: EstadoBadgeProps) {
 
   // Colores según el estado
   const colorStyles = isReservada
-    ? 'bg-amber-500 text-white shadow-amber-900/20'
+    ? 'bg-amber-600 text-white shadow-amber-900/20'
     : 'bg-red-600 text-white shadow-red-900/20';
 
   return (
     <div className={`absolute top-0 left-0 w-32 h-32 overflow-hidden z-20 pointer-events-none ${className}`}>
       <div
-        className={`absolute top-6 -left-10 w-40 py-1 text-center font-spartan font-black text-[10px] tracking-widest uppercase shadow-md transform -rotate-45 border-y border-white/20 ${colorStyles}`}
+        className={`absolute top-6 -left-10 w-40 py-1.5 text-center font-spartan font-black text-[11px] tracking-widest uppercase shadow-md transform -rotate-45 border-y border-white/20 ${colorStyles}`}
       >
         {label}
       </div>

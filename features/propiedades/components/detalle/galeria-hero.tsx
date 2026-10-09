@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { CustomImage } from '@/components/ui/custom-image';
-import { styles } from './galeria.styles';
-import type { Imagen } from '@prisma-client';
+import { styles, statusColors } from './galeria.styles';
+import type { EstadoPropiedadEnum, Imagen } from '@prisma-client';
 import { AccionesPropiedad } from './acciones-propiedad';
 import { trackDownloadPDF } from '@/lib/analytics';
 
@@ -16,6 +16,7 @@ interface GaleriaHeroProps {
   imagenes: Imagen[];
   pdfUrl?: string | null;
   propiedadId?: number;
+  propiedadStatus: EstadoPropiedadEnum;
 }
 
 export default function GaleriaHero({
@@ -27,6 +28,7 @@ export default function GaleriaHero({
   imagenes,
   pdfUrl,
   propiedadId,
+  propiedadStatus,
 }: GaleriaHeroProps) {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -83,6 +85,8 @@ export default function GaleriaHero({
     return img.url || '/images/placeholder.png';
   };
 
+  const colorClass = statusColors[propiedadStatus] || "bg-slate-200 text-slate-700";
+
   return (
     <div className="space-y-4">
       {/* 🏷️ ENCABEZADO / TITULAR */}
@@ -90,6 +94,7 @@ export default function GaleriaHero({
         <div>
           <span className={styles.badgeOperacion}>En {categoria}</span>
           <span className={styles.codigoBadge}>CÓDIGO: {codigo}</span>
+          <span className={`${styles.badgeDisponibilidad} ${colorClass}`}>{propiedadStatus}</span>
         </div>
 
         <div className="flex items-start justify-between gap-4">

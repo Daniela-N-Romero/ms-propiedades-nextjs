@@ -16,7 +16,12 @@ export function CustomImage({
   ...imageProps
 }: CustomImageProps) {
 
-  console.log(propiedadStatus)
+  // Evaluamos si tiene un estado activo que requiera overlay
+  const statusNormalized = propiedadStatus ? String(propiedadStatus).toLowerCase() : 'disponible';
+  
+  // Solo se activa el backdrop si NO está disponible y NO es un string vacío
+  const hasStatusBadge = statusNormalized !== 'disponible' && statusNormalized !== '';
+
   const [isLoaded, setIsLoaded] = useState(false);
 
 return (
@@ -46,6 +51,11 @@ return (
           isLoaded ? 'opacity-100' : 'opacity-0'
         }`}
       />
+
+      {/* 🌑 BACKDROP OSCURO / GRISÁCEO (Se activa solo si NO está disponible) */}
+      {hasStatusBadge && (
+        <div className="absolute inset-0 bg-slate-900/35 backdrop-brightness-95 z-10 pointer-events-none transition-all" />
+      )}
 
       <EstadoBadge status={propiedadStatus}/>
       

@@ -81,6 +81,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
           imagenes={propiedad.imagenes as any}
           pdfUrl={propiedad.pdfUrl}
           propiedadId={propiedad.id}
+          propiedadStatus={propiedad.status}
         />
 
         {/* LAYOUT PRINCIPAL (A futuro tendrá 2 columnas: Ficha a la izquierda + Contacto Sticky a la derecha) */}

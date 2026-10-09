@@ -2,6 +2,7 @@ export const styles = {
   headerContainer: "mb-6 space-y-2",
   badgeOperacion: "inline-block text-sm font-spartan font-bold uppercase tracking-wider px-3 py-1 bg-brand-orange text-white rounded-md mr-3",
   codigoBadge: "inline-block text-sm font-spartan font-bold uppercase tracking-wider px-3 py-1 bg-slate-200 text-slate-700 rounded-md",
+  badgeDisponibilidad: "inline-block text-sm font-spartan font-bold uppercase tracking-wider ml-2 px-3 py-1 text-slate-700 rounded-md",
   titulo: "text-2xl md:text-3xl font-extrabold text-slate-900 leading-tight",
   ubicacion: "text-sm text-slate-500 flex items-center gap-1 font-medium",
     // Botón Secundario Descarga PDF
@@ -25,3 +26,10 @@ export const styles = {
   lightboxNavBtnLeft: "absolute left-2 md:left-6 z-20 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors text-xl font-bold backdrop-blur-sm",
   lightboxNavBtnRight: "absolute right-2 md:right-6 z-20 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors text-xl font-bold backdrop-blur-sm"
 };
+
+export  const statusColors: Record<string, string> = {
+    alquilada: "bg-red-500 text-white",
+    vendida: "bg-red-500 text-white",
+    reservada: "bg-amber-600 text-white",
+    disponible: "bg-emerald-300 text-emerald-800",
+  };
