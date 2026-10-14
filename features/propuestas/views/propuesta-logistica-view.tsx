@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 
 const MapaPropuesta = dynamic(
-  () => import("./mapa-propuesta"),
+  () => import("../components/mapa-propuesta"),
   { ssr: false, loading: () => <div className="h-full bg-slate-100 flex items-center justify-center">Cargando Mapa Interactivo...</div> }
 );
 
@@ -35,7 +35,7 @@ interface Props {
   puntoInteresNombre?: string;
 }
 
-export default function PropuestaInteractiveView({
+export default function PropuestaLogisticaView({
   propiedades,
   destinoCoords,
   puntoInteresNombre = "Punto de Interés",

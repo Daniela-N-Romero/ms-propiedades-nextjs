@@ -112,6 +112,7 @@ export async function GET(request: Request) {
           propietarioId: true,
           colegaId: true,
           zonaId: true,
+          financiacion:true,
           zona: {
             select: {
               id: true,

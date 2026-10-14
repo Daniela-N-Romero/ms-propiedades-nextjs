@@ -1,12 +1,14 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
-import tsconfigPaths from 'vite-tsconfig-paths';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 export default defineConfig({
-  plugins: [react(), tsconfigPaths()],
+  resolve: {
+    tsconfigPaths: true,
+  },
+  plugins: [react()],
   test: {
     environment: 'node', // Entorno Node.js: ideal para Server Actions y Prisma
     globals: true,

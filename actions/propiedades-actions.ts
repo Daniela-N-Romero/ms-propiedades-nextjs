@@ -20,14 +20,32 @@ export async function savePropertyAction(
   const imagenesParaSalvar = mapearImagenesParaSalvar(data.imagenes);
 
   try {
-    const zona = await prisma.zona.findUnique({ where: { id: data.zonaId } });
-    const tipoInmueble = await prisma.tipoInmueble.findUnique({
-      where: { id: data.tipoInmuebleId },
-      include: { padre: true },
-    });
+    let zona = null;
+    if (data.zonaId && Number(data.zonaId) > 0) {
+      zona = await prisma.zona.findUnique({
+        where: { id: Number(data.zonaId) },
+      });
+      if (!zona) {
+        return { success: false, error: 'La zona seleccionada no existe.' };
+      }
+    }
+
+    if (data.isPublished && (!data.precio || Number(data.precio) <= 0)) {
+      return { success: false, error: 'Para publicar la propiedad debes ingresar un precio mayor a 0.' };
+    }
+    //envuelto en un if para evitar que Prisma registre excepciones innecesarias en los logs cuando tipoInmuebleId sea undefined en borradores? 
+    let tipoInmueble = null;
+    if (data.tipoInmuebleId && Number(data.tipoInmuebleId) > 0) {
+      tipoInmueble = await prisma.tipoInmueble.findUnique({
+        where: { id: Number(data.tipoInmuebleId) },
+        include: { padre: true },
+      });
+    }
 
     const tipoCategoria = tipoInmueble?.padre?.slug || tipoInmueble?.slug || 'industrial';
     const propertyData = construirPropertyData(data);
+
+
 
     if (propertyId) {
       // ✏️ MODO EDICIÓN

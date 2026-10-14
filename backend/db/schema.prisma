@@ -26,6 +26,7 @@ model Zona {
   latitud     Decimal?    @db.Decimal(9, 6)
   longitud    Decimal?    @db.Decimal(9, 6)
   propiedades Propiedad[]
+  parques     ParqueIndustrial[]
   padre       Zona?       @relation("ZonaJerarquia", fields: [padreId], references: [id])
   hijas       Zona[]      @relation("ZonaJerarquia")
 
@@ -112,6 +113,8 @@ model Propiedad {
   propietario            Propietario?        @relation(fields: [propietarioId], references: [id])
   tipoInmueble           TipoInmueble        @relation(fields: [tipoInmuebleId], references: [id])
   zona                   Zona                @relation(fields: [zonaId], references: [id])
+  parqueIndustrialId Int?              @map("parque_industrial_id")
+  parqueIndustrial   ParqueIndustrial? @relation(fields: [parqueIndustrialId], references: [id])
 
   @@index([deletedAt])
   @@map("propiedades")
@@ -161,16 +164,24 @@ model configuracionEmpresa {
 }
 
 model PropuestaComercial {
-  id                 String          @id @default(cuid())
+  id                 String            @id @default(cuid())
   clienteNombre      String
   clienteEmpresa     String?
-  slug               String          @unique
-  puntoInteresNombre String
-  puntoInteresLat    Float
-  puntoInteresLng    Float
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
+  slug               String            @unique
+  tipo               TipoPropuestaEnum @default(LOGISTICA_RUTAS)
+
+  // Campos específicos de LOGISTICA_RUTAS
+  puntoInteresNombre String?
+  puntoInteresLat    Float?
+  puntoInteresLng    Float?
+
+  // Datos flexibles generales (Metadata, premisas económicas globales)
+  payloadJson        Json?
+
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
   items              PropuestaItem[]
+
 }
 
 model PropuestaItem {
@@ -178,11 +189,54 @@ model PropuestaItem {
   propuestaId          String
   propiedadId          Int
   esPrioritaria        Boolean            @default(false)
-  notaLogistica        String?
-  tiempoEstimadoString String?
+
+  // Campos específicos de Logística
+  notaLogistica        String?            // Utilizado para "Ubicación / Accesos y Conectividad" en Inversión
+  tiempoEstimadoString String?           
+
+  // Campos específicos de Inversión y ROI
+  nombre               String?
+  parqueIndustrialId   Int?              @map("parque_industrial_id")
+  costoObraM2          Float?             // Ej: USD 350/m² o USD 400/m²
+  supNaveProyectada    Float?             // m² de nave a construir
+  alquilerM2Estimado   Float?             // USD/m² de alquiler estimado
+  cuotasTexto          String?            // Ej: "30% anticipo + 24 cuotas"
+  fosAplicado          Float?             @default(0.6) 
+  esFinanciado         Boolean?           @default(false)
+  costoTierraCustom  Float?             // Precio base o financiado (ej: 250.000)
+  ofertaContadoUSD   Float?             // Precio oferta de contado (ej: 230.000)
+  porcentajeAnticipo   Float?             @default(0)
+  anticipoCash         Float?             // Monto de desembolso inicial
+  cantidadCuotas       Int?               @default(0)
+  mesesObra            Int?               @default(0)
+
+
   orden                Int                @default(0)
   propiedad            Propiedad          @relation(fields: [propiedadId], references: [id])
   propuesta            PropuestaComercial @relation(fields: [propuestaId], references: [id], onDelete: Cascade)
+  parqueIndustrial   ParqueIndustrial? @relation(fields: [parqueIndustrialId], references: [id])
+
+}
+
+model ParqueIndustrial {
+  id                    Int             @id @default(autoincrement())
+  nombre                String          @db.VarChar(150)
+  slug                  String          @unique @db.VarChar(150)
+  direccionAcceso       String?         @map("direccion_acceso") @db.VarChar(255)
+  conectividad          String?         @db.Text
+  alquilerM2Referencial Float?          @map("alquiler_m2_referencial")
+  precioTierraM2Ref     Float?          @map("precio_tierra_m2_ref")
+  latitud               Decimal?        @db.Decimal(9, 6)
+  longitud              Decimal?        @db.Decimal(9, 6)
+  zonaId                Int?            @map("zona_id")
+  createdAt             DateTime        @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt             DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  zona                  Zona?           @relation(fields: [zonaId], references: [id])
+  propiedades           Propiedad[]
+  itemsPropuesta        PropuestaItem[]
+
+  @@map("parques_industriales")
 }
 
 enum TipoOperacionEnum {
@@ -217,4 +271,9 @@ enum LeadStatusEnum {
 enum UserRoleEnum {
   admin
   agente
+}
+
+enum TipoPropuestaEnum {
+  LOGISTICA_RUTAS        // Tipo clásico (Mapa + Rutas OSRM + Puntos de Interés)
+  INVERSION_DESARROLLO   // Nuevo tipo (Terrenos + Naves + Costo Obra + ROI)
 }
