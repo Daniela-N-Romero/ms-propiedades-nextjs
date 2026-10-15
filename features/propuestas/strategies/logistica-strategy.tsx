@@ -28,7 +28,7 @@ export class LogisticaStrategy implements PropuestaStrategy {
         precioM2: precioM2Calculado,
         supCubierta: p.superficieCubierta ? `${p.superficieCubierta} m²` : 'Sin especificar',
         supTerreno: p.superficieTotal ? `${p.superficieTotal} m²` : 'Sin especificar',
-        tiempoRuta: item.tiempoEstimado || 'Ruta directa',
+        tiempoRuta: item.tiempoEstimadoString || 'Ruta directa',
         ahorroTiempo: item.notaLogistica || '',
         aptitud: p.descripcion ? `${p.descripcion.substring(0, 120)}...` : 'Apto para logística',
         prioritaria: item.esPrioritaria,

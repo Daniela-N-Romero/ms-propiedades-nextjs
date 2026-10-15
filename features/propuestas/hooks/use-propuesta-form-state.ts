@@ -55,10 +55,14 @@ export function usePropuestaFormState(initialData?: any, propuestaId?: string, d
 
   // Recomendaciones
   const [recomMostrar, setRecomMostrar] = useState<boolean>(initialData?.payloadJson?.recomendaciones?.mostrarSeccion ?? true);
-  const [recomTituloGeneral, setRecomTituloGeneral] = useState<string>(initialData?.payloadJson?.recomendaciones?.tituloGeneral ||"🎯 Conclusiones Strategicas & Recomendaciones");
+  const [recomTituloGeneral, setRecomTituloGeneral] = useState<string>(
+    initialData?.payloadJson?.recomendaciones?.tituloGeneral || "🎯 Conclusiones Estratégicas & Recomendaciones"
+  );
 
   // Cargar tarjetas existentes o las plantillas iniciales
-  const [tarjetasRecom, setTarjetasRecom] = useState<TarjetaRecomendacion[]>(initialData?.payloadJson?.recomendaciones?.tarjetas || plantillasPorDefecto);
+  const [tarjetasRecom, setTarjetasRecom] = useState<TarjetaRecomendacion[]>(
+    initialData?.payloadJson?.recomendaciones?.tarjetas || plantillasPorDefecto
+  );
 
   const agregarTarjetaRecom = () => {
     const nueva: TarjetaRecomendacion = {
@@ -81,68 +85,113 @@ export function usePropuestaFormState(initialData?: any, propuestaId?: string, d
     );
   };
 
-const [itemsSeleccionados, setItemsSeleccionados] = useState<ItemForm[]>(
-  initialData?.items?.map((i: any, idx: number) => ({
-    propiedadId: i.propiedadId,
-    esPrioritaria: i.esPrioritaria || idx === 0,
-    notaLogistica: i.notaLogistica || '',
-    tiempoEstimado: i.tiempoEstimado || '',
-    nombre: i.nombre || i.parqueIndustrialNombre || i.parqueIndustrial?.nombre || '',
-    costoTierraCustom: i.costoTierraCustom || 0,
-    costoObraM2: i.costoObraM2 || 350,
-    supNaveProyectada: i.supNaveProyectada || 0,
-    alquilerM2Estimado: i.alquilerM2Estimado || 5.0,
-    anticipoCash: i.anticipoCash || 0,
-    cuotasTexto: i.cuotasTexto || '',
-    fosAplicado: i.fosAplicado || 0.6,
-    orden: i.orden || idx + 1,
-    esFinanciado: i.esFinanciado ?? true,
-    porcentajeAnticipo: i.porcentajeAnticipo ?? 30,
-    cantidadCuotas: i.cantidadCuotas ?? 24,
-    mesesObra: i.mesesObra ?? 8,
-    ofertaContadoUSD: i.ofertaContadoUSD ?? undefined,
-  })) || []
-);
+  // Inicialización inteligente de los ítems seleccionados
+  const [itemsSeleccionados, setItemsSeleccionados] = useState<ItemForm[]>(
+    initialData?.items?.map((i: any, idx: number) => {
+      const nombreParquePropiedad = i.propiedad?.parqueIndustrial?.nombre;
+      const nombreZonaPropiedad = i.propiedad?.zona?.nombre;
 
-  useEffect(() => {
-    fetch('/api/properties?tab=activas&limit=1000')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data && Array.isArray(data.propiedades)) setPropiedadesBD(data.propiedades);
-      });
+      // Jerarquía: si el nombre guardado es igual a la zona, le damos prioridad al parque si existe
+      const nombreFinal =
+        nombreParquePropiedad ||
+        (i.nombre && i.nombre !== nombreZonaPropiedad ? i.nombre : null) ||
+        i.parqueIndustrialNombre ||
+        i.parqueIndustrial?.nombre ||
+        nombreZonaPropiedad ||
+        i.propiedad?.titulo ||
+        '';
 
-      fetch('/api/parques-industriales')
-          .then((res) => res.json())
-          .then((data) => {
-            if (Array.isArray(data)) setParquesBD(data);
-          });
+      return {
+        propiedadId: i.propiedadId,
+        esPrioritaria: i.esPrioritaria || idx === 0,
+        notaLogistica: i.notaLogistica || '',
+        tiempoEstimadoString: i.tiempoEstimadoString || '',
+        nombre: nombreFinal,
+        costoTierraCustom: i.costoTierraCustom || 0,
+        costoObraM2: i.costoObraM2 || 350,
+        supNaveProyectada: i.supNaveProyectada || 0,
+        alquilerM2Estimado: i.alquilerM2Estimado || 5.0,
+        anticipoCash: i.anticipoCash || 0,
+        cuotasTexto: i.cuotasTexto || '',
+        fosAplicado: i.fosAplicado || 0.6,
+        orden: i.orden || idx + 1,
+        esFinanciado: i.esFinanciado ?? true,
+        porcentajeAnticipo: i.porcentajeAnticipo ?? 30,
+        cantidadCuotas: i.cantidadCuotas ?? 24,
+        mesesObra: i.mesesObra ?? 8,
+        ofertaContadoUSD: i.ofertaContadoUSD ?? undefined,
+      };
+    }) || []
+  );
 
-    }, []);
-
-const catalogoFiltrado = propiedadesBD.filter((p) => {
-  // Coincidencia con la búsqueda
-  const coincideBusqueda =
-    p.titulo.toLowerCase().includes(busqueda.toLowerCase()) ||
-    p.codigo.toLowerCase().includes(busqueda.toLowerCase()) ||
-    p.zona?.nombre.toLowerCase().includes(busqueda.toLowerCase());
-
-      if (!coincideBusqueda) return false;
-
-      // Si es propuesta de Desarrollo/ROI, mostramos EXCLUSIVAMENTE Terrenos / Lotes
-      if (esInversion) {
-        const esLoteOTerreno =
-          p.titulo.toLowerCase().includes("lote") ||
-          p.titulo.toLowerCase().includes("terreno") ||
-          p.titulo.toLowerCase().includes("fraccion") ||
-          p.titulo.toLowerCase().includes("parcela") ||
-          (p.superficieTotal && Number(p.superficieTotal) > 0);
-
-        return esLoteOTerreno;
+useEffect(() => {
+  fetch('/api/properties?tab=activas&limit=1000')
+    .then((res) => res.json())
+    .then((data) => {
+      if (data && Array.isArray(data.propiedades)) {
+        setPropiedadesBD(data.propiedades);
       }
+    })
+    .catch((err) => console.error('Error al cargar propiedades:', err));
 
-      return true;
-    });
-  
+  fetch('/api/parques-industriales')
+    .then((res) => res.json())
+    .then((data) => {
+      if (Array.isArray(data)) setParquesBD(data);
+    })
+    .catch((err) => console.error('Error al cargar parques:', err));
+}, []);
+
+// 2. EFECTO DE RE-SINCRONIZACIÓN DE NOMBRES DE PARQUE
+// Cuando ambas listas (propiedadesBD y parquesBD) están cargadas, buscamos el parque usando parqueIndustrialId
+useEffect(() => {
+  if (propiedadesBD.length === 0 || parquesBD.length === 0) return;
+
+  setItemsSeleccionados((itemsPrev) =>
+    itemsPrev.map((item) => {
+      const propReal = propiedadesBD.find((p: any) => p.id === item.propiedadId);
+      
+      // Obtenemos el ID del parque (sea del objeto relacional o de la propiedad directamente)
+      const parqueId = propReal?.parqueIndustrialId || propReal?.parqueIndustrial?.id;
+
+      if (parqueId) {
+        // Buscamos el objeto del parque dentro de la lista parquesBD que descargamos de /api/parques-industriales
+        const parqueEncontrado = parquesBD.find((park) => Number(park.id) === Number(parqueId));
+
+        if (parqueEncontrado?.nombre) {
+          return {
+            ...item,
+            nombre: parqueEncontrado.nombre, 
+            notaLogistica: item.notaLogistica || parqueEncontrado.conectividad || parqueEncontrado.direccionAcceso || '',
+          };
+        }
+      }
+      return item;
+    })
+  );
+}, [propiedadesBD, parquesBD]);
+  const catalogoFiltrado = propiedadesBD.filter((p) => {
+    const coincideBusqueda =
+      p.titulo.toLowerCase().includes(busqueda.toLowerCase()) ||
+      p.codigo.toLowerCase().includes(busqueda.toLowerCase()) ||
+      p.zona?.nombre.toLowerCase().includes(busqueda.toLowerCase());
+
+    if (!coincideBusqueda) return false;
+
+    if (esInversion) {
+      const esLoteOTerreno =
+        p.titulo.toLowerCase().includes("lote") ||
+        p.titulo.toLowerCase().includes("terreno") ||
+        p.titulo.toLowerCase().includes("fraccion") ||
+        p.titulo.toLowerCase().includes("parcela") ||
+        (p.superficieTotal && Number(p.superficieTotal) > 0);
+
+      return esLoteOTerreno;
+    }
+
+    return true;
+  });
+
   const parseSeguro = (val: any): number => {
     if (val === null || val === undefined) return 0;
     const cleanStr = String(val).replace(/[^0-9.]/g, '');
@@ -174,15 +223,15 @@ const catalogoFiltrado = propiedadesBD.filter((p) => {
       const fosBase = 0.6;
       const supNaveCalc = supLote > 0 ? Math.round(supLote * fosBase) : 0;
 
-      // JERARQUÍA AUTOMÁTICA: Parque Industrial -> Zona / Localidad -> Título
+      // JERARQUÍA AUTOMÁTICA AL AGREGAR: Parque Industrial -> Zona / Localidad -> Título
       const nombreAuto = prop.parqueIndustrial?.nombre || prop.zona?.nombre || prop.titulo;
       const accesosAuto = prop.parqueIndustrial?.conectividad || prop.parqueIndustrial?.direccionAcceso || '';
-      
+
       const nuevoItem: ItemForm = {
         propiedadId: prop.id,
         esPrioritaria: itemsSeleccionados.length === 0,
         notaLogistica: accesosAuto,
-        tiempoEstimado: '',
+        tiempoEstimadoString: '',
         nombre: nombreAuto,
         costoTierraCustom: precioTotal,
         costoObraM2: tieneTarifaPreferencial ? costoObraPreferencial : costoObraMercado,
@@ -197,52 +246,46 @@ const catalogoFiltrado = propiedadesBD.filter((p) => {
         cantidadCuotas: 24,
         mesesObra: 8,
         ofertaContadoUSD: undefined,
-        };
+      };
       setItemsSeleccionados([...itemsSeleccionados, nuevoItem]);
     }
   };
-  
+
   const calcularMetricasItem = (item: ItemForm) => {
-  const prop = propiedadesBD.find((p) => p.id === item.propiedadId);
-  const supLote = prop ? extraerSuperficieLote(prop) : 0;
-  const fos = item.fosAplicado || 0.6;
-  
-  // Superficie Nave
-  const supNave = item.supNaveProyectada || (supLote > 0 ? Math.round(supLote * fos) : 0);
-  
-  // Costos
-  const costoTierra = item.costoTierraCustom || 0;
-  const tarifaObraM2 = tieneTarifaPreferencial ? costoObraPreferencial : costoObraMercado;
-  const costoObraTotal = supNave * tarifaObraM2;
-  const inversionTotal = costoTierra + costoObraTotal;
+    const prop = propiedadesBD.find((p) => p.id === item.propiedadId);
+    const supLote = prop ? extraerSuperficieLote(prop) : 0;
+    const fos = item.fosAplicado || 0.6;
 
-  // Ingresos
-  const alquilerM2 = item.alquilerM2Estimado || 5.0;
-  const ingresoAnualUSD = supNave * alquilerM2 * 12;
+    const supNave = item.supNaveProyectada || (supLote > 0 ? Math.round(supLote * fos) : 0);
+    const costoTierra = item.costoTierraCustom || 0;
+    const tarifaObraM2 = tieneTarifaPreferencial ? costoObraPreferencial : costoObraMercado;
+    const costoObraTotal = supNave * tarifaObraM2;
+    const inversionTotal = costoTierra + costoObraTotal;
 
-  // ROI
-  const roiAnual = inversionTotal > 0 ? (ingresoAnualUSD / inversionTotal) * 100 : 0;
+    const alquilerM2 = item.alquilerM2Estimado || 5.0;
+    const ingresoAnualUSD = supNave * alquilerM2 * 12;
 
-  return {
-    supNave,
-    costoObraTotal,
-    inversionTotal,
-    ingresoAnualUSD,
-    roiAnual: Number(roiAnual.toFixed(2)),
+    const roiAnual = inversionTotal > 0 ? (ingresoAnualUSD / inversionTotal) * 100 : 0;
+
+    return {
+      supNave,
+      costoObraTotal,
+      inversionTotal,
+      ingresoAnualUSD,
+      roiAnual: Number(roiAnual.toFixed(2)),
+    };
   };
-};
 
-// Obtenemos la opción con mayor ROI en tiempo real para destacar en los selectors
-const maxRoiCalculado = itemsSeleccionados.length > 0
-  ? Math.max(...itemsSeleccionados.map((it) => calcularMetricasItem(it).roiAnual))
-  : 0;
-  
+  const maxRoiCalculado = itemsSeleccionados.length > 0
+    ? Math.max(...itemsSeleccionados.map((it) => calcularMetricasItem(it).roiAnual))
+    : 0;
+
   return {
     router,
     loading,
     setLoading,
-    propiedadesBD,    
-    catalogoFiltrado,  
+    propiedadesBD,
+    catalogoFiltrado,
     parquesBD,
     busqueda,
     setBusqueda,

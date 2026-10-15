@@ -249,6 +249,8 @@ function construirPropertyData(values: PropertyFormValues) {
     ? parseRawNumber(values.superficieCubierta)
     : Number(values.superficieCubierta || 0);
 
+  const parqueIndustrialId = values.parqueIndustrialId ? Number(values.parqueIndustrialId) : null;
+
   return {
     titulo: values.titulo,
     categoria: (values.categoria as any) || 'venta',
@@ -258,6 +260,7 @@ function construirPropertyData(values: PropertyFormValues) {
     financiacion: values.financiacion || null,
     descripcion: values.descripcion || '',
     direccionPersonalizada: values.direccionPersonalizada || null,
+    parqueIndustrialId: parqueIndustrialId,
     latitud: parseCoordenada(values.latitud) || -34.78,
     longitud: parseCoordenada(values.longitud) || -58.28,
     superficieTotal: supTotalPura,

@@ -61,7 +61,8 @@ export interface PropuestaItemEntity {
   propiedadId: number;
   esPrioritaria: boolean;
   notaLogistica?: string | null;
-  tiempoEstimado?: string | null;
+  tiempoEstimadoString?: string | null;
+  financiacion?: string | null;
   nombre?: string | null;
   parqueIndustrialId?: number | null;
   parqueIndustrial?: ParqueIndustrialEntity | null;
@@ -146,6 +147,7 @@ export interface PropiedadSimple {
   superficieTotal?: number | string | null;
   superficieCubierta?: number | string | null;
   zona?: { id: number; nombre: string };
+  parqueIndustrialId: number | null;
   parqueIndustrial?: { id: number; nombre: string; direccionAcceso?: string | null; conectividad?: string | null } | null;
   descripcion?: string | null;
 }
@@ -154,7 +156,7 @@ export interface ItemForm {
   propiedadId: number;
   esPrioritaria: boolean;
   notaLogistica: string;
-  tiempoEstimado: string;
+  tiempoEstimadoString: string;
   nombre: string;
   costoTierraCustom: number;
   costoObraM2: number;

@@ -67,17 +67,18 @@ type = TipoPropuestaEnum.INVERSION_DESARROLLO;
       const roiAnual = inversionTotal > 0 ? (ingresoAnualTotal / inversionTotal) * 100 : 0;
 
       // 🔑 Cálculo de Desembolso y Flujo de Fondos ("El lote se paga solo")
-      const esFinanciado = item.esFinanciado === true; // 🔑 Evaluación estricta
+      const esFinanciado = item.esFinanciado === true; 
 
-      const porcentajeAnticipo = Number(item.porcentajeAnticipo || 30);
-      const cantidadCuotas = Number(item.cantidadCuotas || 24);
-      const mesesObra = Number(item.mesesObra || 8);
+      const porcentajeAnticipo = Number(item.porcentajeAnticipo ?? 0);
+      const cantidadCuotas = Number(item.cantidadCuotas ?? 0);
+      const mesesObra = Number(item.mesesObra ?? 0);
 
       // Si es financiado, calcula el anticipo; si es al contado, el desembolso en tierra es el 100%
-      const anticipoLoteUSD = esFinanciado ? (costoTierra * porcentajeAnticipo) / 100 : costoTierra;
+     const anticipoLoteUSD = esFinanciado ? (costoTierra * porcentajeAnticipo) / 100 : costoTierra;
       const desembolsoInicialRequeridoUSD = anticipoLoteUSD + costoObraTotal;
 
-      const saldoFinanciadoUSD = esFinanciado ? costoTierra - anticipoLoteUSD : 0;
+      const saldoFinanciadoUSD = costoTierra - anticipoLoteUSD;
+      // Evitamos división por 0
       const cuotaMensualLoteUSD = esFinanciado && cantidadCuotas > 0 ? saldoFinanciadoUSD / cantidadCuotas : 0;
 
       const resultadoNetoMensualUSD = ingresoMensualTotal - cuotaMensualLoteUSD;

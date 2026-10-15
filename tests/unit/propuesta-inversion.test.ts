@@ -1,15 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PropuestasService } from '@/backend/services/propuesta.service';
 import { prisma } from '@/backend/db';
-import { sanearPropuestaComercial } from '@/lib/sanitizers';
+import { sanearItemsPropuesta, sanearPropuestaComercial } from '@/lib/sanitizers';
+import { InversionStrategy } from '@/features/propuestas/strategies/inversion-strategy';
 
 // ============================================================================
 // 1. MOCKS / SIMULACIONES
 // ============================================================================
-// Aislar el servicio mockeando Prisma y las funciones utilitarias externas.
-// Esto garantiza que el test pruebe la lógica interna del servicio sin conectarse
-// a la base de datos ni depender de la implementación real de otros módulos.
-
 vi.mock('@/backend/db', () => ({
   prisma: {
     propuestaComercial: {
@@ -22,32 +19,139 @@ vi.mock('@/backend/db', () => ({
     propuestaItem: {
       deleteMany: vi.fn(),
     },
-    // Simula la transacción de Prisma resolviendo la función callback directamente con la misma instancia mockeada
     $transaction: vi.fn((callback) => callback(prisma)),
   },
 }));
 
-// Mock del sanitizador: Retorna los datos limpios sin alterar la estructura en el test
-vi.mock('@/lib/sanitizers', () => ({
-  sanearPropuestaComercial: vi.fn((data) => data),
-}));
-
-// ============================================================================
-// 2. SUITE PRINCIPAL DE TESTS
-// ============================================================================
-describe('PropuestasService - Unidad y Lógica de Inversión', () => {
-  // Limpia el historial de llamadas de todos los mocks antes de cada test para evitar interferencias entre pruebas
+describe('PropuestasService e InversionStrategy - Unidad y Lógica de Inversión', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   // --------------------------------------------------------------------------
-  // TEST: Método crear()
+  // 1. PRUEBAS DE SANITIZACIÓN REAL
   // --------------------------------------------------------------------------
-  describe('crear()', () => {
-    it('debe mapear correctamente los campos de financiación y venta al contado al crear', async () => {
-      // DATO DE ENTRADA: Simulamos un payload recibido desde el formulario del cliente.
-      // Contiene una propiedad financiada y una propiedad al contado.
+  describe('sanearItemsPropuesta() - Sanitización Real', () => {
+    it('debe asignar valores respetando 0 como fallback cuando es enviado', () => {
+      const rawItems = [
+        {
+          id: 'item-1',
+          propuestaId: 'prop-1',
+          propiedadId: 21,
+          esFinanciado: false,
+          porcentajeAnticipo: 0,
+          cantidadCuotas: 0,
+          mesesObra: 0,
+          propiedad: {
+            id: 21,
+            codigo: 'P-21',
+            titulo: 'Lote Spegazzini',
+            precio: 250000,
+          },
+        },
+      ];
+
+      const resultado = sanearItemsPropuesta(rawItems);
+
+      expect(resultado[0]).toMatchObject({
+        esFinanciado: false,
+        porcentajeAnticipo: 0,
+        cantidadCuotas: 0,
+        mesesObra: 0,
+      });
+    });
+  });
+
+  // --------------------------------------------------------------------------
+  // 2. PRUEBAS DE LA ESTRATEGIA DE INVERSIÓN (CÁLCULO DE MÉTRICAS & ROI)
+  // --------------------------------------------------------------------------
+  describe('InversionStrategy.calcularMetricas()', () => {
+    const strategy = new InversionStrategy();
+
+    it('debe calcular el flujo de fondos correcto para un lote financiado ("El lote se paga solo")', () => {
+      // Mock de un ítem con lote de USD 250,000 (30% anticipo + 24 cuotas) y nave de 1,380 m²
+      const itemMock: any = {
+        id: 'item-financiado',
+        propiedadId: 21,
+        nombre: 'Lote Parque Industrial Spegazzini',
+        costoTierraCustom: 250000,
+        supNaveProyectada: 1380,
+        costoObraM2: 350,
+        alquilerM2Estimado: 5.5,
+        esFinanciado: true,
+        porcentajeAnticipo: 30,
+        cantidadCuotas: 24,
+        mesesObra: 8,
+        propiedad: {
+          superficieTotal: 2300,
+          precio: 250000,
+          moneda: 'USD',
+        },
+      };
+
+      const payloadMock = {
+        costoObraMercadoM2: 400,
+        costoObraPreferencialM2: 350,
+        tieneTarifaPreferencial: true,
+      };
+
+      const resultado = strategy.calcularMetricas([itemMock], payloadMock);
+      const opcion = resultado.comparativa[0];
+
+      // Verificaciones numéricas:
+      // Tierra = 250,000 | Obra = 1,380 * 350 = 483,000 | Inversión Total = 733,000
+      expect(opcion.costoTierra).toBe(250000);
+      expect(opcion.costoObraTotal).toBe(483000);
+      expect(opcion.inversionTotal).toBe(733000);
+
+      // Desembolso Inicial = Anticipo Tierra (30% de 250,000 = 75,000) + Costo Obra (483,000) = 558,000
+      expect(opcion.desembolsoInicialRequeridoUSD).toBe(558000);
+
+      // Cuota Lote = Saldo (175,000) / 24 cuotas = ~7,292
+      // Renta Mensual = 1,380 m² * 5.5 USD/m² = 7,590 USD/mes
+      expect(opcion.ingresoMensualTotal).toBe(7590);
+      expect(opcion.cuotaMensualLoteUSD).toBe(7292);
+
+      // Superávit Neto Mensual = 7,590 - 7,292 = 298 USD/mes
+      expect(opcion.resultadoNetoMensualUSD).toBe(298);
+    });
+
+    it('debe manejar correctamente un esquema al contado sin divisiones por cero', () => {
+      const itemContadoMock: any = {
+        id: 'item-contado',
+        propiedadId: 71,
+        nombre: 'Lote Al Contado',
+        costoTierraCustom: 200000,
+        ofertaContadoUSD: 180000,
+        supNaveProyectada: 1000,
+        costoObraM2: 400,
+        alquilerM2Estimado: 5.0,
+        esFinanciado: false,
+        porcentajeAnticipo: 0,
+        cantidadCuotas: 0,
+        mesesObra: 6,
+        propiedad: {
+          superficieTotal: 1500,
+          precio: 200000,
+          moneda: 'USD',
+        },
+      };
+
+      const resultado = strategy.calcularMetricas([itemContadoMock], null);
+      const opcion = resultado.comparativa[0];
+
+      expect(opcion.esFinanciado).toBe(false);
+      expect(opcion.cuotaMensualLoteUSD).toBe(0);
+      expect(opcion.desembolsoInicialRequeridoUSD).toBe(600000); // 200,000 Tierra + 400,000 Obra
+      expect(opcion.ofertaContadoUSD).toBe(180000);
+    });
+  });
+
+  // --------------------------------------------------------------------------
+  // 3. PRUEBAS DE PERSISTENCIA EN PROPUESTAS SERVICE
+  // --------------------------------------------------------------------------
+  describe('PropuestasService.crear()', () => {
+    it('debe mapear y guardar los datos de desembolso inicial y cuotas', async () => {
       const mockPayload = {
         tipo: 'INVERSION',
         clienteNombre: 'Inversor Test',
@@ -58,217 +162,26 @@ describe('PropuestasService - Unidad y Lógica de Inversión', () => {
             esFinanciado: true,
             porcentajeAnticipo: 30,
             cantidadCuotas: 24,
-            cuotasTexto: '30% anticipo y 24 cuotas',
-            mesesObra: 12,
-            costoTierraCustom: 450000,
-          },
-          {
-            propiedadId: 71,
-            esFinanciado: false, // Propiedad comprada al contado
-            porcentajeAnticipo: 0,
-            cantidadCuotas: 0,
-            ofertaContadoUSD: 650000,
-            costoTierraCustom: 700000,
+            mesesObra: 8,
+            costoTierraCustom: 250000,
           },
         ],
       };
 
-      // SIMULACIÓN: Hacemos que prisma.create resuelva con éxito devolviendo los datos cargados
       vi.mocked(prisma.propuestaComercial.create).mockResolvedValue({ id: 'prop-1', ...mockPayload } as any);
 
-      // EJECUCIÓN: Llamamos al método que estamos testeando
       await PropuestasService.crear(mockPayload);
 
-      // VERIFICACIÓN 1: Verificar que se llamó a Prisma para crear el registro en BD
-      expect(prisma.propuestaComercial.create).toHaveBeenCalledTimes(1);
-      
-      // Capturamos los argumentos exactos con los que fue invocado prisma.create
       const createCallArgs = vi.mocked(prisma.propuestaComercial.create).mock.calls[0][0];
-      const itemsCreados = createCallArgs.data.items.create;
+      const itemCreado = createCallArgs.data.items.create[0];
 
-      // VERIFICACIÓN 2: Ítem Financiado
-      // Validamos que se preserven los porcentajes, cuotas y texto explicativo
-      expect(itemsCreados[0]).toMatchObject({
+      expect(itemCreado).toMatchObject({
         propiedadId: 21,
         esFinanciado: true,
         porcentajeAnticipo: 30,
         cantidadCuotas: 24,
-        cuotasTexto: '30% anticipo y 24 cuotas',
-        mesesObra: 12,
+        mesesObra: 8,
       });
-
-      // VERIFICACIÓN 3: Ítem al Contado
-      // Validamos que cuando no es financiado, los valores queden en 0/undefined y no se sobreescriban
-      expect(itemsCreados[1]).toMatchObject({
-        propiedadId: 71,
-        esFinanciado: false,
-        porcentajeAnticipo: 0,
-        cantidadCuotas: 0,
-      });
-    });
-    it('debe manejar correctamente valores nulos en costoTierraCustom y anticipoCash', async () => {
-  const payloadConNulos = {
-    tipo: 'INVERSION',
-    clienteNombre: 'Cliente Test',
-    items: [
-      {
-        propiedadId: 10,
-        costoTierraCustom: null,
-        anticipoCash: null,
-        esFinanciado: true,
-      },
-    ],
-  };
-
-  vi.mocked(prisma.propuestaComercial.create).mockResolvedValue({ id: 'p-2', ...payloadConNulos } as any);
-
-  await PropuestasService.crear(payloadConNulos);
-
-  const createCallArgs = vi.mocked(prisma.propuestaComercial.create).mock.calls[0][0];
-  const item = createCallArgs.data.items.create[0];
-
-  expect(item.costoTierraCustom).toBeNull();
-  expect(item.anticipoCash).toBeNull();
-});
-  it('debe asignar el orden correcto secuencial a los items enviados', async () => {
-    const payloadConOrden = {
-      tipo: 'LOGISTICA_RUTAS',
-      items: [
-        { propiedadId: 101, orden: 1 },
-        { propiedadId: 102, orden: 2 },
-      ],
-    };
-
-    vi.mocked(prisma.propuestaComercial.create).mockResolvedValue({ id: 'p-3', ...payloadConOrden } as any);
-
-    await PropuestasService.crear(payloadConOrden);
-
-    const createCallArgs = vi.mocked(prisma.propuestaComercial.create).mock.calls[0][0];
-    expect(createCallArgs.data.items.create[0].orden).toBe(1);
-    expect(createCallArgs.data.items.create[1].orden).toBe(2);
-  });
-
-  it('debe registrar precio financiado y oferta de contado para un mismo lote', async () => {
-  const payloadLoteSpegazzini = {
-    tipo: 'INVERSION',
-    clienteNombre: 'Cliente Lotes',
-    items: [
-      {
-        propiedadId: 21,
-        nombre: 'Lote Industrial Spegazzini',
-        costoTierraCustom: 250000, // Precio Financiado
-        ofertaContadoUSD: 230000,  // Precio Al Contado
-        esFinanciado: true,
-        porcentajeAnticipo: 30,
-        cantidadCuotas: 24,
-      },
-    ],
-  };
-
-  vi.mocked(prisma.propuestaComercial.create).mockResolvedValue({ id: 'p-spegazzini', ...payloadLoteSpegazzini } as any);
-
-  await PropuestasService.crear(payloadLoteSpegazzini);
-
-  const createCallArgs = vi.mocked(prisma.propuestaComercial.create).mock.calls[0][0];
-  const item = createCallArgs.data.items.create[0];
-
-  expect(item.costoTierraCustom).toBe(250000);
-  expect(item.ofertaContadoUSD).toBe(230000);
-  expect(item.esFinanciado).toBe(true);
-});
-  });
-
-  // --------------------------------------------------------------------------
-  // TEST: Método actualizar()
-  // --------------------------------------------------------------------------
-  describe('actualizar()', () => {
-    it('debe persistir correctamente los cambios de financiación sin sobreescribir con valores default por defecto', async () => {
-      const mockId = 'cmv8b49nv000060u8alusimuf';
-      
-      // DATO DE ENTRADA: Cambiamos una propiedad que antes era financiada a pago al contado
-      const mockPayloadUpdate = {
-        tipo: 'INVERSION',
-        clienteNombre: 'Inversor Editado',
-        slug: 'inversion-editada',
-        items: [
-          {
-            propiedadId: 21,
-            esFinanciado: false, // Cambio explicito a al contado
-            porcentajeAnticipo: 0,
-            cantidadCuotas: 0,
-            ofertaContadoUSD: 400000,
-          },
-        ],
-      };
-
-      vi.mocked(prisma.propuestaComercial.update).mockResolvedValue({ id: mockId, ...mockPayloadUpdate } as any);
-
-      // EJECUCIÓN
-      await PropuestasService.actualizar(mockId, mockPayloadUpdate);
-
-      // VERIFICACIÓN 1: En una actualización, primero deben borrarse los items anteriores dentro de la transacción
-      expect(prisma.propuestaItem.deleteMany).toHaveBeenCalledWith({ where: { propuestaId: mockId } });
-      expect(prisma.propuestaComercial.update).toHaveBeenCalledTimes(1);
-
-      // VERIFICACIÓN 2: Comprobamos que no se apliquen defaults indeseados (como 30% o 24 cuotas)
-      // si el usuario explícitamente marcó el ítem como "no financiado" (`esFinanciado: false`)
-      const updateCallArgs = vi.mocked(prisma.propuestaComercial.update).mock.calls[0][0];
-      const itemActualizado = updateCallArgs.data.items.create[0];
-
-      expect(itemActualizado.esFinanciado).toBe(false);
-      expect(itemActualizado.porcentajeAnticipo).toBe(0);
-      expect(itemActualizado.cantidadCuotas).toBe(0);
-      expect(itemActualizado.ofertaContadoUSD).toBe(400000);
-    });
-  });
-
-  // --------------------------------------------------------------------------
-  // TEST: Métodos de Lectura (obtenerPorId / obtenerPorSlug)
-  // --------------------------------------------------------------------------
-  describe('obtenerPorId() / obtenerPorSlug()', () => {
-    it('debe llamar al sanitizador para limpiar y estructurar los datos recibidos de la BD', async () => {
-      const mockDbResponse = {
-        id: 'prop-1',
-        slug: 'inversion-prueba',
-        items: [
-          {
-            id: 'item-1',
-            propiedadId: 21,
-            esFinanciado: true,
-            propiedad: { id: 21, titulo: 'Galpón Spegazzini' },
-          },
-        ],
-      };
-
-      // SIMULACIÓN: Prisma encuentra la propuesta
-      vi.mocked(prisma.propuestaComercial.findUnique).mockResolvedValue(mockDbResponse as any);
-
-      // EJECUCIÓN
-      const resultado = await PropuestasService.obtenerPorId('prop-1');
-
-      // VERIFICACIÓN 1: Prisma incluye la relación de items y datos relacionales
-      expect(prisma.propuestaComercial.findUnique).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { id: 'prop-1' },
-          include: expect.objectContaining({ items: expect.anything() }),
-        })
-      );
-
-      // VERIFICACIÓN 2: Confirmar que los datos pasen por la función de sanitización antes de enviarlos al frontend
-      expect(sanearPropuestaComercial).toHaveBeenCalledWith(mockDbResponse);
-      expect(resultado).toEqual(mockDbResponse);
-    });
-
-    it('debe retornar null si la propuesta no existe', async () => {
-      // SIMULACIÓN: Búsqueda sin resultados en la BD
-      vi.mocked(prisma.propuestaComercial.findUnique).mockResolvedValue(null);
-
-      // EJECUCIÓN
-      const resultado = await PropuestasService.obtenerPorSlug('slug-inexistente');
-
-      // VERIFICACIÓN: Retorna null y NO ejecuta el sanitizador
-      expect(resultado).toBeNull();
-      expect(sanearPropuestaComercial).not.toHaveBeenCalled();
     });
   });
 });

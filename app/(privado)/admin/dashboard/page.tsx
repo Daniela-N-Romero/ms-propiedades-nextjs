@@ -48,6 +48,7 @@ interface PropiedadAdmin {
   imagenes: { url: string }[];
   direccionPersonalizada?: string | null;
   categoria: string;
+  parqueIndustrial?: { id: number; nombre: string } | null;
 
 }
 
@@ -493,7 +494,8 @@ export default function DashboardPage() {
                         <span className="text-[10px] font-mono text-slate-400 block mt-0.5">REF: {prop.codigo}</span>
                       </td>
                       <td className="p-3 font-semibold text-slate-800">
-                        {getZonaJerarquia(prop)}
+                        <span className="">{getZonaJerarquia(prop)}</span>
+                        <span className="text-[9px] px-1 rounded bg-slate-300/60">{prop.parqueIndustrial?.nombre}</span>
                       </td>
                       <td className="p-3 font-extrabold text-slate-900">
                         {formatPrecio(prop.precio, prop.moneda)}

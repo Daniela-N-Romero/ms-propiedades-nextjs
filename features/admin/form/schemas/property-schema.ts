@@ -39,8 +39,9 @@ export const draftPropertySchema = z.object({
   tipoInmuebleId: coerceNumber('Debe seleccionar un tipo de inmueble').refine((val) => val >= 1, 'Debe seleccionar un tipo de inmueble'),
   agenteId: coerceNumber('Debe asignar un agente responsable').refine((val) => val >= 1, 'Debe asignar un agente responsable'),
   zonaId: coerceNumber('Debe seleccionar una localidad/zona').refine((val) => val >= 1, 'Debe seleccionar una localidad/zona'),
-
+  
   // Todo lo demás es opcional para el borrador
+  parqueIndustrialId: coerceNullableNumber(),
   categoria: z.string().optional(),
   origen: z.string().optional(),
   precio: coerceOptionalNumber(),
@@ -90,6 +91,7 @@ export const basePublishPropertySchema = z.object({
   descripcion: z.string().min(10, 'La descripción debe tener al menos 10 caracteres'),
 
   zonaId: coerceNumber('Debe seleccionar una localidad/zona').refine((val) => val >= 1, 'Debe seleccionar una localidad/zona'),
+  parqueIndustrialId: z.coerce.number().optional().nullable(),
   direccionPersonalizada: z.string().optional(),
   latitud: coerceNumber('Latitud inválida o no seleccionada'),
   longitud: coerceNumber('Longitud inválida o no seleccionada'),

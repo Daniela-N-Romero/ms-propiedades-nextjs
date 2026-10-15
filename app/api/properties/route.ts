@@ -113,6 +113,12 @@ export async function GET(request: Request) {
           colegaId: true,
           zonaId: true,
           financiacion:true,
+          parqueIndustrial: {
+              select: {
+                id: true,
+                nombre: true,
+              },
+            },
           zona: {
             select: {
               id: true,

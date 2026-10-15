@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useFormContext, useWatch } from 'react-hook-form';
 import { PropertyFormValues } from '@/features/admin/form/schemas/property-schema';
 import { getInputClass, getSelectClass } from '../utils/form-utils';
@@ -40,6 +40,30 @@ export function LocationSection({
   const [listaRegiones, setListaRegiones] = useState<ZonaServer[]>(zonasPadre);
   const [listaPartidos, setListaPartidos] = useState<ZonaServer[]>(partidosDisponibles);
   const [listaLocalidades, setListaLocalidades] = useState<ZonaServer[]>(localidadesDisponibles);
+  const [parques, setParques] = useState<Array<{ id: number; nombre: string }>>([]);
+  const parqueIndustrialIdValue = watch('parqueIndustrialId');
+
+    useEffect(() => {
+      fetch("/api/parques-industriales")
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data)) {
+            setParques(data);
+          }
+        })
+        .catch((err) => console.error("Error al cargar parques:", err));
+    }, []);
+
+    // 2. Cuando los parques terminan de cargar, forzamos la actualización si venía un ID inicial
+    useEffect(() => {
+      if (parques.length > 0 && parqueIndustrialIdValue) {
+        setValue('parqueIndustrialId', Number(parqueIndustrialIdValue), {
+          shouldValidate: false,
+          shouldDirty: false,
+          shouldTouch: false,
+        });
+      }
+    }, [parques, parqueIndustrialIdValue, setValue]);
 
   const [zonaModalConfig, setZonaModalConfig] = useState<{
     isOpen: boolean;
@@ -49,6 +73,7 @@ export function LocationSection({
     isOpen: false,
     tipo: 'region',
   });
+
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-5">
@@ -251,6 +276,36 @@ export function LocationSection({
           placeholder="Ej: Colectora Au. Bs As - La Plata Km 38, Parque Industrial Hudson"
           className={getInputClass(!!errors.direccionPersonalizada)}
         />
+      </div>
+      
+      {/* SELECTOR DE PARQUE INDUSTRIAL (OPCIONAL) */}
+      <div className="space-y-1.5">
+        <label >
+          <p className="block text-xs font-bold uppercase tracking-wider text-slate-700">Parque Industrial (Opcional)</p>
+          <p className="text-xs text-slate-500 mb-1">
+            Asigna esta propiedad a un parque cerrado/logístico
+          </p>
+        </label>
+
+        <select
+            value={parqueIndustrialIdValue ? String(parqueIndustrialIdValue) : ""}
+            onChange={(e) => {
+              const val = e.target.value;
+              setValue(
+                "parqueIndustrialId",
+                val === "" || val === null ? null : Number(val),
+                { shouldValidate: true, shouldDirty: true }
+              );
+            }}
+            className={getSelectClass(!!errors.parqueIndustrialId)}
+          >
+            <option value="">-- Ninguno (Propiedad Standalone / fuera de parque) --</option>
+            {parques.map((parque) => (
+              <option key={parque.id} value={String(parque.id)}>
+                {parque.nombre}
+              </option>
+            ))}
+          </select>
       </div>
 
       {/* MODAL DE ZONAS */}

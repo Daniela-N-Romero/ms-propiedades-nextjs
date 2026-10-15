@@ -67,6 +67,7 @@ export default function PropertyForm({
   const folderIdRef = useRef<string>(
     initialData?.id ? initialData.id.toString() : `propiedad-${crypto.randomUUID().slice(0, 8)}`
   );
+  console.log(initialData)
 
   return (
     <FormProvider {...form}>
