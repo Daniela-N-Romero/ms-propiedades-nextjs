@@ -103,6 +103,7 @@ export function sanearItemsPropuesta(itemsRaw: any[]): PropuestaItemEntity[] {
       cantidadCuotas: item.cantidadCuotas ?? 0,
       mesesObra: item.mesesObra !== null && item.mesesObra !== undefined ? Number(item.mesesObra) : 0,
       ofertaContadoUSD: item.ofertaContadoUSD ?? null,
+      notaEspecial: item.notaEspecial ?? null,
       propiedad: {
         id: Number(p.id),
         codigo: String(p.codigo || ''),

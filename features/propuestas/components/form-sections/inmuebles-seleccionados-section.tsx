@@ -83,11 +83,6 @@ export function InmueblesSeleccionadosSection({
 												Lote: {supLote.toLocaleString("es-AR")} m²)
 											</span>
 										</p>
-										{prop.financiacion && (
-										<p className="ml-5 text-xs text-slate-500 font-semibold">
-											{prop.financiacion}
-										</p>
-										)}
 									</div>
 									<button
 										type="button"
@@ -254,7 +249,7 @@ export function InmueblesSeleccionadosSection({
 										{prop.financiacion && (
 											<div className="bg-amber-50/80 border border-amber-200/80 rounded-xl p-3 text-xs text-amber-900 flex items-center justify-between">
 												<span>
-													📌 <strong>Condiciones BBDD:</strong>{" "}
+													📌 <strong>Condiciones de financiación:</strong>{" "}
 													{prop.financiacion}
 												</span>
 												<button
@@ -379,6 +374,20 @@ export function InmueblesSeleccionadosSection({
 													</div>
 												</div>
 											)}
+										</div>
+										<div>
+											<label className="block text-[11px] font-bold text-slate-700 mb-1">
+													Notas especiales
+											</label>
+											<input
+													type="text"
+													value={item.notaEspecial || ""}
+													onChange={(e) =>
+														updateItem(prop.id, { notaEspecial: e.target.value })
+													}
+													placeholder="Aclaraciones necesarias acerca de la propiedad (opcional)"
+													className="w-full bg-white border border-slate-200 rounded-xl p-2 text-xs text-slate-900 outline-none focus:border-amber-500"
+											/>
 										</div>
 									</div>
 								) : (

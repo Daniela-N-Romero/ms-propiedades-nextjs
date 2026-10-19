@@ -210,7 +210,7 @@ model PropuestaItem {
   cantidadCuotas       Int?               @default(0)
   mesesObra            Int?               @default(0)
 
-
+  notaEspecial         String?
   orden                Int                @default(0)
   propiedad            Propiedad          @relation(fields: [propiedadId], references: [id])
   propuesta            PropuestaComercial @relation(fields: [propuestaId], references: [id], onDelete: Cascade)

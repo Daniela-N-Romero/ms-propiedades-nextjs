@@ -105,8 +105,6 @@ type = TipoPropuestaEnum.INVERSION_DESARROLLO;
         anticipoCash: item.anticipoCash ?? anticipoLoteUSD,
         cuotasTexto: item.cuotasTexto || p.financiacion || '',
         moneda: p.moneda ?? 'USD',
-
-        // 🔑 Retorno de las variables calculadas de desembolso
         esFinanciado,
         porcentajeAnticipo,
         cantidadCuotas,
@@ -117,6 +115,7 @@ type = TipoPropuestaEnum.INVERSION_DESARROLLO;
         costoNetoFinalActivoUSD: Number(costoNetoFinalActivoUSD.toFixed(0)),
         ahorroTotalRentaUSD: Number(ahorroTotalRentaUSD.toFixed(0)),
         ofertaContadoUSD: item.ofertaContadoUSD ? Number(item.ofertaContadoUSD) : undefined,
+        notaEspecial: item.notaEspecial ?? null,
       };
     });
 

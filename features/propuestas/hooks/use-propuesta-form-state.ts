@@ -120,6 +120,7 @@ export function usePropuestaFormState(initialData?: any, propuestaId?: string, d
         cantidadCuotas: i.cantidadCuotas ?? 24,
         mesesObra: i.mesesObra ?? 8,
         ofertaContadoUSD: i.ofertaContadoUSD ?? undefined,
+        notaEspecial: i.notaEspecial ?? "",
       };
     }) || []
   );
@@ -246,6 +247,7 @@ useEffect(() => {
         cantidadCuotas: 24,
         mesesObra: 8,
         ofertaContadoUSD: undefined,
+        notaEspecial: null
       };
       setItemsSeleccionados([...itemsSeleccionados, nuevoItem]);
     }
@@ -273,6 +275,7 @@ useEffect(() => {
       inversionTotal,
       ingresoAnualUSD,
       roiAnual: Number(roiAnual.toFixed(2)),
+      notaEspecial: item.notaEspecial || null,
     };
   };
 

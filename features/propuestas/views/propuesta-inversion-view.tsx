@@ -118,7 +118,7 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 
 			{/* BANNER DE AHORRO DIRECTO EN USD */}
 			{metricas.tieneAhorroPreferencial && metricas.costoObraPreferencial && (
-				<div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-slate-950 border-2 border-emerald-500/50 rounded-2xl p-4 sm:p-6 shadow-xl relative overflow-hidden">
+				<div className="bg-linear-to-r from-emerald-950 via-slate-900 to-slate-950 border-2 border-emerald-500/50 rounded-2xl p-4 sm:p-6 shadow-xl relative overflow-hidden">
 					<div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
 						<div className="space-y-1">
 							<span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[9px] sm:text-[10px] font-black uppercase px-2.5 py-1 rounded-full inline-block">
@@ -169,6 +169,7 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 						);
 						const esGanador = item.id === maxRoiOption?.id;
 						const esSeleccionado = item.id === opcionSeleccionadaId;
+						console.log(item)
 
 						return (
 							<div
@@ -229,6 +230,7 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 										(USD {item.ingresoAnualTotal.toLocaleString("es-AR")}/año)
 									</span>
 								</div>
+								
 							</div>
 						);
 					})}
@@ -249,7 +251,7 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 						const imagenUrl =
 							propOriginal?.imagenes?.[0]?.url || "/images/placeholder.png";
 						const esSeleccionado = item.id === opcionSeleccionadaId;
-
+						console.log(item)
 						return (
 							<div
 								key={item.id}
@@ -272,6 +274,7 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 										📍 {item.localidad}
 									</div>
 								</div>
+								
 
 								{/* DETALLES DE LA PROPIEDAD */}
 								<div className="lg:col-span-8 space-y-4">
@@ -312,7 +315,11 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 													.
 												</p>
 											)}
+											<div>
+												<p className="text-[10px] sm:text-[11px] text-slate-500 font-medium mt-1 leading-snug italic">* Importante: {item.notaEspecial}</p>
+											</div>
 										</div>
+										
 										<div className="text-right shrink-0">
 											<span className="text-[10px] sm:text-xs text-slate-400 block">
 												ROI Proyectado
@@ -364,6 +371,8 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 											</span>
 										</div>
 									</div>
+
+									
 
 									{/* MÓDULO DE FLUJO DE FONDOS Y APALANCAMIENTO LOCATIVO */}
 									{item.esFinanciado ? (
@@ -517,7 +526,7 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 											</div>
 										</div>
 									)}
-
+									
 									{/* PIE DE TARJETA */}
 									<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pt-2 border-t border-slate-800/80 text-xs">
 										<div className="text-slate-400 text-[11px] sm:text-xs">

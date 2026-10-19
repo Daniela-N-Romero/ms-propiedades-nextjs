@@ -80,6 +80,7 @@ export interface PropuestaItemEntity {
   cantidadCuotas?: number | null;
   mesesObra?: number | null;
   ofertaContadoUSD?: number | null;
+  notaEspecial: string | null;
 }
 
 export interface PropuestaComercialEntity {
@@ -120,6 +121,7 @@ export interface MetricaInversionItem {
   porcentajeAnticipo: number;
   cantidadCuotas: number;
   mesesObra: number;
+  notaEspecial: string | null;
   desembolsoInicialRequeridoUSD: number;
   cuotaMensualLoteUSD: number;
   resultadoNetoMensualUSD: number;
@@ -156,6 +158,7 @@ export interface ItemForm {
   propiedadId: number;
   esPrioritaria: boolean;
   notaLogistica: string;
+  notaEspecial: string | null;
   tiempoEstimadoString: string;
   nombre: string;
   costoTierraCustom: number;
