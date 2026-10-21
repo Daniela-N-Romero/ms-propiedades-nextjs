@@ -296,9 +296,15 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 														{item.supLote?.toLocaleString("es-AR")} m²
 													</strong>{" "}
 													estructurado con{" "}
-													<strong className="text-amber-300">
-														Anticipo del {item.porcentajeAnticipo}%
-													</strong>{" "}
+													{item.porcentajeAnticipo !== undefined && item.porcentajeAnticipo !== null ? (
+														item.porcentajeAnticipo === 0 ? (
+															<span className="text-amber-300 font-semibold">sin anticipo</span>
+														) : (
+															<strong className="text-amber-300">
+																Anticipo del {item.porcentajeAnticipo}%
+															</strong>
+														)
+													) : null}{" "}
 													y saldo financiado en{" "}
 													<strong>{item.cantidadCuotas} cuotas</strong>.
 												</p>
@@ -315,9 +321,12 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 													.
 												</p>
 											)}
-											<div>
-												<p className="text-[10px] sm:text-[11px] text-slate-500 font-medium mt-1 leading-snug italic">* Importante: {item.notaEspecial}</p>
-											</div>
+
+											{item.notaEspecial && (
+												<div>
+													<p className="text-[10px] sm:text-[11px] text-slate-500 font-medium mt-1 leading-snug italic">* Importante: {item.notaEspecial}</p>
+												</div>
+											)}											
 										</div>
 										
 										<div className="text-right shrink-0">
@@ -421,7 +430,7 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 																)}
 															</span>
 															<p className="text-[9px] sm:text-[10px] text-slate-400">
-																Anticipo Lote ({item.porcentajeAnticipo}%) +
+																{(item.porcentajeAnticipo > 0 && item.porcentajeAnticipo !== null) ? `Anticipo Lote (${item.porcentajeAnticipo}%)` : `Sin anticipo`} +
 																100% Costo Obra
 															</p>
 														</div>

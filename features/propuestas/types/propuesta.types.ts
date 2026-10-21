@@ -165,7 +165,7 @@ export interface ItemForm {
   costoObraM2: number;
   supNaveProyectada: number;
   alquilerM2Estimado: number;
-  anticipoCash: number;
+  anticipoCash: number | null;
   cuotasTexto: string;
   fosAplicado: number;
   orden: number;

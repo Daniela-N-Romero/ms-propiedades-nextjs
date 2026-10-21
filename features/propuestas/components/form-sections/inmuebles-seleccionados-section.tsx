@@ -333,7 +333,7 @@ export function InmueblesSeleccionadosSection({
 														</label>
 														<input
 															type="number"
-															value={item.porcentajeAnticipo || 30}
+															value={item.porcentajeAnticipo || 0}
 															onChange={(e) =>
 																updateItem(prop.id, {
 																	porcentajeAnticipo: Number(e.target.value),
