@@ -42,7 +42,6 @@ export function InmueblesSeleccionadosSection({
 		);
 	};
 
-
 	return (
 		<div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 space-y-4">
 			<h2 className="text-xs font-bold uppercase tracking-wider text-slate-800 border-b border-slate-100 pb-2">
@@ -72,10 +71,10 @@ export function InmueblesSeleccionadosSection({
 									<div className="">
 										<p>
 											<span className="bg-slate-800 text-white font-bold text-xs px-2.5 py-0.5 rounded-md">
-												#{idx + 1} 
+												#{idx + 1}
 											</span>
 											<span className="font-bold text-sm text-slate-900">
-												{prop.titulo} 
+												{prop.titulo}
 											</span>
 											<span className="ml-1 text-xs text-slate-500 font-semibold">
 												({prop.moneda}{" "}
@@ -302,6 +301,45 @@ export function InmueblesSeleccionadosSection({
 												</div>
 											</div>
 
+											<div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+												<label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700">
+													<input
+														type="checkbox"
+														checked={item.esPreventa || false}
+														onChange={(e) =>
+															updateItem(prop.id, {
+																esPreventa: e.target.checked,
+															})
+														}
+														className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
+													/>
+													<span>
+														¿Lote en Preventa? (Ajusta estrategia de plazos y
+														slogan)
+													</span>
+												</label>
+											</div>
+
+											{item.esPreventa && (
+												<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+													<div>
+														<label className="block text-[10px] font-bold text-slate-600 mb-1 uppercase">
+															Meses Estimados de Entrega del Loteo
+														</label>
+														<input
+															type="number"
+															value={item.mesesEntregaLote || 12}
+															onChange={(e) =>
+																updateItem(prop.id, {
+																	mesesEntregaLote: Number(e.target.value),
+																})
+															}
+															className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs font-bold outline-none"
+														/>
+													</div>
+												</div>
+											)}
+
 											{item.esFinanciado === false ? (
 												<div className="space-y-3">
 													<p className="text-xs text-slate-600 font-medium">
@@ -377,16 +415,16 @@ export function InmueblesSeleccionadosSection({
 										</div>
 										<div>
 											<label className="block text-[11px] font-bold text-slate-700 mb-1">
-													Notas especiales
+												Notas especiales
 											</label>
 											<input
-													type="text"
-													value={item.notaEspecial || ""}
-													onChange={(e) =>
-														updateItem(prop.id, { notaEspecial: e.target.value })
-													}
-													placeholder="Aclaraciones necesarias acerca de la propiedad (opcional)"
-													className="w-full bg-white border border-slate-200 rounded-xl p-2 text-xs text-slate-900 outline-none focus:border-amber-500"
+												type="text"
+												value={item.notaEspecial || ""}
+												onChange={(e) =>
+													updateItem(prop.id, { notaEspecial: e.target.value })
+												}
+												placeholder="Aclaraciones necesarias acerca de la propiedad (opcional)"
+												className="w-full bg-white border border-slate-200 rounded-xl p-2 text-xs text-slate-900 outline-none focus:border-amber-500"
 											/>
 										</div>
 									</div>
@@ -406,7 +444,9 @@ export function InmueblesSeleccionadosSection({
 											placeholder="Tiempo / Salida Vial"
 											value={item.tiempoEstimadoString}
 											onChange={(e) =>
-												updateItem(prop.id, { tiempoEstimadoString: e.target.value })
+												updateItem(prop.id, {
+													tiempoEstimadoString: e.target.value,
+												})
 											}
 											className="w-full bg-white border border-slate-200 rounded-xl p-2 text-xs text-slate-900"
 										/>

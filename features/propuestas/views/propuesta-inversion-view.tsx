@@ -169,7 +169,7 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 						);
 						const esGanador = item.id === maxRoiOption?.id;
 						const esSeleccionado = item.id === opcionSeleccionadaId;
-						console.log(item)
+						console.log(item);
 
 						return (
 							<div
@@ -230,7 +230,6 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 										(USD {item.ingresoAnualTotal.toLocaleString("es-AR")}/año)
 									</span>
 								</div>
-								
 							</div>
 						);
 					})}
@@ -251,7 +250,7 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 						const imagenUrl =
 							propOriginal?.imagenes?.[0]?.url || "/images/placeholder.png";
 						const esSeleccionado = item.id === opcionSeleccionadaId;
-						console.log(item)
+						console.log(item);
 						return (
 							<div
 								key={item.id}
@@ -274,7 +273,6 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 										📍 {item.localidad}
 									</div>
 								</div>
-								
 
 								{/* DETALLES DE LA PROPIEDAD */}
 								<div className="lg:col-span-8 space-y-4">
@@ -289,16 +287,78 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 												</p>
 											)}
 											{/* LEYENDA CONDICIONAL SEGÚN MODALIDAD DE PAGO */}
-											{item.esFinanciado ? (
+											{item.esPreventa ? (
+												<div className="bg-slate-950 border border-amber-500/40 rounded-2xl p-3 sm:p-4 space-y-3">
+													<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-2 gap-2">
+														<h5 className="font-extrabold text-amber-400 text-xs flex items-center gap-1.5">
+															🚀 Oportunidad en Preventa
+														</h5>
+														<span className="bg-amber-500/10 border border-amber-500/40 text-amber-300 text-[8px] sm:text-[9px] font-black px-2.5 py-1 rounded-full uppercase">
+															Entrega estimada en {item.mesesEntregaLote} meses
+														</span>
+													</div>
+
+													<div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 sm:gap-3 text-xs">
+														<div className="bg-slate-900 border border-slate-800 p-2.5 sm:p-3 rounded-xl space-y-0.5">
+															<span className="text-slate-400 text-[9px] sm:text-[10px] font-bold block uppercase">
+																Desembolso Inicial Requerido
+															</span>
+															<span className="text-xs sm:text-sm font-black text-white block">
+																USD{" "}
+																{item.desembolsoInicialRequeridoUSD?.toLocaleString(
+																	"es-AR",
+																)}
+															</span>
+															<p className="text-[9px] sm:text-[10px] text-slate-400">
+																Esquema de anticipo y financiación en etapas de
+																pozo/preventa.
+															</p>
+														</div>
+
+														<div className="bg-slate-900 border border-amber-500/30 p-2.5 sm:p-3 rounded-xl space-y-0.5">
+															<span className="text-amber-400 text-[9px] sm:text-[10px] font-bold block uppercase">
+																Ventaja Financiera en Preventa
+															</span>
+															<span className="text-xs sm:text-sm font-black text-amber-300 block">
+																Financiación en cuotas
+															</span>
+															<p className="text-[9px] sm:text-[10px] text-slate-300">
+																Mayor flexibilidad de pago inicial mientras
+																avanza la infraestructura del parque.
+															</p>
+														</div>
+
+														<div className="bg-slate-900 border border-slate-800 p-2.5 sm:p-3 rounded-xl space-y-0.5">
+															<span className="text-slate-400 text-[9px] sm:text-[10px] font-bold block uppercase">
+																Alquiler Estimado (Post-Obra)
+															</span>
+															<span className="text-xs sm:text-sm font-black text-emerald-400 block">
+																USD{" "}
+																{item.ingresoMensualTotal.toLocaleString(
+																	"es-AR",
+																)}{" "}
+																/ mes
+															</span>
+															<p className="text-[9px] sm:text-[10px] text-emerald-400 font-semibold">
+																Proyección de renta una vez finalizada la nave
+																industrial.
+															</p>
+														</div>
+													</div>
+												</div>
+											) : item.esFinanciado ? (
 												<p className="text-[10px] sm:text-[11px] text-slate-300 font-medium mt-1 leading-snug">
 													Lote industrial de{" "}
 													<strong>
 														{item.supLote?.toLocaleString("es-AR")} m²
 													</strong>{" "}
 													estructurado con{" "}
-													{item.porcentajeAnticipo !== undefined && item.porcentajeAnticipo !== null ? (
+													{item.porcentajeAnticipo !== undefined &&
+													item.porcentajeAnticipo !== null ? (
 														item.porcentajeAnticipo === 0 ? (
-															<span className="text-amber-300 font-semibold">sin anticipo</span>
+															<span className="text-amber-300 font-semibold">
+																sin anticipo
+															</span>
 														) : (
 															<strong className="text-amber-300">
 																Anticipo del {item.porcentajeAnticipo}%
@@ -324,11 +384,13 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 
 											{item.notaEspecial && (
 												<div>
-													<p className="text-[10px] sm:text-[11px] text-slate-500 font-medium mt-1 leading-snug italic">* Importante: {item.notaEspecial}</p>
+													<p className="text-[10px] sm:text-[11px] text-slate-500 font-medium mt-1 leading-snug italic">
+														* Importante: {item.notaEspecial}
+													</p>
 												</div>
-											)}											
+											)}
 										</div>
-										
+
 										<div className="text-right shrink-0">
 											<span className="text-[10px] sm:text-xs text-slate-400 block">
 												ROI Proyectado
@@ -381,8 +443,6 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 										</div>
 									</div>
 
-									
-
 									{/* MÓDULO DE FLUJO DE FONDOS Y APALANCAMIENTO LOCATIVO */}
 									{item.esFinanciado ? (
 										(() => {
@@ -430,8 +490,11 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 																)}
 															</span>
 															<p className="text-[9px] sm:text-[10px] text-slate-400">
-																{(item.porcentajeAnticipo > 0 && item.porcentajeAnticipo !== null) ? `Anticipo Lote (${item.porcentajeAnticipo}%)` : `Sin anticipo`} +
-																100% Costo Obra
+																{item.porcentajeAnticipo > 0 &&
+																item.porcentajeAnticipo !== null
+																	? `Anticipo Lote (${item.porcentajeAnticipo}%)`
+																	: `Sin anticipo`}{" "}
+																+ 100% Costo Obra
 															</p>
 														</div>
 
@@ -535,7 +598,7 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 											</div>
 										</div>
 									)}
-									
+
 									{/* PIE DE TARJETA */}
 									<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pt-2 border-t border-slate-800/80 text-xs">
 										<div className="text-slate-400 text-[11px] sm:text-xs">

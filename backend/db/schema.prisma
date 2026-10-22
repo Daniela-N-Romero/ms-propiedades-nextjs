@@ -105,6 +105,9 @@ model Propiedad {
   financiacion           String?             @db.VarChar(255)
   imagenMetaUrl          String?             @map("imagen_meta_url") @db.VarChar(255)
   permitMetaAd           Boolean             @default(false) @map("permit_meta_ad")
+  esPreventa             Boolean             @default(false)
+  fechaEstimadaEntrega   DateTime? @map("fecha_estimada_entrega") @db.Timestamp(6)
+
   propuestas             PropuestaItem[]
   imagenes               Imagen[]
   leads                  Lead[]
@@ -228,6 +231,9 @@ model ParqueIndustrial {
   precioTierraM2Ref     Float?          @map("precio_tierra_m2_ref")
   latitud               Decimal?        @db.Decimal(9, 6)
   longitud              Decimal?        @db.Decimal(9, 6)
+  esPreventa             Boolean        @default(false)
+  fechaEstimadaEntrega   DateTime?      @map("fecha_estimada_entrega") @db.Timestamp(6)
+ 
   zonaId                Int?            @map("zona_id")
   createdAt             DateTime        @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt             DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)

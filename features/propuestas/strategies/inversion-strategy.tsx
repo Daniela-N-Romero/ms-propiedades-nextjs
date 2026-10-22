@@ -29,7 +29,7 @@ type = TipoPropuestaEnum.INVERSION_DESARROLLO;
     const comparativa: MetricaInversionItem[] = items.map((item) => {
       const p = item.propiedad;
 
-      // 🔑 Prioridad absoluta al texto neutro 'nombre' editado en el form
+      //Prioridad absoluta al texto neutro 'nombre' editado en el form
       const nombreOpcion =
         item.nombre?.trim() ||
         (item as any).parqueIndustrialNombre?.trim() ||
@@ -116,6 +116,8 @@ type = TipoPropuestaEnum.INVERSION_DESARROLLO;
         ahorroTotalRentaUSD: Number(ahorroTotalRentaUSD.toFixed(0)),
         ofertaContadoUSD: item.ofertaContadoUSD ? Number(item.ofertaContadoUSD) : undefined,
         notaEspecial: item.notaEspecial ?? null,
+        esPreventa: item.esPreventa,
+        mesesEntregaLote: Number(item.mesesEntregaLote)
       };
     });
 

@@ -1,13 +1,27 @@
 import { TipoPropuestaEnum } from '@/prisma/generated/client';
 
+/**
+ * PropiedadBase: Representa una propiedad devuelta por el backend. Todo lo que viene de la BBDD de inmuebles.
+ * ItemForm: Es la estructura plana que manipulan React Hook Form o el Hook usePropuestaFormState. Todo lo que el usuario edita en la pantalla dentro de las tarjetitas.
+ * PropuestaItemEntity: Es el ítem guardado/cargado de la propuesta (extiende de ItemForm). Es ItemForm + la PropiedadBase adjunta traída de la BBDD.
+ * MetricaInversionItem: Es el resultado transformado por la InversionStrategy para mostrar las tarjetas con ROI. Son los números finales calculados por la matemática financiera.
+ */
 
-
+// ==========================================
+// 1. RECOMENDACIONES Y PAYLOAD (JSON)
+// ==========================================
 export interface TarjetaRecomendacion {
   id: string;
   activa: boolean;
   titulo: string;
-  opcionAsociadaId?: string; // ID o nombre de la opción vinculada (ej: "propiedadId" o "nombre")
+  opcionAsociadaId?: string;
   texto: string;
+}
+
+export interface RecomendacionesPayload {
+  mostrarSeccion?: boolean;
+  tituloGeneral?: string;
+  tarjetas?: TarjetaRecomendacion[];
 }
 
 export interface PropuestaPayload {
@@ -18,12 +32,9 @@ export interface PropuestaPayload {
   [key: string]: unknown;
 }
 
-export interface RecomendacionesPayload {
-  mostrarSeccion?: boolean;
-  tituloGeneral?: string;
-  tarjetas?: TarjetaRecomendacion[];
-}
-
+// ==========================================
+// 2. DOMINIO / BBDD (Propiedades y Parques)
+// ==========================================
 export interface ParqueIndustrialEntity {
   id: number;
   nombre: string;
@@ -32,55 +43,79 @@ export interface ParqueIndustrialEntity {
   conectividad?: string | null;
   alquilerM2Referencial?: number | null;
   precioTierraM2Ref?: number | null;
-  latitud?: number | string | null;
-  longitud?: number | string | null;
+  latitud?: number | null;
+  longitud?: number | null;
   zonaId?: number | null;
+  esPreventa?: boolean;
+  fechaEstimadaEntrega?: Date | string | null;
 }
 
-export interface PropiedadEntity {
+export interface PropiedadBase {
   id: number;
   codigo: string;
   titulo: string;
   slug: string;
-  precio: number | string;
+  precio: number;
   moneda: string;
   financiacion?: string | null;
-  superficieTotal?: number | string | null;
-  superficieCubierta?: number | string | null;
-  latitud?: number | string | null;
-  longitud?: number | string | null;
+  superficieTotal?: number | null;
+  superficieCubierta?: number | null;
+  latitud?: number | null;
+  longitud?: number | null;
   descripcion?: string | null;
+  zonaId?: number | null;
   zona?: { id: number; nombre: string } | null;
+  parqueIndustrialId?: number | null;
   parqueIndustrial?: { id: number; nombre: string; direccionAcceso?: string | null; conectividad?: string | null } | null;
   imagenes?: { id: number; url: string }[];
+  esPreventa?: boolean;
+  fechaEstimadaEntrega?: Date | string | null;
 }
 
-export interface PropuestaItemEntity {
-  id: string;
-  propuestaId: string;
+// Para usar en el catálogo de búsqueda (alias más limpio)
+export type PropiedadSimple = PropiedadBase;
+
+// ==========================================
+// 3. FORMULARIO DE EDICIÓN / ESTADO
+// ==========================================
+export interface ItemForm {
   propiedadId: number;
   esPrioritaria: boolean;
+  orden: number;
+  nombre: string;
   notaLogistica?: string | null;
+  notaEspecial?: string | null;
   tiempoEstimadoString?: string | null;
-  financiacion?: string | null;
-  nombre?: string | null;
-  parqueIndustrialId?: number | null;
-  parqueIndustrial?: ParqueIndustrialEntity | null;
-  costoTierraCustom?: number | null;
-  costoObraM2?: number | null;
-  supNaveProyectada?: number | null;
-  alquilerM2Estimado?: number | null;
+
+  // Parámetros de Inversión y Obra
+  costoTierraCustom: number;
+  costoObraM2: number;
+  supNaveProyectada: number;
+  alquilerM2Estimado: number;
+  fosAplicado: number;
+
+  // Esquema de Financiación / Compra
+  esFinanciado: boolean;
+  porcentajeAnticipo: number;
+  cantidadCuotas: number;
+  mesesObra: number;
   anticipoCash?: number | null;
   cuotasTexto?: string | null;
-  fosAplicado?: number | null;
-  orden: number;
-  propiedad: PropiedadEntity;
-  esFinanciado?: boolean | null;
-  porcentajeAnticipo?: number | null;
-  cantidadCuotas?: number | null;
-  mesesObra?: number | null;
   ofertaContadoUSD?: number | null;
-  notaEspecial: string | null;
+
+  // Atributos de Preventa
+  esPreventa?: boolean;
+  mesesEntregaLote?: number | null;
+}
+
+// ==========================================
+// 4. ENTIDAD COMPLETA DE PROPUESTA (Prisma + Relaciones)
+// ==========================================
+export interface PropuestaItemEntity extends ItemForm {
+  id: string;
+  propuestaId: string;
+  propiedad: PropiedadBase;
+  parqueIndustrial?: ParqueIndustrialEntity | null;
 }
 
 export interface PropuestaComercialEntity {
@@ -93,11 +128,14 @@ export interface PropuestaComercialEntity {
   puntoInteresLat?: number | null;
   puntoInteresLng?: number | null;
   payloadJson?: PropuestaPayload | null;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date | string;
+  updatedAt: Date | string;
   items: PropuestaItemEntity[];
 }
 
+// ==========================================
+// 5. MÉTIRICAS CALCULADAS (Estrategias de Inversión)
+// ==========================================
 export interface MetricaInversionItem {
   id: string;
   nombre: string;
@@ -128,6 +166,8 @@ export interface MetricaInversionItem {
   costoNetoFinalActivoUSD: number;
   ahorroTotalRentaUSD: number;
   ofertaContadoUSD?: number;
+  esPreventa: boolean;
+  mesesEntregaLote: number;
 }
 
 export interface MetricasInversionResult {
@@ -138,41 +178,3 @@ export interface MetricasInversionResult {
   comparativa: MetricaInversionItem[];
   maxRoi: number;
 }
-
-export interface PropiedadSimple {
-  id: number;
-  codigo: string;
-  titulo: string;
-  precio: number | string;
-  moneda: string;
-  financiacion?: string | null;
-  superficieTotal?: number | string | null;
-  superficieCubierta?: number | string | null;
-  zona?: { id: number; nombre: string };
-  parqueIndustrialId: number | null;
-  parqueIndustrial?: { id: number; nombre: string; direccionAcceso?: string | null; conectividad?: string | null } | null;
-  descripcion?: string | null;
-}
-
-export interface ItemForm {
-  propiedadId: number;
-  esPrioritaria: boolean;
-  notaLogistica: string;
-  notaEspecial: string | null;
-  tiempoEstimadoString: string;
-  nombre: string;
-  costoTierraCustom: number;
-  costoObraM2: number;
-  supNaveProyectada: number;
-  alquilerM2Estimado: number;
-  anticipoCash: number | null;
-  cuotasTexto: string;
-  fosAplicado: number;
-  orden: number;
-  esFinanciado?: boolean;
-  porcentajeAnticipo?: number;
-  cantidadCuotas?: number;
-  mesesObra?: number;
-  ofertaContadoUSD?: number;
-}
-

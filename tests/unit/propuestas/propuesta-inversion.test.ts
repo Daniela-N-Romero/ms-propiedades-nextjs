@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { PropuestasService } from '@/backend/services/propuesta.service';
+import { PropuestasService } from '@/features/propuestas/services/propuesta.service';
 import { prisma } from '@/backend/db';
-import { sanearItemsPropuesta, sanearPropuestaComercial } from '@/lib/sanitizers';
+import { sanearItemsPropuesta, sanearPropuestaComercial } from '@/features/propuestas/utils/sanitizer';
 import { InversionStrategy } from '@/features/propuestas/strategies/inversion-strategy';
 
 // ============================================================================

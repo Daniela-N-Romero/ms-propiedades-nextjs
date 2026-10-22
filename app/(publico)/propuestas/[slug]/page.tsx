@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { PropuestasService } from "@/backend/services/propuesta.service";
+import { PropuestasService } from "@/features/propuestas/services/propuesta.service";
 import PropuestaAdminTracker from "@/features/propuestas/components/propuesta-admin-tracker";
 import { PropuestaFactory } from "@/features/propuestas/strategies/propuesta-factory";
 
@@ -11,7 +11,7 @@ interface Props {
 export default async function PropuestaDinamicaPage({ params }: Props) {
   const { slug } = await params;
 
-  // 🔑 Consulta desacoplada a través del servicio
+  // Consulta desacoplada a través del servicio
   const propuesta = await PropuestasService.obtenerPorSlug(slug);
 
   if (!propuesta) notFound();

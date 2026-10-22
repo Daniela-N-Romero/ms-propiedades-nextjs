@@ -1,5 +1,5 @@
 import { prisma } from '@/backend/db';
-import { sanearPropuestaComercial } from '@/lib/sanitizers';
+import { sanearPropuestaComercial } from '../utils/sanitizer';
 import { PropuestaComercialEntity } from '@/features/propuestas/types/propuesta.types';
 
 export class PropuestasService {
@@ -12,7 +12,11 @@ export class PropuestasService {
             parqueIndustrial: true,
             propiedad: {
               include: {
-                imagenes: true,
+                // TRAE SOLO LA PRIMERA IMAGEN (PORTADA)
+                imagenes: {
+                  take: 1,
+                  orderBy: { orden: 'asc' },
+                },
                 zona: true,
                 parqueIndustrial: true,
               },
@@ -36,7 +40,11 @@ export class PropuestasService {
             parqueIndustrial: true,
             propiedad: {
               include: {
-                imagenes: true,
+                // TRAE SOLO LA PRIMERA IMAGEN (PORTADA)
+                imagenes: {
+                  take: 1,
+                  orderBy: { orden: 'asc' },
+                },
                 zona: true,
                 parqueIndustrial: true,
               },

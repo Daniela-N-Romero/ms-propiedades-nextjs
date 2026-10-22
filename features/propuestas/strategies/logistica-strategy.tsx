@@ -1,9 +1,9 @@
-import React from 'react';
 import PropuestaLogisticaView from '../views/propuesta-logistica-view';
 import { PropuestaStrategy } from './propuesta-strategy.interface';
+import { TipoPropuestaEnum } from '@/prisma/generated/client';
 
 export class LogisticaStrategy implements PropuestaStrategy {
-  type = 'LOGISTICA_RUTAS' as const;
+  type = TipoPropuestaEnum.LOGISTICA_RUTAS;
 
   calcularMetricas(items: any[]) {
     return items.map((item) => {
