@@ -39,6 +39,25 @@ export function usePropuestaFormState(initialData?: any, propuestaId?: string, d
     costoObraMercado
   );
 
+  // Helper para parsear de forma segura
+  const parseSeguro = (val: any): number => {
+  if (val === null || val === undefined) return 0;
+  const cleanStr = String(val).replace(/[^0-9.]/g, '');
+  const num = Number(cleanStr);
+  return isNaN(num) ? 0 : num;
+};
+
+// Helper para extraer la superficie
+  const extraerSuperficieLote = (p: any): number => {
+  let sup = parseSeguro(p.superficieTotal);
+  if (sup === 0) sup = parseSeguro(p.superficieCubierta);
+  if (sup === 0 && p.titulo) {
+    const match = p.titulo.match(/(\d+)\s*m2/i);
+    if (match && match[1]) sup = Number(match[1]);
+  }
+  return sup;
+};
+  
   return {
     router,
     loading,
@@ -67,5 +86,7 @@ export function usePropuestaFormState(initialData?: any, propuestaId?: string, d
     setCostoObraPreferencial,
     tieneTarifaPreferencial,
     setTieneTarifaPreferencial,
+    parseSeguro,
+    extraerSuperficieLote,
   };
 }
