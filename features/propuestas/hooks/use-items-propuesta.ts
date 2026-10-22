@@ -16,7 +16,7 @@ export function useItemsPropuesta(
   // 1. Inicialización de los ítems seleccionados
   const [itemsSeleccionados, setItemsSeleccionados] = useState<ItemForm[]>(
     initialItems?.map((i: any, idx: number) => ({
-      ...i, // Pasa automáticamente todos los campos (incluyendo esPreventa, mesesEntrega, etc.)
+      ...i, // Pasa automáticamente todos los campos (incluyendo esPreventa, mesesEntregaLote, etc.)
       propiedadId: i.propiedadId,
       esPrioritaria: i.esPrioritaria || idx === 0,
       nombre:
@@ -33,6 +33,9 @@ export function useItemsPropuesta(
       porcentajeAnticipo: i.porcentajeAnticipo ?? 30,
       cantidadCuotas: i.cantidadCuotas ?? 24,
       mesesObra: i.mesesObra ?? 8,
+      esPreventa: i.esPreventa ?? i.propiedad?.esPreventa ?? false,
+      fechaEstimadaEntrega:
+        i.fechaEstimadaEntrega ?? i.propiedad?.fechaEstimadaEntrega ?? null,
     })) || []
   );
 
@@ -100,6 +103,7 @@ export function useItemsPropuesta(
         ofertaContadoUSD: undefined,
         notaEspecial: null,
         esPreventa: prop.esPreventa ?? false,
+        fechaEstimadaEntrega: prop.fechaEstimadaEntrega ?? null,
       };
       setItemsSeleccionados([...itemsSeleccionados, nuevoItem]);
     }
