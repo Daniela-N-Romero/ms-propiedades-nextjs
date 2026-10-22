@@ -19,6 +19,9 @@ export function usePropertyForm(initialData?: PropertyFullData | null) {
   const [actionType, setActionType] = useState<'draft' | 'publish' | null>(null);
 
   const rawCaracteristicas = (initialData?.caracteristicas as Record<string, any>) || {};
+  const fechaEntregaFormateada = initialData?.fechaEstimadaEntrega
+    ? new Date(initialData.fechaEstimadaEntrega).toISOString().split('T')[0]
+    : "";
 
   const form = useForm<PropertyFormValues>({
     resolver: zodResolver(basePublishPropertySchema) as any,
@@ -31,6 +34,8 @@ export function usePropertyForm(initialData?: PropertyFullData | null) {
           precio: initialData.precio,
           moneda: initialData.moneda,
           financiacion: initialData.financiacion,
+          esPreventa: Boolean(initialData?.esPreventa ?? false),
+          fechaEstimadaEntrega: fechaEntregaFormateada,
           descripcion: initialData.descripcion || '',
           zonaId: initialData.zonaId,
           direccionPersonalizada: initialData.direccionPersonalizada || '',
@@ -70,6 +75,8 @@ export function usePropertyForm(initialData?: PropertyFullData | null) {
           moneda: '' as any,
           financiacion: '',
           descripcion: '',
+          esPreventa: false,
+          fechaEstimadaEntrega: '',
           zonaId: 0,
           direccionPersonalizada: '',
           latitud: -34.78,

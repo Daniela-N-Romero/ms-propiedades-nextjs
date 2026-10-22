@@ -14,7 +14,7 @@ Representan las entidades crudas deserializadas desde Prisma.
 ### 2. Formulario y Estado Local (`ItemForm`)
 Representa la estructura plana utilizada por los formularios de edición y hooks (`usePropuestaFormState`).
 - Contiene los parámetros editables por el usuario (costo de obra, superficie proyectada, porcentaje de anticipo, notas de logística).
-- Soporta atributos de preventa (`esPreventa`, `mesesEntregaLote`).
+- Soporta atributos de preventa (`esPreventa`, `mesesEntrega`).
 
 ### 3. Entidad de Propuesta (`PropuestaItemEntity` y `PropuestaComercialEntity`)
 - `PropuestaItemEntity`: Extiende de `ItemForm` añadiendo los identificadores (`id`, `propuestaId`) y el objeto relacional `propiedad: PropiedadBase`.

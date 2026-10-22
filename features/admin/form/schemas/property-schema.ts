@@ -48,6 +48,8 @@ export const draftPropertySchema = z.object({
   moneda: z.string().optional(),
   financiacion: z.string().optional().nullable(),
   descripcion: z.string().optional(),
+  esPreventa: z.boolean().default(false),
+  fechaEstimadaEntrega: z.string().optional().nullable(),
   direccionPersonalizada: z.string().optional(),
   latitud: coerceOptionalNumber(),
   longitud: coerceOptionalNumber(),
@@ -89,7 +91,8 @@ export const basePublishPropertySchema = z.object({
   }),
   financiacion: z.string().optional().nullable(),
   descripcion: z.string().min(10, 'La descripción debe tener al menos 10 caracteres'),
-
+  esPreventa: z.boolean().default(false),
+  fechaEstimadaEntrega: z.string().optional().nullable(),
   zonaId: coerceNumber('Debe seleccionar una localidad/zona').refine((val) => val >= 1, 'Debe seleccionar una localidad/zona'),
   parqueIndustrialId: z.coerce.number().optional().nullable(),
   direccionPersonalizada: z.string().optional(),
@@ -128,28 +131,3 @@ export const basePublishPropertySchema = z.object({
 
 // Inferimos el tipo ANTES de aplicar .superRefine() para evitar la referencia circular
 export type PropertyFormValues = z.infer<typeof basePublishPropertySchema>;
-
-// Refinamos el esquema y lo exportamos
-// export const publishPropertySchema = basePublishPropertySchema.superRefine((data, ctx) => {
-
-//   const colegaIdNum = Number(data.colegaId);
-//   const propietarioIdNum = Number(data.propietarioId);
-
-//   // Si es De Colega y no seleccionó un ID válido (> 0)
-//   if (data.origen === 'fromColleague' && (!colegaIdNum || isNaN(colegaIdNum) || colegaIdNum <= 0)) {
-//     ctx.addIssue({
-//       code: 'custom',
-//       path: ['colegaId'],
-//       message: 'Debe seleccionar la Inmobiliaria Colega de origen.',
-//     });
-//   }
-
-//   // Si es Cartera Propia y no seleccionó Propietario (> 0)
-//   if (data.origen === 'own' && (!propietarioIdNum || isNaN(propietarioIdNum) || propietarioIdNum <= 0)) {
-//     ctx.addIssue({
-//       code: 'custom',
-//       path: ['propietarioId'],
-//       message: 'Debe seleccionar el Propietario asignado.',
-//     });
-//   }
-// });

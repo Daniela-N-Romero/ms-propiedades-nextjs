@@ -16,7 +16,7 @@ export function useItemsPropuesta(
   // 1. Inicialización de los ítems seleccionados
   const [itemsSeleccionados, setItemsSeleccionados] = useState<ItemForm[]>(
     initialItems?.map((i: any, idx: number) => ({
-      ...i, // Pasa automáticamente todos los campos (incluyendo esPreventa, mesesEntregaLote, etc.)
+      ...i, // Pasa automáticamente todos los campos (incluyendo esPreventa, mesesEntrega, etc.)
       propiedadId: i.propiedadId,
       esPrioritaria: i.esPrioritaria || idx === 0,
       nombre:

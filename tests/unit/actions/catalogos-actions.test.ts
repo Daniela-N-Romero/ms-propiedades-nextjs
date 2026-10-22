@@ -43,9 +43,8 @@ describe('Pruebas de Server Actions de Catálogos de Creación en Modals de Form
 
   // 3. ZONA: Validación de Nombre
   it('saveZonaAction debe rechazar si el nombre de ubicación está vacío', async () => {
-    const res = await saveZonaAction({
-      nombre: '  ',
-    });
+    // Intentamos guardar una zona sin nombre
+    const res = await saveZonaAction({ nombre: '   ', padreId: null });
 
     expect(res.success).toBe(false);
     expect(res.error).toBeDefined();

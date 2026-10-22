@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
 const zonaSchema = z.object({
-  nombre: z.string().min(1, 'El nombre de la ubicación es obligatorio'),
+  nombre: z.string().trim().min(1, 'El nombre de la ubicación es obligatorio'),
   padreId: z.number().optional().nullable(),
 });
 

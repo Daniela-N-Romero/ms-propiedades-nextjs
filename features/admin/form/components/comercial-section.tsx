@@ -16,6 +16,7 @@ interface ComercialSectionProps {
 	subtiposDisponibles: TipoInmueble[];
 	selectedMercadoId: number;
 	setSelectedMercadoId: (id: number) => void;
+
 	agentes: Agente[];
 	propietarios: Propietario[];
 	colegas: Colega[];
@@ -44,6 +45,11 @@ export function ComercialSection({
 	const origen = useWatch({
 		control,
 		name: "origen",
+	});
+	
+	const esPreventa = useWatch({
+		control,
+		name: "esPreventa",
 	});
 
 	const [listaPropietarios, setListaPropietarios] = useState(propietarios);
@@ -243,6 +249,52 @@ export function ComercialSection({
 						Si la propiedad cuenta con plan de pago, completá este campo para
 						mostrar un banner promocional destacado.
 					</p>
+				</div>
+				
+			    {/* 🔑 NUEVA SECCIÓN DE PREVENTA Y FECHA ESTIMADA DE ENTREGA */}
+				<div className="col-span-full bg-amber-50/70 border border-amber-200/90 rounded-2xl p-4 space-y-3 transition-all">
+					<label className="flex items-center gap-3 cursor-pointer select-none">
+						<input
+							type="checkbox"
+							{...register("esPreventa")}
+							className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
+						/>
+						<span className="text-xs font-extrabold text-amber-950 uppercase tracking-wide">
+							¿Es una Propiedad o Loteo en Preventa?
+						</span>
+					</label>
+
+					{esPreventa && (
+						<div className="pt-3 border-t border-amber-200/60 grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+							<div>
+								<label className="block text-xs font-bold text-amber-900 mb-1">
+									📅 Fecha Estimada de Entrega
+								</label>
+								<Controller
+									name="fechaEstimadaEntrega"
+									control={control}
+									render={({ field: { value, onChange, onBlur } }) => (
+										<input
+											type="date"
+											value={
+												value
+													? typeof value === "string"
+														? value.split("T")[0]
+														: new Date(value).toISOString().split("T")[0]
+													: ""
+											}
+											onChange={(e) => onChange(e.target.value || null)}
+											onBlur={onBlur}
+											className="w-full bg-white border border-amber-300 rounded-xl p-2.5 text-xs font-bold text-amber-950 outline-none focus:ring-2 focus:ring-amber-500"
+										/>
+									)}
+								/>
+							</div>
+							<p className="text-[11px] text-amber-800/80 leading-relaxed font-medium">
+								💡 <strong>Información Comercial:</strong> Al marcar preventa y asignar fecha, el sistema pre-seleccionará automáticamente las reglas de vacancia y plazos de entrega cuando esta propiedad se sume a una propuesta de inversión.
+							</p>
+						</div>
+					)}
 				</div>
 
 				<div>

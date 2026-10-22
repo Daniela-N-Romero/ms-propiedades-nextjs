@@ -28,7 +28,7 @@ type = TipoPropuestaEnum.INVERSION_DESARROLLO;
 
     const comparativa: MetricaInversionItem[] = items.map((item) => {
       const p = item.propiedad;
-
+      
       //Prioridad absoluta al texto neutro 'nombre' editado en el form
       const nombreOpcion =
         item.nombre?.trim() ||
@@ -73,6 +73,27 @@ type = TipoPropuestaEnum.INVERSION_DESARROLLO;
       const cantidadCuotas = Number(item.cantidadCuotas ?? 0);
       const mesesObra = Number(item.mesesObra ?? 0);
 
+      // Si es preventa calculamos meses que faltan para la entrega
+      const esPreventa = Boolean(item.esPreventa ?? item.propiedad?.esPreventa ?? false);
+      const fechaEntregaRaw = item.fechaEstimadaEntrega || item.propiedad?.fechaEstimadaEntrega || null;
+
+      let mesesEntrega = 0;
+
+      if (esPreventa && fechaEntregaRaw) {
+        const hoy = new Date();
+        const fechaEntrega = new Date(fechaEntregaRaw);
+        
+        const diffTiempoMs = fechaEntrega.getTime() - hoy.getTime();
+        const diffDias = diffTiempoMs / (1000 * 3600 * 24);
+        
+        if (diffDias > 0) {
+          // Tomamos un mes promedio de 30 días y redondeamos siempre hacia arriba (12.1 => 13)
+          mesesEntrega = Math.ceil(diffDias / 30);
+        } else {
+          mesesEntrega = 0; // Si la fecha ya pasó o es hoy
+        }
+      }
+
       // Si es financiado, calcula el anticipo; si es al contado, el desembolso en tierra es el 100%
      const anticipoLoteUSD = esFinanciado ? (costoTierra * porcentajeAnticipo) / 100 : costoTierra;
       const desembolsoInicialRequeridoUSD = anticipoLoteUSD + costoObraTotal;
@@ -116,8 +137,9 @@ type = TipoPropuestaEnum.INVERSION_DESARROLLO;
         ahorroTotalRentaUSD: Number(ahorroTotalRentaUSD.toFixed(0)),
         ofertaContadoUSD: item.ofertaContadoUSD ? Number(item.ofertaContadoUSD) : undefined,
         notaEspecial: item.notaEspecial ?? null,
-        esPreventa: item.esPreventa,
-        mesesEntregaLote: Number(item.mesesEntregaLote)
+        esPreventa,
+        fechaEstimadaEntrega: fechaEntregaRaw ? String(fechaEntregaRaw) : null,
+        mesesEntrega,
       };
     });
 

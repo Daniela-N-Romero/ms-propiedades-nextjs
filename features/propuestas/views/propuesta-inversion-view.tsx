@@ -71,7 +71,7 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 
 	const supNaveTop = maxRoiOption?.supNave || 0;
 	const ahorroNaveDestacada = supNaveTop * diferenciaTarifaM2;
-
+	
 	return (
 		<div className="space-y-6 sm:space-y-8 animate-fade-in px-1 sm:px-0">
 			{/* 1. TARJETAS DE MÉTRICAS GENERALES */}
@@ -168,8 +168,7 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 							100,
 						);
 						const esGanador = item.id === maxRoiOption?.id;
-						const esSeleccionado = item.id === opcionSeleccionadaId;
-						console.log(item);
+						const esSeleccionado = item.id === opcionSeleccionadaId;						
 
 						return (
 							<div
@@ -250,7 +249,14 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 						const imagenUrl =
 							propOriginal?.imagenes?.[0]?.url || "/images/placeholder.png";
 						const esSeleccionado = item.id === opcionSeleccionadaId;
-						console.log(item);
+						
+						// Formateo dinámico del texto de entrega de preventa
+						const textoEntrega = item.mesesEntrega > 0
+							? `Entrega estimada en ${item.mesesEntrega} ${item.mesesEntrega === 1 ? 'mes' : 'meses'}`
+							: item.fechaEstimadaEntrega
+								? `Entrega en ${new Date(item.fechaEstimadaEntrega).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })}`
+								: "Entrega Inmediata / En desarrollo";
+
 						return (
 							<div
 								key={item.id}
@@ -286,15 +292,15 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 													{item.ubicacionDescripcion}
 												</p>
 											)}
-											{/* LEYENDA CONDICIONAL SEGÚN MODALIDAD DE PAGO */}
+											{/* LEYENDA CONDICIONAL SEGÚN MODALIDAD DE PREVENTA / FINANCIACIÓN / CONTADO */}
 											{item.esPreventa ? (
-												<div className="bg-slate-950 border border-amber-500/40 rounded-2xl p-3 sm:p-4 space-y-3">
+												<div className="bg-slate-950 border border-amber-500/40 rounded-2xl p-3 sm:p-4 space-y-3 mt-2">
 													<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-2 gap-2">
 														<h5 className="font-extrabold text-amber-400 text-xs flex items-center gap-1.5">
 															🚀 Oportunidad en Preventa
 														</h5>
 														<span className="bg-amber-500/10 border border-amber-500/40 text-amber-300 text-[8px] sm:text-[9px] font-black px-2.5 py-1 rounded-full uppercase">
-															Entrega estimada en {item.mesesEntregaLote} meses
+															{textoEntrega}
 														</span>
 													</div>
 
@@ -305,26 +311,24 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 															</span>
 															<span className="text-xs sm:text-sm font-black text-white block">
 																USD{" "}
-																{item.desembolsoInicialRequeridoUSD?.toLocaleString(
+																{(item.desembolsoInicialRequeridoUSD ?? item.costoTierra).toLocaleString(
 																	"es-AR",
 																)}
 															</span>
 															<p className="text-[9px] sm:text-[10px] text-slate-400">
-																Esquema de anticipo y financiación en etapas de
-																pozo/preventa.
+																Esquema de anticipo y financiación en etapas de pozo/preventa.
 															</p>
 														</div>
 
 														<div className="bg-slate-900 border border-amber-500/30 p-2.5 sm:p-3 rounded-xl space-y-0.5">
 															<span className="text-amber-400 text-[9px] sm:text-[10px] font-bold block uppercase">
-																Ventaja Financiera en Preventa
+																Ventaja Financiera
 															</span>
 															<span className="text-xs sm:text-sm font-black text-amber-300 block">
-																Financiación en cuotas
+																Apalancamiento en pozo
 															</span>
 															<p className="text-[9px] sm:text-[10px] text-slate-300">
-																Mayor flexibilidad de pago inicial mientras
-																avanza la infraestructura del parque.
+																Mayor flexibilidad de pago mientras se consolida el loteo.
 															</p>
 														</div>
 
@@ -340,8 +344,7 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 																/ mes
 															</span>
 															<p className="text-[9px] sm:text-[10px] text-emerald-400 font-semibold">
-																Proyección de renta una vez finalizada la nave
-																industrial.
+																Proyección de renta al finalizar la nave industrial.
 															</p>
 														</div>
 													</div>
@@ -538,7 +541,7 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 												</div>
 											);
 										})()
-									) : (
+									) : !item.esPreventa && (
 										<div className="bg-slate-950 border border-slate-800 rounded-2xl p-3 sm:p-4 space-y-3">
 											<div className="flex justify-between items-center border-b border-slate-800 pb-2">
 												<h5 className="font-extrabold text-blue-400 text-xs flex items-center gap-1.5">

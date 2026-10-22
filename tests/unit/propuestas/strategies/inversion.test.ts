@@ -29,12 +29,14 @@ describe('InversionStrategy - Cálculos Financieros', () => {
   });
 
   it('debe procesar los campos de Preventa correctamente', () => {
+    const fechaFutura = new Date();
+    fechaFutura.setDate(fechaFutura.getDate() + 375);
     const mockItems: any[] = [
       {
         id: 'item-2',
         propiedadId: 2,
         esPreventa: true,
-        mesesEntregaLote: 18,
+        fechaEstimadaEntrega: fechaFutura.toISOString(),
         propiedad: { id: 2, precio: 50000 },
       },
     ];
@@ -42,6 +44,31 @@ describe('InversionStrategy - Cálculos Financieros', () => {
     const resultado = strategy.calcularMetricas(mockItems, null);
 
     expect(resultado.comparativa[0].esPreventa).toBe(true);
-    expect(resultado.comparativa[0].mesesEntregaLote).toBe(18);
+    expect(resultado.comparativa[0].mesesEntrega).toBe(13);
+  });
+
+  it('debe calcular y redondear hacia arriba los meses de entrega de preventa', () => {
+    console.log('  🔍 Evaluando: Redondeo hacia arriba (Math.ceil) para fechas de entrega en preventa...');
+
+    // Simulamos una fecha a ~375 días de distancia (~12.3 meses -> debe redondear a 13)
+    const fechaFutura = new Date();
+    fechaFutura.setDate(fechaFutura.getDate() + 375);
+
+    const mockItems: any[] = [
+      {
+        id: 'item-preventa',
+        propiedadId: 100,
+        esPreventa: true,
+        fechaEstimadaEntrega: fechaFutura.toISOString(),
+        propiedad: { id: 100, precio: 80000, superficieTotal: 1000 },
+      },
+    ];
+
+    const resultado = strategy.calcularMetricas(mockItems, null);
+
+    expect(resultado.comparativa[0].esPreventa).toBe(true);
+    expect(resultado.comparativa[0].mesesEntrega).toBe(13);
+
+    console.log('  ✅ Éxito: El plazo de entrega en meses se redondeó hacia arriba correctamente.');
   });
 });

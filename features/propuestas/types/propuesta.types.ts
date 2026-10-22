@@ -105,7 +105,8 @@ export interface ItemForm {
 
   // Atributos de Preventa
   esPreventa?: boolean;
-  mesesEntregaLote?: number | null;
+  fechaEstimadaEntrega?: Date | string | null;
+  mesesEntrega?: number;
 }
 
 // ==========================================
@@ -167,7 +168,8 @@ export interface MetricaInversionItem {
   ahorroTotalRentaUSD: number;
   ofertaContadoUSD?: number;
   esPreventa: boolean;
-  mesesEntregaLote: number;
+  fechaEstimadaEntrega: string | null; 
+  mesesEntrega: number;
 }
 
 export interface MetricasInversionResult {

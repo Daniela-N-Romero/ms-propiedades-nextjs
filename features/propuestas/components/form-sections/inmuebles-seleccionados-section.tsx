@@ -324,14 +324,14 @@ export function InmueblesSeleccionadosSection({
 												<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
 													<div>
 														<label className="block text-[10px] font-bold text-slate-600 mb-1 uppercase">
-															Meses Estimados de Entrega del Loteo
+															Meses Estimados de Entrega (Posesión)
 														</label>
 														<input
 															type="number"
-															value={item.mesesEntregaLote || 12}
+															value={item.mesesEntrega || 12}
 															onChange={(e) =>
 																updateItem(prop.id, {
-																	mesesEntregaLote: Number(e.target.value),
+																	mesesEntrega: Number(e.target.value),
 																})
 															}
 															className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs font-bold outline-none"

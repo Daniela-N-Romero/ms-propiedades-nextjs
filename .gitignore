@@ -60,3 +60,9 @@ public/images/fotos_pitec/
 public/images/munro/
 
 backup_supabase.sql
+
+# Base de datos local SQLite y archivos temporales
+*.db
+*.db-journal
+dev.db
+.env

@@ -250,6 +250,9 @@ function construirPropertyData(values: PropertyFormValues) {
     : Number(values.superficieCubierta || 0);
 
   const parqueIndustrialId = values.parqueIndustrialId ? Number(values.parqueIndustrialId) : null;
+  const fechaEntrega = values.fechaEstimadaEntrega 
+    ? new Date(values.fechaEstimadaEntrega) 
+    : null;
 
   return {
     titulo: values.titulo,
@@ -258,6 +261,8 @@ function construirPropertyData(values: PropertyFormValues) {
     precio: precioPuro,
     moneda: (values.moneda as any) || 'USD',
     financiacion: values.financiacion || null,
+    esPreventa: Boolean(values.esPreventa),
+    fechaEstimadaEntrega: fechaEntrega,
     descripcion: values.descripcion || '',
     direccionPersonalizada: values.direccionPersonalizada || null,
     parqueIndustrialId: parqueIndustrialId,
