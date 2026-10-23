@@ -1,4 +1,5 @@
 'use client';
+//features\navigation\components\header\header-view.tsx
 import Link from 'next/link';
 import Image from 'next/image'
 import { styles } from './header.styles';
@@ -9,13 +10,19 @@ interface HeaderViewProps {
     isMenuOpen: boolean;
     toggleMenu: () => void;
     isAdmin: boolean;
+    isSticky?: boolean;
 }
 
-export default function HeaderView({ isMenuOpen, toggleMenu, isAdmin }: HeaderViewProps) {
+export default function HeaderView({ isMenuOpen, toggleMenu, isAdmin, isSticky = true }: HeaderViewProps) {
     const links = useContactLinks();
 
+    // Calculamos la posición exacta combinando ambas banderas
+    const positionClasses = isSticky
+        ? `sticky ${isAdmin ? "top-10" : "top-0"} z-50 backdrop-blur-md`
+        : "relative z-20";
+
     return (
-        <header className={`${styles.header} ${isAdmin? 'top-10' : 'top-0'}`}>
+        <header className={`w-full bg-white border-b border-slate-100 shadow-md ${positionClasses}`} >
             <div className={styles.container}>
                 {/* LOGO */}
                 <Link href="/" className={styles.logo}>
