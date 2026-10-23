@@ -66,7 +66,7 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 
 	const supNaveTop = maxRoiOption?.supNave || 0;
 	const ahorroNaveDestacada = supNaveTop * diferenciaTarifaM2;
-	
+
 	return (
 		<div className="space-y-6 sm:space-y-8 animate-fade-in px-1 sm:px-0">
 			{/* 1. TARJETAS DE MÉTRICAS GENERALES */}
@@ -163,7 +163,7 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 							100,
 						);
 						const esGanador = item.id === maxRoiOption?.id;
-						const esSeleccionado = item.id === opcionSeleccionadaId;						
+						const esSeleccionado = item.id === opcionSeleccionadaId;
 
 						return (
 							<div
@@ -248,12 +248,13 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 						const imagenUrl =
 							propOriginal?.imagenes?.[0]?.url || "/images/placeholder.png";
 						const esSeleccionado = item.id === opcionSeleccionadaId;
-						
-						const textoEntrega = item.mesesEntrega > 0
-							? `Entrega estimada en ${item.mesesEntrega} ${item.mesesEntrega === 1 ? 'mes' : 'meses'}`
-							: item.fechaEstimadaEntrega
-								? `Entrega en ${new Date(item.fechaEstimadaEntrega).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })}`
-								: "Entrega Inmediata / En desarrollo";
+
+						const textoEntrega =
+							item.mesesEntrega > 0
+								? `Entrega estimada en ${item.mesesEntrega} ${item.mesesEntrega === 1 ? "mes" : "meses"}`
+								: item.fechaEstimadaEntrega
+									? `Entrega en ${new Date(item.fechaEstimadaEntrega).toLocaleDateString("es-AR", { month: "long", year: "numeric" })}`
+									: "Entrega Inmediata / En desarrollo";
 
 						// Cálculos de cobertura y cuotas
 						const mesesEntrega = item.mesesEntrega || 0;
@@ -302,7 +303,7 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 											<h4 className="text-base sm:text-lg font-bold text-white">
 												{item.nombre}
 											</h4>
-											
+
 											{/* RESTABLECIDO: DESCRIPCIÓN DE LA PROPIEDAD */}
 											{item.ubicacionDescripcion ? (
 												<p className="text-xs text-slate-300 font-medium mt-0.5">
@@ -377,85 +378,121 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 
 									{/* BLOQUE INFERIOR DE ESTRATEGIA (UBICACIÓN UNIFICADA) */}
 									{item.esPreventa ? (
-										<div className="bg-slate-950 border border-amber-500/40 rounded-2xl p-3 sm:p-4 space-y-3">
-											<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-2 gap-2">
-												<h5 className="font-extrabold text-amber-400 text-xs flex items-center gap-1.5">
-													🚀 Oportunidad en Preventa
-												</h5>
-												<span className="bg-amber-500/10 border border-amber-500/40 text-amber-300 text-[8px] sm:text-[9px] font-black px-2.5 py-1 rounded-full uppercase">
-													{textoEntrega}
-												</span>
-											</div>
+										(() => {
+											const cantidadCuotas = item.cantidadCuotas || 0;
+											const cuotaMontoUSD =
+												item.cuotaMensualLoteUSD ||
+												(cantidadCuotas > 0
+													? Math.round(item.costoTierra / cantidadCuotas)
+													: 0);
+											const tieneAnticipo =
+												item.porcentajeAnticipo !== undefined &&
+												item.porcentajeAnticipo !== null &&
+												item.porcentajeAnticipo > 0;
 
-											<div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 sm:gap-3 text-xs">
-												{/* 1. Desembolso Inicial Requerido (Sin incluir obra) */}
-												<div className="bg-slate-900 border border-slate-800 p-2.5 sm:p-3 rounded-xl space-y-0.5">
-													<span className="text-slate-400 text-[9px] sm:text-[10px] font-bold block uppercase">
-														Desembolso Inicial Requerido
-													</span>
-													<span className="text-xs sm:text-sm font-black text-white block">
-														USD {anticipoSoloLoteUSD.toLocaleString("es-AR")}
-													</span>
-													<p className="text-[9px] sm:text-[10px] text-slate-400">
-														{item.porcentajeAnticipo > 0
-															? `Anticipo Lote (${item.porcentajeAnticipo}%) sin desembolso inicial de obra.`
-															: `Pago inicial del lote en etapa de pozo.`}
-													</p>
+											// 1. Cálculo dinámico de Desembolso Inicial (Corrige Box 24 Canning cuando anticipo es 0%)
+											let desembolsoInicialUSD = item.costoTierra;
+											let textoAnticipo =
+												"Pago inicial del lote en etapa de pozo.";
+
+											if (item.esFinanciado && cantidadCuotas > 0) {
+												if (tieneAnticipo) {
+													desembolsoInicialUSD = Math.round(
+														(item.costoTierra * item.porcentajeAnticipo) / 100,
+													);
+													textoAnticipo = `Anticipo Lote (${item.porcentajeAnticipo}%) sin desembolso inicial de obra.`;
+												} else {
+													desembolsoInicialUSD = cuotaMontoUSD;
+													textoAnticipo =
+														"Pago de 1er cuota (Sin anticipo).";
+												}
+											}
+
+											// 2. Cobertura de Renta
+											const mesesEntrega = item.mesesEntrega || 0;
+											const mesesObra = item.mesesObra || 0;
+											const inicioCobroMes = mesesEntrega + mesesObra + 1;
+											const aplicaApalancamientoRenta =
+												item.esFinanciado &&
+												cantidadCuotas > 0 &&
+												inicioCobroMes <= cantidadCuotas;
+
+											const porcentajeCubierto =
+												cuotaMontoUSD > 0
+													? Math.min(
+															Math.round(
+																(item.ingresoMensualTotal / cuotaMontoUSD) *
+																	100,
+															),
+															100,
+														)
+													: 0;
+
+											return (
+												<div className="bg-slate-950 border border-amber-500/40 rounded-2xl p-3 sm:p-4 space-y-3">
+													<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-2 gap-2">
+														<h5 className="font-extrabold text-amber-400 text-xs flex items-center gap-1.5">
+															🚀 Oportunidad en Preventa
+														</h5>
+														<span className="bg-amber-500/10 border border-amber-500/40 text-amber-300 text-[8px] sm:text-[9px] font-black px-2.5 py-1 rounded-full uppercase">
+															{textoEntrega}
+														</span>
+													</div>
+
+													<div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 sm:gap-3 text-xs">
+														{/* Caja 1: Desembolso Inicial */}
+														<div className="bg-slate-900 border border-slate-800 p-2.5 sm:p-3 rounded-xl space-y-0.5">
+															<span className="text-slate-400 text-[9px] sm:text-[10px] font-bold block uppercase">
+																Desembolso Inicial Requerido
+															</span>
+															<span className="text-xs sm:text-sm font-black text-white block">
+																USD{" "}
+																{desembolsoInicialUSD.toLocaleString("es-AR")}
+															</span>
+															<p className="text-[9px] sm:text-[10px] text-slate-400">
+																{textoAnticipo}
+															</p>
+														</div>
+
+														{/* Caja 2: Esquema de Financiación */}
+														<div className="bg-slate-900 border border-amber-500/30 p-2.5 sm:p-3 rounded-xl space-y-0.5">
+															<span className="text-amber-400 text-[9px] sm:text-[10px] font-bold block uppercase">
+																Esquema de Financiación
+															</span>
+															<span className="text-xs sm:text-sm font-black text-amber-300 block">
+																{cantidadCuotas > 0
+																	? `${cantidadCuotas} cuotas de USD ${cuotaMontoUSD.toLocaleString("es-AR")}`
+																	: "Pago 100% Contado / Etapas"}
+															</span>
+															<p className="text-[9px] sm:text-[10px] text-slate-300">
+																{tieneAnticipo
+																	? `Anticipo del ${item.porcentajeAnticipo}% + saldo en cuotas.`
+																	: "Financiación 100% en cuotas fijas/ajustables."}
+															</p>
+														</div>
+
+														{/* Caja 3: Alquiler Estimado Unificado */}
+														<div className="bg-slate-900 border border-slate-800 p-2.5 sm:p-3 rounded-xl space-y-0.5">
+															<span className="text-slate-400 text-[9px] sm:text-[10px] font-bold block uppercase">
+																Alquiler Estimado (Post-Obra)
+															</span>
+															<span className="text-xs sm:text-sm font-black text-emerald-400 block">
+																USD{" "}
+																{item.ingresoMensualTotal.toLocaleString(
+																	"es-AR",
+																)}{" "}
+																/ mes
+															</span>
+															<p className="text-[9px] sm:text-[10px] text-emerald-400 font-semibold">
+																{aplicaApalancamientoRenta
+																	? `💡 El alquiler absorbe el ${porcentajeCubierto}% de la cuota (Mes ${inicioCobroMes} al ${cantidadCuotas}).`
+																	: "Proyección de renta una vez entregado el lote y finalizada la nave."}
+															</p>
+														</div>
+													</div>
 												</div>
-
-												{/* 2. Estructura de Cuotas / Apalancamiento Renta */}
-												{aplicaApalancamientoRenta ? (
-													<div className="bg-slate-900 border border-amber-500/30 p-2.5 sm:p-3 rounded-xl space-y-0.5">
-														<span className="text-amber-400 text-[9px] sm:text-[10px] font-bold block uppercase">
-															Aporte Alquiler (Mes {inicioCobroMes} al {cantidadCuotas})
-														</span>
-														<span className="text-xs sm:text-sm font-black text-emerald-400 block">
-															+ USD {item.ingresoMensualTotal.toLocaleString("es-AR")}/mes
-														</span>
-														<p className="text-[9px] sm:text-[10px] text-slate-300">
-															Financiación en {cantidadCuotas} cuotas de USD {cuotaMontoUSD.toLocaleString("es-AR")}. El alquiler absorbe parte de las cuotas finales.
-														</p>
-													</div>
-												) : item.esFinanciado && cantidadCuotas > 0 ? (
-													<div className="bg-slate-900 border border-amber-500/30 p-2.5 sm:p-3 rounded-xl space-y-0.5">
-														<span className="text-amber-400 text-[9px] sm:text-[10px] font-bold block uppercase">
-															Esquema de Financiación
-														</span>
-														<span className="text-xs sm:text-sm font-black text-amber-300 block">
-															{cantidadCuotas} cuotas de USD {cuotaMontoUSD.toLocaleString("es-AR")}
-														</span>
-														<p className="text-[9px] sm:text-[10px] text-slate-300">
-															Plan de pagos financiado durante la etapa de consolidación del parque.
-														</p>
-													</div>
-												) : (
-													<div className="bg-slate-900 border border-amber-500/30 p-2.5 sm:p-3 rounded-xl space-y-0.5">
-														<span className="text-amber-400 text-[9px] sm:text-[10px] font-bold block uppercase">
-															Modalidad de Pago
-														</span>
-														<span className="text-xs sm:text-sm font-black text-amber-300 block">
-															Pago al Contado / Etapas
-														</span>
-														<p className="text-[9px] sm:text-[10px] text-slate-300">
-															Prioridad en asignación de lote dentro del desarrollo.
-														</p>
-													</div>
-												)}
-
-												{/* 3. Alquiler Estimado Post-Obra */}
-												<div className="bg-slate-900 border border-slate-800 p-2.5 sm:p-3 rounded-xl space-y-0.5">
-													<span className="text-slate-400 text-[9px] sm:text-[10px] font-bold block uppercase">
-														Alquiler Estimado (Post-Obra)
-													</span>
-													<span className="text-xs sm:text-sm font-black text-emerald-400 block">
-														USD {item.ingresoMensualTotal.toLocaleString("es-AR")} / mes
-													</span>
-													<p className="text-[9px] sm:text-[10px] text-emerald-400 font-semibold">
-														Proyección de renta una vez entregado el lote y finalizada la nave.
-													</p>
-												</div>
-											</div>
-										</div>
+											);
+										})()
 									) : item.esFinanciado ? (
 										<div className="bg-slate-950 border border-amber-500/30 rounded-2xl p-3 sm:p-4 space-y-3">
 											<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-2 gap-2">
@@ -463,7 +500,16 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 													🚀 Estrategia: "El lote se paga con el alquiler"
 												</h5>
 												<span className="bg-amber-500/10 border border-amber-500/40 text-amber-300 text-[8px] sm:text-[9px] font-black px-2.5 py-1 rounded-full uppercase self-start sm:self-auto">
-													💡 El Alquiler Paga el {Math.min(Math.round(((item.ingresoMensualTotal || 0) / (item.cuotaMensualLoteUSD || 1)) * 100), 100)}% de la Cuota
+													💡 El Alquiler Paga el{" "}
+													{Math.min(
+														Math.round(
+															((item.ingresoMensualTotal || 0) /
+																(item.cuotaMensualLoteUSD || 1)) *
+																100,
+														),
+														100,
+													)}
+													% de la Cuota
 												</span>
 											</div>
 
@@ -473,10 +519,14 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 														Desembolso Inicial Requerido
 													</span>
 													<span className="text-xs sm:text-sm font-black text-white block">
-														USD {item.desembolsoInicialRequeridoUSD?.toLocaleString("es-AR")}
+														USD{" "}
+														{item.desembolsoInicialRequeridoUSD?.toLocaleString(
+															"es-AR",
+														)}
 													</span>
 													<p className="text-[9px] sm:text-[10px] text-slate-400">
-														Anticipo Lote ({item.porcentajeAnticipo}%) + 100% Costo Obra
+														Anticipo Lote ({item.porcentajeAnticipo}%) + 100%
+														Costo Obra
 													</p>
 												</div>
 
@@ -485,10 +535,13 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 														Aporte Mensual por Alquiler
 													</span>
 													<span className="text-xs sm:text-sm font-black text-emerald-400 block">
-														+ USD {item.ingresoMensualTotal?.toLocaleString("es-AR")} / mes
+														+ USD{" "}
+														{item.ingresoMensualTotal?.toLocaleString("es-AR")}{" "}
+														/ mes
 													</span>
 													<p className="text-[9px] sm:text-[10px] text-slate-300">
-														Financiación en {cantidadCuotas} cuotas de USD {cuotaMontoUSD.toLocaleString("es-AR")}.
+														Financiación en {cantidadCuotas} cuotas de USD{" "}
+														{cuotaMontoUSD.toLocaleString("es-AR")}.
 													</p>
 												</div>
 
@@ -497,10 +550,14 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 														Costo Neto Final del Activo
 													</span>
 													<span className="text-xs sm:text-sm font-black text-white block">
-														USD {item.costoNetoFinalActivoUSD?.toLocaleString("es-AR")}
+														USD{" "}
+														{item.costoNetoFinalActivoUSD?.toLocaleString(
+															"es-AR",
+														)}
 													</span>
 													<p className="text-[9px] sm:text-[10px] text-emerald-400 font-semibold">
-														El alquiler subsidia USD {item.ahorroTotalRentaUSD?.toLocaleString("es-AR")}
+														El alquiler subsidia USD{" "}
+														{item.ahorroTotalRentaUSD?.toLocaleString("es-AR")}
 													</p>
 												</div>
 											</div>
@@ -522,7 +579,8 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 														Ventaja de Liquidez
 													</span>
 													<p className="text-slate-300 font-medium text-xs leading-snug">
-														Permite concretar el boleto con posesión inmediata, optimizando tiempos de obra.
+														Permite concretar el boleto con posesión inmediata,
+														optimizando tiempos de obra.
 													</p>
 												</div>
 
@@ -533,10 +591,12 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 														</span>
 														<div className="flex items-baseline gap-2">
 															<span className="text-sm sm:text-base font-black text-amber-300">
-																USD {item.ofertaContadoUSD.toLocaleString("es-AR")}
+																USD{" "}
+																{item.ofertaContadoUSD.toLocaleString("es-AR")}
 															</span>
 															<span className="text-[10px] sm:text-xs text-slate-400 font-normal">
-																(Precio Lista: USD {item.costoTierra.toLocaleString("es-AR")})
+																(Precio Lista: USD{" "}
+																{item.costoTierra.toLocaleString("es-AR")})
 															</span>
 														</div>
 													</div>
@@ -545,9 +605,9 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 														<span className="text-slate-400 text-[9px] sm:text-[10px] font-bold block uppercase">
 															Margen de Negociación
 														</span>
-														<span className="text-xs sm:text-sm font-bold text-white">
-															USD {item.costoTierra.toLocaleString("es-AR")}
-														</span>
+														<p className="text-slate-300 font-medium text-xs leading-snug">
+															¿Pagas al contado? Consúltanos para presentar tu oferta y obtener un precio más bajo.
+													    </p>
 													</div>
 												)}
 											</div>
@@ -561,7 +621,8 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 											<strong className="text-emerald-400">
 												USD {item.alquilerM2}/m²
 											</strong>{" "}
-											(~ USD {item.ingresoAnualTotal.toLocaleString("es-AR")}/año)
+											(~ USD {item.ingresoAnualTotal.toLocaleString("es-AR")}
+											/año)
 										</div>
 
 										{propOriginal?.slug && (
