@@ -5,6 +5,15 @@
 import { useState, useEffect } from 'react';
 import { ItemForm, PropiedadSimple } from '../types/propuesta.types';
 
+function calcularMesesDesdeFecha(fechaRaw: any): number {
+  if (!fechaRaw) return 0;
+  const hoy = new Date();
+  const entrega = new Date(fechaRaw);
+  const diffMs = entrega.getTime() - hoy.getTime();
+  const diffDias = diffMs / (1000 * 3600 * 24);
+  return diffDias > 0 ? Math.ceil(diffDias / 30) : 0;
+}
+
 export function useItemsPropuesta(
   initialItems: any[],
   propiedadesBD: PropiedadSimple[],
@@ -13,61 +22,67 @@ export function useItemsPropuesta(
   costoObraPreferencial: number,
   costoObraMercado: number
 ) {
-  // 1. Inicialización de los ítems seleccionados
+  // 1. Inicialización
   const [itemsSeleccionados, setItemsSeleccionados] = useState<ItemForm[]>(
-    initialItems?.map((i: any, idx: number) => ({
-      ...i, // Pasa automáticamente todos los campos (incluyendo esPreventa, mesesEntregaLote, etc.)
-      propiedadId: i.propiedadId,
-      esPrioritaria: i.esPrioritaria || idx === 0,
-      nombre:
-        i.nombre ||
-        i.parqueIndustrialNombre ||
-        i.parqueIndustrial?.nombre ||
-        i.propiedad?.parqueIndustrial?.nombre ||
-        i.propiedad?.zona?.nombre ||
-        '',
-      costoObraM2: i.costoObraM2 || 350,
-      fosAplicado: i.fosAplicado || 0.6,
-      orden: i.orden || idx + 1,
-      esFinanciado: i.esFinanciado ?? true,
-      porcentajeAnticipo: i.porcentajeAnticipo ?? 30,
-      cantidadCuotas: i.cantidadCuotas ?? 24,
-      mesesObra: i.mesesObra ?? 8,
-      esPreventa: i.esPreventa ?? i.propiedad?.esPreventa ?? false,
-      fechaEstimadaEntrega:
-        i.fechaEstimadaEntrega ?? i.propiedad?.fechaEstimadaEntrega ?? null,
-    })) || []
+    initialItems?.map((i: any, idx: number) => {
+      const propBase = i.propiedad || {};
+      const esPreventaFinal = i.esPreventa ?? propBase.esPreventa ?? false;
+      const fechaEntregaFinal = i.fechaEstimadaEntrega || propBase.fechaEstimadaEntrega || null;
+      const mesesEntregaFinal = (i.mesesEntrega !== undefined && i.mesesEntrega !== null && i.mesesEntrega > 0)
+        ? i.mesesEntrega
+        : calcularMesesDesdeFecha(fechaEntregaFinal);
+
+      return {
+        ...i,
+        propiedadId: i.propiedadId,
+        esPrioritaria: i.esPrioritaria || idx === 0,
+        nombre: i.nombre || i.parqueIndustrialNombre || i.parqueIndustrial?.nombre || i.propiedad?.parqueIndustrial?.nombre || i.propiedad?.zona?.nombre || '',
+        costoObraM2: i.costoObraM2 || 350,
+        fosAplicado: i.fosAplicado || 0.6,
+        orden: i.orden || idx + 1,
+        esFinanciado: i.esFinanciado ?? true,
+        porcentajeAnticipo: i.porcentajeAnticipo ?? 30,
+        cantidadCuotas: i.cantidadCuotas ?? 24,
+        mesesObra: i.mesesObra ?? 8,
+        esPreventa: esPreventaFinal,
+        fechaEstimadaEntrega: fechaEntregaFinal,
+        mesesEntrega: mesesEntregaFinal,
+      };
+    }) || []
   );
 
-  // 2. Re-sincronización asíncrona de nombres de parques desde la BBDD
+  // 2. Re-sincronización con Logs
   useEffect(() => {
-    if (propiedadesBD.length === 0 || parquesBD.length === 0) return;
+    if (propiedadesBD.length === 0) return;
+
+    console.log("🔍 [DEBUG BBDD] Propiedades cargadas desde API:", propiedadesBD);
 
     setItemsSeleccionados((itemsPrev) =>
       itemsPrev.map((item) => {
         const propReal = propiedadesBD.find((p) => p.id === item.propiedadId);
-        const parqueId = propReal?.parqueIndustrialId || propReal?.parqueIndustrial?.id;
+        if (!propReal) return item;
 
-        if (parqueId) {
-          const parqueEncontrado = parquesBD.find((park) => Number(park.id) === Number(parqueId));
-          if (parqueEncontrado?.nombre) {
-            return {
-              ...item,
-              nombre: parqueEncontrado.nombre,
-              notaLogistica:
-                item.notaLogistica ||
-                parqueEncontrado.conectividad ||
-                parqueEncontrado.direccionAcceso ||
-                '',
-            };
-          }
-        }
-        return item;
+        console.log(`📌 [DEBUG ITEM] Propiedad id ${item.propiedadId} (${propReal.titulo}):`, {
+          propReal_esPreventa: propReal.esPreventa,
+          propReal_fechaEntrega: propReal.fechaEstimadaEntrega,
+          item_esPreventa_actual: item.esPreventa,
+        });
+
+        // Forzamos el valor de la BBDD si el ítem de la propuesta no viene explícitamente en true
+        const esPreventaCalculado = Boolean(propReal.esPreventa || item.esPreventa);
+        const fechaEntregaCalculada = item.fechaEstimadaEntrega || propReal.fechaEstimadaEntrega || null;
+        const mesesEntregaCalculados = item.mesesEntrega || calcularMesesDesdeFecha(fechaEntregaCalculada);
+
+        return {
+          ...item,
+          esPreventa: esPreventaCalculado,
+          fechaEstimadaEntrega: fechaEntregaCalculada,
+          mesesEntrega: mesesEntregaCalculados,
+        };
       })
     );
   }, [propiedadesBD, parquesBD]);
 
-  // 3. Agregar o quitar propiedades del catálogo
   const togglePropiedad = (prop: PropiedadSimple) => {
     const existe = itemsSeleccionados.some((i) => i.propiedadId === prop.id);
     if (existe) {
@@ -77,15 +92,18 @@ export function useItemsPropuesta(
           .map((it, idx) => ({ ...it, orden: idx + 1 }))
       );
     } else {
+      console.log("➕ [DEBUG TOGGLE] Agregando propiedad:", prop);
+
       const supLote = Number(prop.superficieTotal || prop.superficieCubierta || 0);
       const precioTotal = Number(prop.precio || 0);
       const fosBase = 0.6;
+      const esPreventa = Boolean(prop.esPreventa);
+      const mesesEntrega = esPreventa ? calcularMesesDesdeFecha(prop.fechaEstimadaEntrega) : 0;
 
       const nuevoItem: ItemForm = {
         propiedadId: prop.id,
         esPrioritaria: itemsSeleccionados.length === 0,
-        notaLogistica:
-          prop.parqueIndustrial?.conectividad || prop.parqueIndustrial?.direccionAcceso || '',
+        notaLogistica: prop.parqueIndustrial?.conectividad || prop.parqueIndustrial?.direccionAcceso || '',
         tiempoEstimadoString: '',
         nombre: prop.parqueIndustrial?.nombre || prop.zona?.nombre || prop.titulo,
         costoTierraCustom: precioTotal,
@@ -102,14 +120,14 @@ export function useItemsPropuesta(
         mesesObra: 8,
         ofertaContadoUSD: undefined,
         notaEspecial: null,
-        esPreventa: prop.esPreventa ?? false,
-        fechaEstimadaEntrega: prop.fechaEstimadaEntrega ?? null,
+        esPreventa: esPreventa,
+        fechaEstimadaEntrega: prop.fechaEstimadaEntrega || null,
+        mesesEntrega: mesesEntrega,
       };
       setItemsSeleccionados([...itemsSeleccionados, nuevoItem]);
     }
   };
 
-  // 4. Cálculo de métricas financieras por ítem
   const calcularMetricasItem = (item: ItemForm) => {
     const prop = propiedadesBD.find((p) => p.id === item.propiedadId);
     const supLote = Number(prop?.superficieTotal || prop?.superficieCubierta || 0);

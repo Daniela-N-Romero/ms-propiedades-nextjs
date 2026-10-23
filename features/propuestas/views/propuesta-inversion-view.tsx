@@ -156,17 +156,17 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 					📊 Comparativa de Rentabilidad Bruta Anual (ROI %)
 				</h3>
 				<div className="inline-flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-full w-fit">
-						<span className="relative flex h-2 w-2">
-							<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-							<span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-						</span>
-						<span className="text-[10px] sm:text-xs text-amber-300 font-bold tracking-wide animate-pulse">
-							Tocá una opción para ir al detalle
-						</span>
-						<span className="text-amber-400 font-black text-xs animate-bounce inline-block">
-							↓
-						</span>
-					</div>
+					<span className="relative flex h-2 w-2">
+						<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+						<span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+					</span>
+					<span className="text-[10px] sm:text-xs text-amber-300 font-bold tracking-wide animate-pulse">
+						Tocá una opción para ir al detalle
+					</span>
+					<span className="text-amber-400 font-black text-xs animate-bounce inline-block">
+						↓
+					</span>
+				</div>
 
 				<div className="space-y-2.5 sm:space-y-3">
 					{metricas.comparativa.map((item, index) => {
@@ -472,9 +472,18 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 																/ mes
 															</span>
 															<p className="text-[8px] sm:text-[10px] text-emerald-400 font-semibold leading-tight">
-																{aplicaApalancamientoRenta
-																	? `💡 El alquiler absorbe el ${porcentajeCubierto}% de la cuota (Mes ${inicioCobroMes} al ${cantidadCuotas}).`
-																	: "Proyección de renta una vez entregado el lote y finalizada la nave."}
+																{aplicaApalancamientoRenta ? (
+																	<>
+																		💡 El alquiler absorbe el{" "}
+																		{porcentajeCubierto}% de la cuota{" "}
+																		<span className="text-slate-400 font-bold">
+																			(Mes {inicioCobroMes} al {cantidadCuotas})
+																		</span>
+																		.
+																	</>
+																) : (
+																	"Proyección de renta una vez entregado el lote y finalizada la nave."
+																)}
 															</p>
 														</div>
 													</div>
@@ -482,77 +491,103 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 											);
 										})()
 									) : item.esFinanciado ? (
-										<div className="bg-slate-950 border border-amber-500/30 rounded-2xl p-3 sm:p-4 space-y-2.5">
-											<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-2 gap-1.5">
-												<h5 className="font-extrabold text-amber-400 text-[11px] sm:text-xs flex items-center gap-1.5">
-													🚀 Estrategia: "El lote se paga con el alquiler"
-												</h5>
-												<span className="bg-amber-500/10 border border-amber-500/40 text-amber-300 text-[8px] sm:text-[9px] font-black px-2 py-0.5 rounded-full uppercase self-start sm:self-auto">
-													💡 El Alquiler Paga el{" "}
-													{Math.min(
-														Math.round(
-															((item.ingresoMensualTotal || 0) /
-																(item.cuotaMensualLoteUSD || 1)) *
-																100,
-														),
-														100,
-													)}
-													% de la Cuota
-												</span>
-											</div>
+										(() => {
+											const cuotaMontoUSD = item.cuotaMensualLoteUSD || 0;
+											const ingresoMensualUSD = item.ingresoMensualTotal || 0;
+											const cuotaNetaBolsilloUSD = Math.max(
+												cuotaMontoUSD - ingresoMensualUSD,
+												0,
+											);
+											const porcentajeCobertura =
+												cuotaMontoUSD > 0
+													? Math.min(
+															Math.round(
+																(ingresoMensualUSD / cuotaMontoUSD) * 100,
+															),
+															100,
+														)
+													: 0;
 
-											<div className="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-3 text-xs">
-												<div className="bg-slate-900 border border-slate-800 p-2 sm:p-3 rounded-xl space-y-0.5">
-													<span className="text-slate-400 text-[8px] sm:text-[10px] font-bold block uppercase">
-														Desembolso Inicial Requerido
-													</span>
-													<span className="text-xs sm:text-sm font-black text-white block">
-														USD{" "}
-														{item.desembolsoInicialRequeridoUSD?.toLocaleString(
-															"es-AR",
-														)}
-													</span>
-													<p className="text-[8px] sm:text-[10px] text-slate-400 leading-tight">
-														Anticipo Lote ({item.porcentajeAnticipo}%) + 100%
-														Costo Obra
-													</p>
-												</div>
+											// Cálculo de inicio de cobro según meses de obra
+											const mesesObra = Number(item.mesesObra ?? 0);
+											const mesInicioAlquiler = mesesObra + 1;
+											const cantidadCuotas = Number(item.cantidadCuotas ?? 0);
 
-												<div className="bg-slate-900 border border-amber-500/30 p-2 sm:p-3 rounded-xl space-y-0.5">
-													<span className="text-amber-400 text-[8px] sm:text-[10px] font-bold block uppercase">
-														Aporte Mensual por Alquiler
-													</span>
-													<span className="text-xs sm:text-sm font-black text-emerald-400 block">
-														+ USD{" "}
-														{item.ingresoMensualTotal?.toLocaleString("es-AR")}{" "}
-														/ mes
-													</span>
-													<p className="text-[8px] sm:text-[10px] text-slate-300 leading-tight">
-														Financiación en {item.cantidadCuotas} cuotas de USD{" "}
-														{(item.cuotaMensualLoteUSD || 0).toLocaleString(
-															"es-AR",
-														)}
-														.
-													</p>
-												</div>
+											return (
+												<div className="bg-slate-950 border border-amber-500/30 rounded-2xl p-3 sm:p-4 space-y-2.5">
+													<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-2 gap-1.5">
+														<h5 className="font-extrabold text-amber-400 text-[11px] sm:text-xs flex items-center gap-1.5">
+															🚀 Estrategia: "El lote se paga con el alquiler"
+														</h5>
+														<span className="bg-amber-500/10 border border-amber-500/40 text-amber-300 text-[8px] sm:text-[9px] font-black px-2 py-0.5 rounded-full uppercase self-start sm:self-auto">
+															💡 El Alquiler Paga el {porcentajeCobertura}% de
+															la Cuota
+														</span>
+													</div>
 
-												<div className="bg-slate-900 border border-slate-800 p-2 sm:p-3 rounded-xl space-y-0.5">
-													<span className="text-slate-400 text-[8px] sm:text-[10px] font-bold block uppercase">
-														Costo Neto Final del Activo
-													</span>
-													<span className="text-xs sm:text-sm font-black text-white block">
-														USD{" "}
-														{item.costoNetoFinalActivoUSD?.toLocaleString(
-															"es-AR",
-														)}
-													</span>
-													<p className="text-[8px] sm:text-[10px] text-emerald-400 font-semibold leading-tight">
-														El alquiler subsidia USD{" "}
-														{item.ahorroTotalRentaUSD?.toLocaleString("es-AR")}
-													</p>
+													<div className="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-3 text-xs">
+														<div className="bg-slate-900 border border-slate-800 p-2 sm:p-3 rounded-xl space-y-0.5">
+															<span className="text-slate-400 text-[8px] sm:text-[10px] font-bold block uppercase">
+																Desembolso Inicial Requerido
+															</span>
+															<span className="text-xs sm:text-sm font-black text-white block">
+																USD{" "}
+																{item.desembolsoInicialRequeridoUSD?.toLocaleString(
+																	"es-AR",
+																)}
+															</span>
+															<p className="text-[8px] sm:text-[10px] text-slate-400 leading-tight">
+																Anticipo Lote ({item.porcentajeAnticipo}%) +
+																100% Costo Obra
+															</p>
+														</div>
+
+														<div className="bg-slate-900 border border-amber-500/30 p-2 sm:p-3 rounded-xl space-y-0.5">
+															<span className="text-amber-400 text-[8px] sm:text-[10px] font-bold block uppercase">
+																Aporte Mensual por Alquiler
+															</span>
+															<div className="flex items-baseline gap-1.5">
+																<span className="text-xs sm:text-sm font-black text-emerald-400 block">
+																	+ USD{" "}
+																	{ingresoMensualUSD.toLocaleString("es-AR")} /
+																	mes
+																</span>
+															</div>
+															<p className="text-[8px] sm:text-[10px] text-slate-300 leading-tight">
+																Cuota original de USD{" "}
+																{cuotaMontoUSD.toLocaleString("es-AR")}.{" "}
+																{cuotaNetaBolsilloUSD > 0
+																	? `Abonás solo USD ${cuotaNetaBolsilloUSD.toLocaleString("es-AR")}/mes de tu bolsillo.`
+																	: "El alquiler cubre el 100% de la cuota."}
+															</p>
+														</div>
+
+														<div className="bg-slate-900 border border-slate-800 p-2 sm:p-3 rounded-xl space-y-0.5">
+															<span className="text-slate-400 text-[8px] sm:text-[10px] font-bold block uppercase">
+																Costo Neto Final del Activo
+															</span>
+															<span className="text-xs sm:text-sm font-black text-white block">
+																USD{" "}
+																{item.costoNetoFinalActivoUSD?.toLocaleString(
+																	"es-AR",
+																)}
+															</span>
+															<p className="text-[8px] sm:text-[10px] text-emerald-400 font-semibold leading-tight">
+																El alquiler subsidia USD{" "}
+																{item.ahorroTotalRentaUSD?.toLocaleString(
+																	"es-AR",
+																)}{" "}
+																<span className="text-slate-400">
+																	(suponiendo cobro de renta desde el mes{" "}
+																	{mesInicioAlquiler}, tras {mesesObra} meses de
+																	obra).
+																</span>
+															</p>
+														</div>
+													</div>
 												</div>
-											</div>
-										</div>
+											);
+										})()
 									) : (
 										<div className="bg-slate-950 border border-slate-800 rounded-2xl p-3 sm:p-4 space-y-2.5">
 											<div className="flex justify-between items-center border-b border-slate-800 pb-2">

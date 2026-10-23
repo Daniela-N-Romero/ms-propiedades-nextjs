@@ -174,6 +174,7 @@ export default function PropuestaForm({ initialData, propuestaId, defaultTipo = 
             togglePropiedad={form.togglePropiedad}
             esInversion={form.esInversion}
             calcularMetricasItem={form.calcularMetricasItem}
+            extraerMesesEntrega={form.extraerMesesEntrega}
           />
 
           <BuscadorCatalogoSection

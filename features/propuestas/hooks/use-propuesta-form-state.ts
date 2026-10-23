@@ -57,6 +57,36 @@ export function usePropuestaFormState(initialData?: any, propuestaId?: string, d
   }
   return sup;
 };
+
+  const extraerMesesEntrega = (p: any, item?: any): number => {
+    // 1. Si el ítem de la propuesta ya tiene un valor numérico asignado
+    if (item?.mesesEntrega !== undefined && item?.mesesEntrega !== null) {
+      return Number(item.mesesEntrega);
+    }
+
+    // 2. Si la propiedad base tiene mesesEntrega explícito
+    if (p?.mesesEntrega !== undefined && p?.mesesEntrega !== null) {
+      return Number(p.mesesEntrega);
+    }
+
+    // 3. Si es preventa y tiene fecha estimada, calculamos los meses que faltan
+    const esPreventa = item?.esPreventa ?? p?.esPreventa ?? false;
+    const fechaRaw = item?.fechaEstimadaEntrega || p?.fechaEstimadaEntrega;
+
+    if (esPreventa && fechaRaw) {
+      const hoy = new Date();
+      const entrega = new Date(fechaRaw);
+      const diffMs = entrega.getTime() - hoy.getTime();
+      const diffDias = diffMs / (1000 * 3600 * 24);
+
+      if (diffDias > 0) {
+        return Math.ceil(diffDias / 30);
+      }
+    }
+
+    return 0; // Si no hay datos, retornamos 0 (sin forzar 12)
+  };
+
   
   return {
     router,
@@ -88,5 +118,6 @@ export function usePropuestaFormState(initialData?: any, propuestaId?: string, d
     setTieneTarifaPreferencial,
     parseSeguro,
     extraerSuperficieLote,
+    extraerMesesEntrega
   };
 }

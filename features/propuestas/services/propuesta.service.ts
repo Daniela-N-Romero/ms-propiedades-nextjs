@@ -114,7 +114,7 @@ export class PropuestasService {
             cantidadCuotas: Number(item.cantidadCuotas ?? 0),
             mesesObra: Number(item.mesesObra ?? 8),
             ofertaContadoUSD: item.ofertaContadoUSD !== null && item.ofertaContadoUSD !== undefined  ? Number(item.ofertaContadoUSD): null,
-            notaEspecial: item.notaEspecial || null,
+            notaEspecial: item.notaEspecial || null
           })),
         },
       },
@@ -170,7 +170,7 @@ export class PropuestasService {
             mesesObra: Number(item.mesesObra ?? 8),
             ofertaContadoUSD: item.ofertaContadoUSD !== null && item.ofertaContadoUSD !== undefined  ? Number(item.ofertaContadoUSD) : null,
             notaEspecial: item.notaEspecial || null,
-          })),
+         })),
         },
       },
     });

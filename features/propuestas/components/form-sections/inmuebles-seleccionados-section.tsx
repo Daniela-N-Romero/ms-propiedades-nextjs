@@ -8,6 +8,7 @@ interface Props {
 	setItemsSeleccionados: React.Dispatch<React.SetStateAction<ItemForm[]>>;
 	propiedadesBD: PropiedadSimple[];
 	extraerSuperficieLote: (p: PropiedadSimple) => number;
+	extraerMesesEntrega: (p: PropiedadSimple, item?: ItemForm) => number;
 	togglePropiedad: (prop: PropiedadSimple) => void;
 	esInversion: boolean;
 	calcularMetricasItem: (item: ItemForm) => {
@@ -24,6 +25,7 @@ export function InmueblesSeleccionadosSection({
 	setItemsSeleccionados,
 	propiedadesBD,
 	extraerSuperficieLote,
+	extraerMesesEntrega,
 	togglePropiedad,
 	esInversion,
 	calcularMetricasItem,
@@ -34,6 +36,7 @@ export function InmueblesSeleccionadosSection({
 		const num = Number(cleanStr);
 		return isNaN(num) ? 0 : num;
 	};
+
 	const updateItem = (propiedadId: number, campos: Partial<ItemForm>) => {
 		setItemsSeleccionados(
 			itemsSeleccionados.map((i) =>
@@ -58,9 +61,14 @@ export function InmueblesSeleccionadosSection({
 					{itemsSeleccionados.map((item, idx) => {
 						const prop = propiedadesBD.find((p) => p.id === item.propiedadId);
 						if (!prop) return null;
-
+						// 🔍 AGREGAR ESTE LOG DE CONTROL VISUAL:
+						console.log(`🖼️ [DEBUG RENDER ITEM #${idx + 1}]`, {
+							item_esPreventa: item.esPreventa,
+							item_mesesEntrega: item.mesesEntrega,
+							prop_esPreventa: prop.esPreventa,
+						});
 						const supLote = extraerSuperficieLote(prop);
-						console.log(prop);
+						const mesesEntregaCalculados = extraerMesesEntrega(prop, item);
 
 						return (
 							<div
@@ -68,12 +76,12 @@ export function InmueblesSeleccionadosSection({
 								className="p-5 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-4 shadow-2xs"
 							>
 								<div className="flex justify-between items-center border-b border-slate-200/80 pb-2.5">
-									<div className="">
+									<div>
 										<p>
 											<span className="bg-slate-800 text-white font-bold text-xs px-2.5 py-0.5 rounded-md">
 												#{idx + 1}
 											</span>
-											<span className="font-bold text-sm text-slate-900">
+											<span className="font-bold text-sm text-slate-900 ml-1.5">
 												{prop.titulo}
 											</span>
 											<span className="ml-1 text-xs text-slate-500 font-semibold">
@@ -119,8 +127,8 @@ export function InmueblesSeleccionadosSection({
 																USD{" "}
 																{metricas.ingresoAnualUSD.toLocaleString(
 																	"es-AR",
-																)}
-																/año
+																)}{" "}
+																/ año
 															</strong>
 														</div>
 													</div>
@@ -144,7 +152,7 @@ export function InmueblesSeleccionadosSection({
 												</label>
 												<input
 													type="text"
-													value={item.nombre}
+													value={item.nombre ?? ""}
 													onChange={(e) =>
 														updateItem(prop.id, { nombre: e.target.value })
 													}
@@ -158,7 +166,7 @@ export function InmueblesSeleccionadosSection({
 												</label>
 												<input
 													type="text"
-													value={item.notaLogistica}
+													value={item.notaLogistica ?? ""}
 													onChange={(e) =>
 														updateItem(prop.id, {
 															notaLogistica: e.target.value,
@@ -181,7 +189,7 @@ export function InmueblesSeleccionadosSection({
 													step="0.05"
 													min="0.1"
 													max="1"
-													value={item.fosAplicado || 0.6}
+													value={item.fosAplicado ?? 0.6}
 													onChange={(e) => {
 														const fosVal = Number(e.target.value);
 														const nuevaNave =
@@ -201,7 +209,7 @@ export function InmueblesSeleccionadosSection({
 												</label>
 												<input
 													type="number"
-													value={item.supNaveProyectada}
+													value={item.supNaveProyectada ?? 0}
 													onChange={(e) =>
 														updateItem(prop.id, {
 															supNaveProyectada: Number(e.target.value),
@@ -218,7 +226,7 @@ export function InmueblesSeleccionadosSection({
 												<input
 													type="number"
 													step="0.5"
-													value={item.alquilerM2Estimado}
+													value={item.alquilerM2Estimado ?? 5.0}
 													onChange={(e) =>
 														updateItem(prop.id, {
 															alquilerM2Estimado: Number(e.target.value),
@@ -234,9 +242,11 @@ export function InmueblesSeleccionadosSection({
 												</label>
 												<input
 													type="text"
-													value={item.cuotasTexto}
+													value={item.cuotasTexto ?? ""}
 													onChange={(e) =>
-														updateItem(prop.id, { cuotasTexto: e.target.value })
+														updateItem(prop.id, {
+															cuotasTexto: e.target.value,
+														})
 													}
 													placeholder="Opcional"
 													className="w-full bg-white border border-slate-200 rounded-xl p-2 text-xs text-slate-900 outline-none focus:border-amber-500"
@@ -244,7 +254,7 @@ export function InmueblesSeleccionadosSection({
 											</div>
 										</div>
 
-										{/* 💡 REFERENCIA DESDE LA BBDD */}
+										{/* REFERENCIA DESDE LA BBDD */}
 										{prop.financiacion && (
 											<div className="bg-amber-50/80 border border-amber-200/80 rounded-xl p-3 text-xs text-amber-900 flex items-center justify-between">
 												<span>
@@ -301,44 +311,35 @@ export function InmueblesSeleccionadosSection({
 												</div>
 											</div>
 
+											{/* ESTADO DE PREVENTA (INFORMATIVO DESDE BBDD) */}
 											<div className="flex items-center gap-2 pt-2 border-t border-slate-100">
-												<label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700">
-													<input
-														type="checkbox"
-														checked={item.esPreventa || false}
-														onChange={(e) =>
-															updateItem(prop.id, {
-																esPreventa: e.target.checked,
-															})
-														}
-														className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
+												<div className="flex items-center gap-2 text-xs font-bold text-slate-700">
+													<>
+													<span
+														className={`w-3 h-3 rounded-full ${prop.esPreventa ? "bg-amber-500" : "bg-slate-300"}`}
 													/>
 													<span>
-														¿Lote en Preventa? (Ajusta estrategia de plazos y
-														slogan)
+														{prop.esPreventa
+															? "🚀 Lote en Preventa"
+															: "📍 Posesión / Entrega Inmediata"}
 													</span>
-												</label>
-											</div>
-
-											{item.esPreventa && (
-												<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-													<div>
-														<label className="block text-[10px] font-bold text-slate-600 mb-1 uppercase">
-															Meses Estimados de Entrega (Posesión)
-														</label>
-														<input
-															type="number"
-															value={item.mesesEntrega || 12}
-															onChange={(e) =>
-																updateItem(prop.id, {
-																	mesesEntrega: Number(e.target.value),
-																})
-															}
-															className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs font-bold outline-none"
-														/>
-													</div>
+													</>
+													{item.esPreventa && (
+														<p className="text-slate-600 mt-1 block font-medium">
+															Faltan ~{mesesEntregaCalculados} meses para la posesión (Fecha estimada:{" "}
+															{prop.fechaEstimadaEntrega
+																? new Date(
+																		prop.fechaEstimadaEntrega,
+																	).toLocaleDateString("es-AR", {
+																		month: "long",
+																		year: "numeric",
+																	})
+																: "No definida"}
+															).
+														</p>
+													)}
 												</div>
-											)}
+											</div>
 
 											{item.esFinanciado === false ? (
 												<div className="space-y-3">
@@ -353,10 +354,12 @@ export function InmueblesSeleccionadosSection({
 														<input
 															type="number"
 															placeholder="Ej: USD 230.000 (Sugerencia de negociación)"
-															value={item.ofertaContadoUSD || ""}
+															value={item.ofertaContadoUSD ?? ""}
 															onChange={(e) =>
 																updateItem(prop.id, {
-																	ofertaContadoUSD: Number(e.target.value),
+																	ofertaContadoUSD: e.target.value
+																		? Number(e.target.value)
+																		: undefined,
 																})
 															}
 															className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-bold"
@@ -371,7 +374,7 @@ export function InmueblesSeleccionadosSection({
 														</label>
 														<input
 															type="number"
-															value={item.porcentajeAnticipo || 0}
+															value={item.porcentajeAnticipo ?? 0}
 															onChange={(e) =>
 																updateItem(prop.id, {
 																	porcentajeAnticipo: Number(e.target.value),
@@ -386,7 +389,7 @@ export function InmueblesSeleccionadosSection({
 														</label>
 														<input
 															type="number"
-															value={item.cantidadCuotas || 24}
+															value={item.cantidadCuotas ?? 24}
 															onChange={(e) =>
 																updateItem(prop.id, {
 																	cantidadCuotas: Number(e.target.value),
@@ -401,7 +404,7 @@ export function InmueblesSeleccionadosSection({
 														</label>
 														<input
 															type="number"
-															value={item.mesesObra || 8}
+															value={item.mesesObra ?? 8}
 															onChange={(e) =>
 																updateItem(prop.id, {
 																	mesesObra: Number(e.target.value),
@@ -419,9 +422,11 @@ export function InmueblesSeleccionadosSection({
 											</label>
 											<input
 												type="text"
-												value={item.notaEspecial || ""}
+												value={item.notaEspecial ?? ""}
 												onChange={(e) =>
-													updateItem(prop.id, { notaEspecial: e.target.value })
+													updateItem(prop.id, {
+														notaEspecial: e.target.value,
+													})
 												}
 												placeholder="Aclaraciones necesarias acerca de la propiedad (opcional)"
 												className="w-full bg-white border border-slate-200 rounded-xl p-2 text-xs text-slate-900 outline-none focus:border-amber-500"
@@ -433,7 +438,7 @@ export function InmueblesSeleccionadosSection({
 										<input
 											type="text"
 											placeholder="Nota Logística"
-											value={item.notaLogistica}
+											value={item.notaLogistica ?? ""}
 											onChange={(e) =>
 												updateItem(prop.id, { notaLogistica: e.target.value })
 											}
@@ -442,7 +447,7 @@ export function InmueblesSeleccionadosSection({
 										<input
 											type="text"
 											placeholder="Tiempo / Salida Vial"
-											value={item.tiempoEstimadoString}
+											value={item.tiempoEstimadoString ?? ""}
 											onChange={(e) =>
 												updateItem(prop.id, {
 													tiempoEstimadoString: e.target.value,
