@@ -181,10 +181,10 @@ export function PropuestaInversionView({ propuesta, metricas }: Props) {
 							<div
 								key={item.id}
 								onClick={() => handleSeleccionarYScroll(item.id)}
-								className={`p-3 sm:p-4 rounded-xl border transition-all cursor-pointer ${
+								className={`p-3 sm:p-4 rounded-xl border transition-all duration-200 cursor-pointer active:scale-[0.98] ${
 									esSeleccionado
 										? "bg-slate-800 border-amber-500/80 shadow-lg scale-[1.005]"
-										: "bg-slate-950/60 border-slate-800 hover:border-slate-700"
+										: "bg-slate-950/60 border-slate-800 hover:border-slate-700 hover:bg-slate-900/80"
 								}`}
 							>
 								<div className="flex justify-between items-center mb-1 gap-2 min-w-0">
