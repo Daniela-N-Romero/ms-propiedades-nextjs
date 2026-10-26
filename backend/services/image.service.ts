@@ -1,5 +1,5 @@
 import { getStorageProvider } from '@/backend/services/storage/storage.factory';
-import { aplicarMarcaDeAgua } from '@/backend/lib/watermark';
+import { aplicarMarcaDeAgua, WatermarkType } from '@/backend/lib/watermark';
 import crypto from 'crypto';
 import { createCanvas, loadImage } from '@napi-rs/canvas';
 
@@ -30,12 +30,13 @@ export async function procesarYGuardarImagen(
   fileBuffer: Buffer,
   _filename: string, // Prefijado con _ indicando que no se usa para la key
   _mimeType: string,
-  folderPath: string = 'propiedades'  
+  folderPath: string = 'propiedades' ,
+  watermarkType: WatermarkType = 'industrial' 
 ) {
   const storage = getStorageProvider();
   const uniqueFilename = generateUniqueFilename();
   const cleanWebpBuffer = await convertToWebP(fileBuffer);
-  const watermarkedBuffer = await aplicarMarcaDeAgua(cleanWebpBuffer); 
+  const watermarkedBuffer = await aplicarMarcaDeAgua(cleanWebpBuffer, watermarkType); 
 
   // 1. Subimos la versión LIMPIA (Original) en WebP
   const cleanKey = `${folderPath}/${uniqueFilename}_clean.webp`;

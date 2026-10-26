@@ -1,11 +1,13 @@
 'use server';
 
 import { procesarYGuardarImagen } from '@/backend/services/image.service';
+import { WatermarkType } from '@/backend/lib/watermark';
 
 export async function uploadImagenAction(formData: FormData) {
   try {
     const file = formData.get('file') as File | null;
     const entityFolder = (formData.get('folderId') as string) || 'temp';
+    const watermarkType = ((formData.get('watermarkType') as string) || 'industrial') as WatermarkType; 
     const folderPath = `propiedades/${entityFolder}`;
 
     if (!file) {
@@ -20,7 +22,8 @@ export async function uploadImagenAction(formData: FormData) {
       buffer,
       file.name,
       file.type,
-      folderPath
+      folderPath,
+      watermarkType
     );
     console.log('Resultado de procesarYGuardarImagen:', resultado);
 

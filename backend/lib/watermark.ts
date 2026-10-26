@@ -2,16 +2,25 @@ import { createCanvas, loadImage } from '@napi-rs/canvas';
 import path from 'path';
 import fs from 'fs';
 
-export async function aplicarMarcaDeAgua(imageBuffer: Buffer): Promise<Buffer> {
-  
-  const logoPath = path.join(process.cwd(), 'public', 'images', 'logos', 'watermark.png');
+export type WatermarkType = 'industrial' | 'general';
+
+const WATERMARK_PATHS: Record<WatermarkType, string> = {
+
+  industrial: path.join(process.cwd(), 'public', 'images', 'logos', 'watermark.png'),
+  general: path.join(process.cwd(), 'public', 'images', 'logos', 'watermark-general.png')
+
+};
+
+export async function aplicarMarcaDeAgua(imageBuffer: Buffer, watermarkType: WatermarkType = 'industrial'): Promise<Buffer> {
+
+  const watermarkPath = WATERMARK_PATHS[watermarkType] || WATERMARK_PATHS.industrial;
 
   // Fallback: si no existe el logo físico, devolvemos la imagen original sin tocar
-  if (!fs.existsSync(logoPath)) {
+  if (!fs.existsSync(watermarkPath)) {
     return imageBuffer;
   }
 
-  const logoBuffer = fs.readFileSync(logoPath);
+  const logoBuffer = fs.readFileSync(watermarkPath);
 
   //Cargamos ambas imágenes usando Canvas
   const [image, logo] = await Promise.all([

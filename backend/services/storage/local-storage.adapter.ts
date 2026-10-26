@@ -13,21 +13,31 @@ export class LocalStorageAdapter implements IStorageProvider {
     this.uploadDir = path.join(process.cwd(), 'public', 'uploads');
     
     // Si la carpeta no existe en tu computadora, la crea
-    if (!fs.existsSync(this.uploadDir)) {
+   if (!fs.existsSync(this.uploadDir)) {
       fs.mkdirSync(this.uploadDir, { recursive: true });
     }
   }
 
-  async uploadFile(file: Buffer, filename: string, mimeType: string): Promise<UploadResult> {
-    // Sanitizamos el nombre del archivo para evitar espacios o caracteres raros
-    const cleanFileName = `${Date.now()}_${filename.replace(/\s+/g, '_')}`;
+  async uploadFile(file: Buffer, filename: string, _mimeType: string): Promise<UploadResult> {
+    // Reemplaza espacios preservando las barras de carpetas
+    const cleanFileName = filename.replace(/\s+/g, '_');
     const filePath = path.join(this.uploadDir, cleanFileName);
 
-    // Guardamos el Buffer directamente en la carpeta public/uploads/
+    // Crea las subcarpetas necesarias (ej: public/uploads/propiedades/id_propiedad/)
+    const targetDir = path.dirname(filePath);
+    if (!fs.existsSync(targetDir)) {
+      await fs.promises.mkdir(targetDir, { recursive: true });
+    }
+
+    // Guarda el archivo
     await fs.promises.writeFile(filePath, file);
 
+    // En Next.js la carpeta /public se omite en la URL web.
+    // Convertimos separadores de Windows (\) a barras de URL (/)
+    const webUrlPath = cleanFileName.split(path.sep).join('/');
+
     return {
-      url: `/uploads/${cleanFileName}`,
+      url: `/uploads/${webUrlPath}`,
       key: cleanFileName,
     };
   }

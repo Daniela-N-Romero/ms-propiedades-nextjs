@@ -16,9 +16,18 @@ interface ImageUploaderProps {
   error?: string;
   onUploadingChange?: (isUploading: boolean) => void;
   folderId?: string; 
+  defaultWatermark?: 'industrial' | 'general';
 }
 
-export function ImageUploader({ imagenes, onChange, error, onUploadingChange, folderId }: ImageUploaderProps) {
+export function ImageUploader({ 
+  imagenes, 
+  onChange, 
+  error, 
+  onUploadingChange, 
+  folderId, 
+  defaultWatermark = 'industrial' 
+}: ImageUploaderProps) {
+  const [selectedWatermark, setSelectedWatermark] = useState<'industrial' | 'general'>(defaultWatermark);
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
@@ -37,11 +46,12 @@ export function ImageUploader({ imagenes, onChange, error, onUploadingChange, fo
 
   for (let i = 0; i < validImages.length; i++) {
     const file = validImages[i];
-    setUploadProgress(`Aplicando marca de agua y subiendo ${i + 1} de ${validImages.length}...`);
+    setUploadProgress(`Aplicando marca de agua (${selectedWatermark}) y subiendo ${i + 1} de ${validImages.length}...`);
 
     const formData = new FormData();
     formData.append('file', file);
     formData.append('folderId', folderId);
+    formData.append('watermarkType', selectedWatermark); 
     
     // Invocación directa a la Server Action
     const res = await uploadImagenAction(formData);
@@ -115,7 +125,35 @@ export function ImageUploader({ imagenes, onChange, error, onUploadingChange, fo
   };
 
   return (
+    
     <div className="space-y-4">
+      {/* Selector de marca de agua */}
+      <div className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl shadow-xs">
+        <span className="text-xs font-bold text-slate-700">Marca de agua:</span>
+        <label className="flex items-center gap-1.5 text-xs cursor-pointer text-slate-600">
+          <input
+            type="radio"
+            name="watermark-type"
+            value="industrial"
+            checked={selectedWatermark === 'industrial'}
+            onChange={() => setSelectedWatermark('industrial')}
+            className="text-brand-orange focus:ring-brand-orange"
+          />
+          MS Industrial
+        </label>
+        <label className="flex items-center gap-1.5 text-xs cursor-pointer text-slate-600">
+          <input
+            type="radio"
+            name="watermark-type"
+            value="general"
+            checked={selectedWatermark === 'general'}
+            onChange={() => setSelectedWatermark('general')}
+            className="text-brand-orange focus:ring-brand-orange"
+          />
+          MS Propiedades (General)
+        </label>
+      </div>
+
       {/* BOTÓN DE CARGA Y DROPZONE */}
       <div onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
