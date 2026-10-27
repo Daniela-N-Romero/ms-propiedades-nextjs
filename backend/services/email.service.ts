@@ -62,14 +62,20 @@ export async function sendLeadNotificationEmail(data: NotificationLeadParams) {
             return { success: true, mock: true };
         }
 
-        const response = await resend.emails.send({
+        const { data: resData, error: resError } = await resend.emails.send({
             from: 'MS Propiedades <onboarding@resend.dev>',
             to: [toEmail],
             subject: `🚨 Consulta por ${data.propiedadCodigo || 'Propiedad'} - ${data.leadNombre}`,
             html: htmlContent,
         });
 
-        return { success: true, id: response.data?.id };
+        if (resError) {
+            console.error('❌ Error devuelto por Resend API:', resError);
+            return { success: false, error: resError };
+        }
+
+        return { success: true, id: resData?.id };
+        
     } catch (error) {
         console.error('❌ Error al enviar email con Resend:', error);
         return { success: false, error };
