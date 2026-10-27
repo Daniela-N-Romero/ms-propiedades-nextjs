@@ -60,20 +60,22 @@ export async function POST(request: Request) {
       console.error('⚠️ No se definió un destinatario de correo válido.');
     }
     // 4. Disparar correo de notificación (No frena la respuesta si falla el correo)
-    sendLeadNotificationEmail({
-      leadNombre: nombre,
-      leadApellido: apellido,
-      leadEmail: email,
-      leadTelefono: telefono,
-      mensaje: mensaje || '',
-      propiedadCodigo,
-      propiedadTitulo,
-      toEmail,
-    }).then((result) => {
-      console.log('✅ Correo procesado con éxito por el servicio. Respuesta/Resultado:', result);
-    })
-    .catch(err => console.error('Error background email:', err));
-
+try {
+      const emailResult = await sendLeadNotificationEmail({
+        leadNombre: nombre,
+        leadApellido: apellido,
+        leadEmail: email,
+        leadTelefono: telefono,
+        mensaje: mensaje || '',
+        propiedadCodigo,
+        propiedadTitulo,
+        toEmail,
+      });
+      console.log('✅ Correo procesado por Resend:', emailResult);
+    } catch (err) {
+      console.error('❌ Error al enviar email:', err);
+    }
+    
     return NextResponse.json(
       { success: true, message: 'Consulta enviada con éxito.', leadId: newLead.id },
       { status: 201 }
