@@ -12,38 +12,38 @@ export function VideoSeccion({ videoUrl }: VideoSeccionProps) {
     try {
       const cleanUrl = url.trim();
 
-// 1. YouTube Shorts: youtube.com/shorts/VIDEO_ID
-    if (cleanUrl.includes('youtube.com/shorts/')) {
-      const videoId = cleanUrl.split('youtube.com/shorts/')[1]?.split('?')[0]?.split('/')[0];
-      return videoId ? `https://www.youtube-nocookie.com/embed/${videoId}?rel=0` : cleanUrl;
-    }
+      // 1. YouTube Shorts: youtube.com/shorts/VIDEO_ID
+      if (cleanUrl.includes('youtube.com/shorts/')) {
+        const videoId = cleanUrl.split('youtube.com/shorts/')[1]?.split('?')[0]?.split('/')[0];
+        return videoId ? `https://www.youtube-nocookie.com/embed/${videoId}?rel=0` : cleanUrl;
+      }
 
-    // 2. YouTube Estándar: youtube.com/watch?v=VIDEO_ID
-    if (cleanUrl.includes('youtube.com/watch')) {
-      const videoId = new URL(cleanUrl).searchParams.get('v');
-      return videoId ? `https://www.youtube-nocookie.com/embed/${videoId}?rel=0` : cleanUrl;
-    }
+      // 2. YouTube Estándar: youtube.com/watch?v=VIDEO_ID
+      if (cleanUrl.includes('youtube.com/watch')) {
+        const videoId = new URL(cleanUrl).searchParams.get('v');
+        return videoId ? `https://www.youtube-nocookie.com/embed/${videoId}?rel=0` : cleanUrl;
+      }
 
-    // 3. YouTube Corto: youtu.be/VIDEO_ID
-    if (cleanUrl.includes('youtu.be/')) {
-      const videoId = cleanUrl.split('youtu.be/')[1]?.split('?')[0]?.split('/')[0];
-      return videoId ? `https://www.youtube-nocookie.com/embed/${videoId}?rel=0` : cleanUrl;
-    }
+      // 3. YouTube Corto: youtu.be/VIDEO_ID
+      if (cleanUrl.includes('youtu.be/')) {
+        const videoId = cleanUrl.split('youtu.be/')[1]?.split('?')[0]?.split('/')[0];
+        return videoId ? `https://www.youtube-nocookie.com/embed/${videoId}?rel=0` : cleanUrl;
+      }
 
-    // 4. YouTube ya en formato Embed (limpia ?feature=share o parámetros conflictivos)
-    if (cleanUrl.includes('youtube.com/embed/') || cleanUrl.includes('youtube-nocookie.com/embed/')) {
-      const splitTarget = cleanUrl.includes('youtube-nocookie.com/embed/') 
-        ? 'youtube-nocookie.com/embed/' 
-        : 'youtube.com/embed/';
-      const videoId = cleanUrl.split(splitTarget)[1]?.split('?')[0]?.split('/')[0];
-      return videoId ? `https://www.youtube-nocookie.com/embed/${videoId}?rel=0` : cleanUrl;
-    }
+      // 4. YouTube ya en formato Embed (con o sin www, o youtube-nocookie)
+      // Corta directamente por '/embed/' para ignorar el dominio y limpiar '?feature=share'
+      if (cleanUrl.includes('/embed/')) {
+        const idConParametros = cleanUrl.split('/embed/')[1];
+        const videoId = idConParametros?.split('?')[0]?.split('&')[0]?.split('/')[0];
+        return videoId ? `https://www.youtube-nocookie.com/embed/${videoId}?rel=0` : cleanUrl;
+      }
 
-    // 5. Vimeo: vimeo.com/VIDEO_ID
-    if (cleanUrl.includes('vimeo.com/')) {
-      const videoId = cleanUrl.split('vimeo.com/')[1]?.split('?')[0]?.split('/')[0];
-      return videoId ? `https://player.vimeo.com/video/${videoId}` : cleanUrl;
-    }
+      // 5. Vimeo: vimeo.com/VIDEO_ID
+      if (cleanUrl.includes('vimeo.com/')) {
+        const videoId = cleanUrl.split('vimeo.com/')[1]?.split('?')[0]?.split('/')[0];
+        return videoId ? `https://player.vimeo.com/video/${videoId}` : cleanUrl;
+      }
+
       return cleanUrl;
     } catch {
       return url;
@@ -64,7 +64,8 @@ export function VideoSeccion({ videoUrl }: VideoSeccionProps) {
           src={embedUrl}
           title="Video de la propiedad"
           className="absolute top-0 left-0 w-full h-full border-0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerPolicy="strict-origin-when-cross-origin"
           allowFullScreen
         />
       </div>
