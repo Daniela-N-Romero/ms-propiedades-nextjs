@@ -8,22 +8,40 @@ export function VideoSeccion({ videoUrl }: VideoSeccionProps) {
   if (!videoUrl) return null;
 
   // 🔍 Helper para convertir URLs estándar de YouTube a formato Embed
-  const getEmbedUrl = (url: string) => {
+ const getEmbedUrl = (url: string) => {
     try {
-      if (url.includes('youtube.com/watch')) {
-        const videoId = new URL(url).searchParams.get('v');
-        return `https://www.youtube.com/embed/${videoId}`;
-      }
-      if (url.includes('youtu.be/')) {
-        const videoId = url.split('youtu.be/')[1]?.split('?')[0];
-        return `https://www.youtube.com/embed/${videoId}`;
-      }
-      if (url.includes('vimeo.com/')) {
-        const videoId = url.split('vimeo.com/')[1]?.split('?')[0];
-        return `https://player.vimeo.com/video/${videoId}`;
+      const cleanUrl = url.trim();
+
+      // Formato YouTube Shorts: youtube.com/shorts/VIDEO_ID
+      if (cleanUrl.includes('youtube.com/shorts/')) {
+        const videoId = cleanUrl.split('youtube.com/shorts/')[1]?.split('?')[0]?.split('/')[0];
+        return videoId ? `https://www.youtube-nocookie.com/embed/${videoId}?rel=0` : cleanUrl;
       }
 
-      return url; // Si ya viene en formato embed
+      // Formato YouTube Estándar: youtube.com/watch?v=VIDEO_ID
+      if (cleanUrl.includes('youtube.com/watch')) {
+        const videoId = new URL(cleanUrl).searchParams.get('v');
+        return videoId ? `https://www.youtube-nocookie.com/embed/${videoId}?rel=0` : cleanUrl;
+      }
+
+      // Formato YouTube Corto: youtu.be/VIDEO_ID
+      if (cleanUrl.includes('youtu.be/')) {
+        const videoId = cleanUrl.split('youtu.be/')[1]?.split('?')[0]?.split('/')[0];
+        return videoId ? `https://www.youtube-nocookie.com/embed/${videoId}?rel=0` : cleanUrl;
+      }
+
+      // Formato YouTube ya incrustado (reemplaza a nocookie para evitar bloqueos)
+      if (cleanUrl.includes('youtube.com/embed/')) {
+        return cleanUrl.replace('youtube.com', 'youtube-nocookie.com');
+      }
+
+      // Vimeo: vimeo.com/VIDEO_ID
+      if (cleanUrl.includes('vimeo.com/')) {
+        const videoId = cleanUrl.split('vimeo.com/')[1]?.split('?')[0]?.split('/')[0];
+        return videoId ? `https://player.vimeo.com/video/${videoId}` : cleanUrl;
+      }
+
+      return cleanUrl;
     } catch {
       return url;
     }

@@ -15,8 +15,8 @@ export const styles = {
   smallImageContainer: "relative aspect-[4/3] h-full overflow-hidden bg-slate-100",
   
   // Botón "Ver todas las fotos"
-  btnVerTodas: "absolute bottom-4 right-4 bg-white/90 backdrop-blur-md hover:bg-white text-slate-900 text-xs font-spartan font-bold uppercase tracking-wider px-4 py-2.5 rounded-xl shadow-lg transition-all flex items-center gap-2 border border-slate-200 z-10 hover:scale-105",
-
+  btnVerTodas: "bg-white/95 backdrop-blur-md hover:bg-white text-slate-900 text-xs font-spartan font-bold uppercase tracking-wider px-3.5 py-2.5 rounded-xl shadow-lg transition-all flex items-center gap-2 border border-slate-200 hover:scale-105 whitespace-nowrap",
+  
   // Modal / Lightbox Fullscreen
   lightboxOverlay: "fixed inset-0 z-1000 bg-slate-950/90 backdrop-blur-md flex flex-col justify-between p-4 md:p-8 animate-fadeIn",
   lightboxHeader: "flex justify-between items-center text-white z-20",

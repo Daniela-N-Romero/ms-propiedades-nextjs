@@ -17,6 +17,7 @@ interface GaleriaHeroProps {
 	pdfUrl?: string | null;
 	propiedadId?: number;
 	propiedadStatus: EstadoPropiedadEnum;
+	videoUrl?: string;
 }
 
 export default function GaleriaHero({
@@ -29,6 +30,7 @@ export default function GaleriaHero({
 	pdfUrl,
 	propiedadId,
 	propiedadStatus,
+	videoUrl,
 }: GaleriaHeroProps) {
 	const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 	const [currentIndex, setCurrentIndex] = useState(0);
@@ -194,14 +196,34 @@ export default function GaleriaHero({
 					))}
 				</div>
 
-				{/* Botón flotante para abrir todas las fotos */}
-				<button
-					type="button"
-					onClick={() => openLightboxAt(0)}
-					className={styles.btnVerTodas}
-				>
-					📸 Ver todas las fotos ({fotosDisplay.length})
-				</button>
+				{/* 📍 CONTENEDOR FLOTANTE DE BOTONES (Fila horizontal en la esquina inferior derecha) */}
+				<div className="absolute bottom-3 right-3 md:bottom-4 md:right-4 z-10 flex flex-col items-end gap-2">
+					{videoUrl && (
+						<button
+							type="button"
+							onClick={(e) => {
+								e.stopPropagation();
+								const el = document.getElementById("seccion-video");
+								if (el)
+									el.scrollIntoView({ behavior: "smooth", block: "center" });
+							}}
+							className="bg-white/95 backdrop-blur-md hover:bg-white text-slate-900 text-xs font-spartan font-bold uppercase tracking-wider px-3.5 py-2.5 rounded-xl shadow-lg transition-all flex items-center gap-2 border border-slate-200 hover:scale-105 whitespace-nowrap"
+						>
+							🎥 Ver Video
+						</button>
+					)}
+
+					<button
+						type="button"
+						onClick={(e) => {
+							e.stopPropagation();
+							openLightboxAt(0);
+						}}
+						className={styles.btnVerTodas}
+					>
+						📷 Ver todas las fotos ({fotosDisplay.length})
+					</button>
+				</div>
 			</div>
 
 			{/* 🌌 LIGHTBOX / MODAL FULLSCREEN */}

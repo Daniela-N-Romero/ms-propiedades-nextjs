@@ -82,6 +82,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
           pdfUrl={propiedad.pdfUrl}
           propiedadId={propiedad.id}
           propiedadStatus={propiedad.status}
+          videoUrl={propiedad.videoUrl}
         />
 
         {/* LAYOUT PRINCIPAL (A futuro tendrá 2 columnas: Ficha a la izquierda + Contacto Sticky a la derecha) */}
@@ -101,9 +102,10 @@ export default async function PropertyDetailPage({ params }: PageProps) {
             />
 
             {propiedad.videoUrl && (
-              <VideoSeccion videoUrl={propiedad.videoUrl} />
+              <div id="seccion-video" className="scroll-mt-24">
+                <VideoSeccion videoUrl={propiedad.videoUrl} />
+              </div>
             )}
-
 
             {propiedad.latitud && propiedad.longitud && (
               <MapaDetallePropiedad
