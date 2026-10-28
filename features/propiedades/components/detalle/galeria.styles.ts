@@ -1,7 +1,7 @@
 export const styles = {
   headerContainer: "mb-6 space-y-2",
-  badgeOperacion: "inline-block text-xs font-spartan font-bold uppercase tracking-wider px-2 py-1 bg-brand-orange text-white rounded-md mr-1",
-  codigoBadge: "inline-block text-xs font-spartan font-bold uppercase tracking-wider px-2 py-1 bg-slate-200 text-slate-700 rounded-md mr-1",
+  badgeOperacion: "inline-block text-xs font-spartan font-bold uppercase tracking-wider px-1 py-1 bg-brand-orange text-white rounded-md mr-0.5",
+  codigoBadge: "inline-block text-xs font-spartan font-bold uppercase tracking-wider px-1 py-1 bg-slate-200 text-slate-700 rounded-md",
   badgeDisponibilidad: "inline-block text-xs font-spartan font-bold uppercase tracking-wider px-2 py-1 text-slate-700 rounded-md",
   titulo: "text-xl md:text-3xl font-extrabold text-slate-900 leading-tight",
   ubicacion: "text-sm text-slate-500 flex items-center gap-1 font-medium",

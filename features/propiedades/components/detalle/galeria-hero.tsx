@@ -103,7 +103,7 @@ export default function GaleriaHero({
 			<div className={styles.headerContainer}>
 				{/* Fila superior: Categoría + Código a la izquierda, Compartir a la derecha en mobile */}
 				<div className="flex items-center justify-between gap-2">
-					<div className="flex flex-wrap gap-2">
+					<div className="flex flex-wrap gap-0.5">
 						<span className={styles.badgeOperacion}>En {categoria}</span>
 						<span className={styles.codigoBadge}>CÓDIGO: {codigo}</span>
 					</div>

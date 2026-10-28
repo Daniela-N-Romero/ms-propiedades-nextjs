@@ -45,7 +45,7 @@ export function AccionesPropiedad({ titulo, codigo, variant = 'icons' }: Accione
   // 🔹 MODO ÍCONOS (Ideal para poner al lado del título)
   if (variant === 'icons') {
     return (
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
         {/* BOTÓN 1: COPIAR ENLACE */}
         <button
           type="button"
