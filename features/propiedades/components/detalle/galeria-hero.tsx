@@ -170,7 +170,7 @@ export default function GaleriaHero({
 						preload={true}
 						unoptimized
 						sizes="(max-width: 768px) 100vw, 50vw"
-						className="object-cover hover:scale-105 transition-transform duration-500 bg-center"
+						className="w-full h-full object-cover hover:scale-105 transition-transform duration-500 object-center"
 					/>
 				</div>
 
