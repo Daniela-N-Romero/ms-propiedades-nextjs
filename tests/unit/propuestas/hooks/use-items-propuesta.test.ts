@@ -82,12 +82,32 @@ describe('🎣 Hook: useItemsPropuesta', () => {
     console.log('  ✅ Éxito: Las fórmulas matemáticas de proyección financiera responden con exactitud.');
   });
 
-  it('debe re-sincronizar automáticamente el nombre del parque cuando se cargan las BBDD', () => {
+ it('debe re-sincronizar automáticamente el nombre del parque cuando se cargan las BBDD', () => {
     console.log('  🔍 Evaluando: Re-sincronización asíncrona de nombres de Parque Industrial...');
 
-    const initialItems = [{ propiedadId: 10, nombre: '' }];
-    const propiedadesBD: any[] = [{ id: 10, parqueIndustrialId: 99 }];
-    const parquesBD: any[] = [{ id: 99, nombre: 'Parque Industrial Pilar', conectividad: 'Ruta 8' }];
+    // Aseguramos que el ítem tenga tanto id como propiedadId por compatibilidad
+    const initialItems: any[] = [
+      { id: 10, propiedadId: 10, nombre: '', notaLogistica: '' }
+    ];
+
+    const parqueMock = {
+      id: 99,
+      nombre: 'Parque Industrial Pilar',
+      conectividad: 'Ruta 8'
+    };
+
+    // Le damos a la propiedad tanto el ID foráneo como el objeto anidado por si el hook lee uno u otro
+    const propiedadesBD: any[] = [
+      {
+        id: 10,
+        titulo: 'Lote 10',
+        parqueIndustrialId: 99,
+        parqueIndustrial: parqueMock,
+        esPreventa: false,
+      }
+    ];
+
+    const parquesBD: any[] = [parqueMock];
 
     const { result } = renderHook(() =>
       useItemsPropuesta(initialItems, propiedadesBD, parquesBD, true, 350, 400)

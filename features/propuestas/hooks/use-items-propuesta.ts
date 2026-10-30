@@ -62,6 +62,28 @@ export function useItemsPropuesta(
         const propReal = propiedadesBD.find((p) => p.id === item.propiedadId);
         if (!propReal) return item;
 
+        // 1. Cruce del parque por ID foráneo contra el catálogo de parquesBD o relación anidada
+        const parqueAsociado = (parquesBD || []).find(
+          (pq: any) => pq.id === (propReal as any).parqueIndustrialId
+        ) || (propReal as any).parqueIndustrial;
+
+        // 2. Jerarquía canónica limpia compatible con ItemForm:
+        // Si item.nombre ya tiene un valor (no vacío), se preserva; 
+        // si no, se busca el nombre del Parque -> Zona -> Título -> ''
+        const nombreSincronizado =
+          item.nombre ||
+          parqueAsociado?.nombre ||
+          (propReal as any).zona?.nombre ||
+          propReal.titulo ||
+          '';
+
+        // 3. Jerarquía de nota logística:
+        const notaLogisticaSincronizada =
+          item.notaLogistica ||
+          parqueAsociado?.conectividad ||
+          parqueAsociado?.direccionAcceso ||
+          '';
+
         console.log(`📌 [DEBUG ITEM] Propiedad id ${item.propiedadId} (${propReal.titulo}):`, {
           propReal_esPreventa: propReal.esPreventa,
           propReal_fechaEntrega: propReal.fechaEstimadaEntrega,
@@ -75,6 +97,8 @@ export function useItemsPropuesta(
 
         return {
           ...item,
+          nombre: nombreSincronizado,
+          notaLogistica: notaLogisticaSincronizada,
           esPreventa: esPreventaCalculado,
           fechaEstimadaEntrega: fechaEntregaCalculada,
           mesesEntrega: mesesEntregaCalculados,
