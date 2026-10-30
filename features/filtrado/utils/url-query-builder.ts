@@ -21,33 +21,28 @@ interface BuildQueryOptions {
 
 export function buildFilterQueryString(
   filters: FiltrosState,
-  options: BuildQueryOptions = {}
+  options?: BuildQueryOptions
 ): string {
-  const { currentSearchParams, preserveKeys = ['mercado'] } = options;
   const params = new URLSearchParams();
 
-    // PASO 1: Preservar parámetros estructurales previos (ej: mercado=industrial)
-  if (currentSearchParams) {
-    const searchObj = currentSearchParams instanceof URLSearchParams
-      ? Object.fromEntries(currentSearchParams.entries())
-      : currentSearchParams;
+  // Si se pasaron opciones para preservar claves de la URL actual:
+  if (options?.currentSearchParams && options?.preserveKeys) {
+    const sp = options.currentSearchParams instanceof URLSearchParams
+      ? options.currentSearchParams
+      : new URLSearchParams(options.currentSearchParams as any);
 
- 
-    for (const key of preserveKeys) {
-      const val = searchObj[key];
-      if (typeof val === 'string' && val.trim() !== '') {
-        params.set(key, val);
-      } else if (Array.isArray(val) && val.length > 0) {
-        // Si el parámetro a preservar venía como array (ej: múltiples valores)
-        val.forEach((v) => params.append(key, v));
-      }
-    }
-
+    options.preserveKeys.forEach((key) => {
+      const val = sp.get(key);
+      if (val) params.set(key, val);
+    });
   }
 
-  // PASO 2: Procesar filtros de texto simple (operación, moneda, orden)
+  // Procesar filtros de texto simple (operación, moneda, orden)
   // Usamos `.set(clave, valor)`: si la clave ya existía, la sobreescribe (evita duplicados).
   // Validamos con `.trim() !== ''` para no generar URLs con claves vacías tipo "?categoria=".
+  if (filters.mercado && filters.mercado.trim() !== '') {
+    params.set('mercado', filters.mercado.trim());
+  }
   if (filters.categoria && filters.categoria.trim() !== '') {
     params.set('categoria', filters.categoria.trim());
   }
@@ -61,12 +56,11 @@ export function buildFilterQueryString(
     params.set('ordenar', filters.orden.trim());
   }
 
-  // PASO 3: Procesar arrays (subtipos y localidades) evitando duplicaciones en la URL
+  // Procesar arrays (subtipos y localidades) evitando duplicaciones en la URL
   if (filters.subtipo && filters.subtipo.length > 0) {
     const subtiposUnicos = Array.from(new Set(filters.subtipo.filter(Boolean)));
     subtiposUnicos.forEach((slug) => params.append('subtipo', slug));
   }
-
 
   if (filters.localidad && filters.localidad.length > 0) {
     // Filtramos IDs válidos (> 0 y que no sean NaN)
@@ -76,7 +70,7 @@ export function buildFilterQueryString(
     locsValidas.forEach((id) => params.append('localidad', String(id)));
   }
 
-  // PASO 4: Procesar rangos numéricos con validación estricta
+  // Procesar rangos numéricos con validación estricta
     // Definimos una tabla de equivalencias entre la propiedad de FiltrosState
   // y el nombre del parámetro que espera la base de datos en Next.js.
   const rangos: Array<[keyof FiltrosState, string]> = [
@@ -97,6 +91,7 @@ export function buildFilterQueryString(
     }
   });
 
+  // ... resto de serialización (categoria, subtipo, localidad, etc.)
   const queryString = params.toString();
   return queryString ? `?${queryString}` : '';
 }
@@ -139,6 +134,7 @@ export function parseSearchParamsToFilters(
   };
 
   return {
+    mercado: getParam('mercado'),
     categoria: getParam('categoria'),
     moneda: getParam('moneda'),
     orden: getParam('ordenar') || getParam('orden'),

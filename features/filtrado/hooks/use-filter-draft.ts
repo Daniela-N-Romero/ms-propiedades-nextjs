@@ -9,7 +9,7 @@
 
 "use client";
 
-import { useState, useTransition, useMemo } from 'react';
+import { useState, useTransition, useMemo, useEffect } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { FiltrosState } from '../types/filtrado.types';
 import { parseSearchParamsToFilters, buildFilterQueryString } from '../utils/url-query-builder';
@@ -22,16 +22,24 @@ export function useFilterDraft() {
   // evitando que la pantalla se congele mientras el Server Component procesa los datos
   const [isPending, startTransition] = useTransition();
 
+// 1. Cadena representativa de la URL actual
+  const currentParamsString = searchParams ? searchParams.toString() : '';
 
-    /**
-   * ESTADO LOCAL EN MEMORIA (DRAFT):
-   * Se inicializa mediante una función lazy `() => parseSearchParamsToFilters(searchParams)`
-   * para que solo lea la URL en el primer montaje del componente y no en cada re-render.
-   */
+  // 2. Rastreamos la última URL procesada
+  const [prevParamsString, setPrevParamsString] = useState(currentParamsString);
+
+  // 3. Estado local borrador
   const [draftFilters, setDraftFilters] = useState<FiltrosState>(() =>
     parseSearchParamsToFilters(searchParams)
   );
 
+  // 4. Patrón oficial de React: sincronización durante el render
+  // Si la URL externa cambió (ej: click en Mercado o botón atrás del navegador),
+  // reiniciamos el borrador sin efectos secundarios ni useEffect.
+  if (prevParamsString !== currentParamsString) {
+    setPrevParamsString(currentParamsString);
+    setDraftFilters(parseSearchParamsToFilters(searchParams));
+  }
   /**
    * Actualiza campos atómicos del borrador (como 'moneda', 'categoria', o rangos numéricos).
    * Utiliza la forma funcional `(prev) => ({ ...prev, ...nuevosCampos })` para garantizar
@@ -90,7 +98,9 @@ const setMultipleInArrayDraft = (
    * Restablece el borrador a un estado completamente vacío (acción "Limpiar Filtros")
    */
   const resetDraft = () => {
-    setDraftFilters({});
+    setDraftFilters((prev) => ({
+      mercado: prev.mercado, // Se conserva el mercado actual
+    }));
   };
 
    /**
@@ -123,14 +133,21 @@ const setMultipleInArrayDraft = (
    */
   const applyFilters = (onApplied?: () => void) => {
     const queryString = buildFilterQueryString(draftFilters, {
-      currentSearchParams: searchParams,
-      preserveKeys: ['mercado'], // Mantiene el mercado industrial/comercial activo
+      currentSearchParams: searchParams
     });
 
     startTransition(() => {
       router.push(`${pathname}${queryString}`);
       if (onApplied) onApplied();
     });
+  };
+
+    const handleCambioMercado = (nuevoMercado: string | undefined) => {
+    // Al cambiar de mercado, navegamos directo limpiando subtipos incompatibles
+    const params = new URLSearchParams();
+    if (nuevoMercado) params.set('mercado', nuevoMercado);
+    
+    router.push(`${pathname}${params.toString() ? `?${params.toString()}` : ''}`);
   };
 
 
@@ -143,5 +160,6 @@ const setMultipleInArrayDraft = (
     applyFilters,             // Función que consolida y navega
     activeCount,              // Cantidad de filtros seleccionados (para el badge del botón)
     isPending,                // Boolean que indica si la navegación está en curso
+    handleCambioMercado       // Funcion que sirve para que al cambiar de mercado, navegamos directo limpiando subtipos incompatibles
   };
 }

@@ -3,6 +3,7 @@
  * Se utiliza tanto para el estado local en memoria como para representar los searchParams.
  */
 export interface FiltrosState {
+  mercado?: string;
   categoria?: string;
   subtipo?: string[]; /** Lista de slugs de subtipos seleccionados (ej: ['nave-industrial', 'lote']) */
   localidad?: number[]; /** Lista de IDs numéricos de localidades seleccionadas (ej: [20, 21]) */

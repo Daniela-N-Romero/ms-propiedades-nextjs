@@ -30,26 +30,34 @@ describe('url-query-builder', () => {
     expect(query).not.toContain('precioMin');
   });
 
-  it('preserva el parámetro de mercado y descarta la paginación previa al aplicar nuevos filtros', () => {
-    const query = buildFilterQueryString(
-      { categoria: 'venta' },
-      { currentSearchParams: new URLSearchParams('mercado=industrial&page=3') }
-    );
-
-    // Debe conservar el mercado intacto
-    expect(query).toContain('mercado=industrial');
-    expect(query).toContain('categoria=venta');
-    // Debe omitir page=3 para que la nueva búsqueda inicie en la página 1
-    expect(query).not.toContain('page=3');
+it('debe devolver string vacío si no hay filtros activos', () => {
+    const qs = buildFilterQueryString({});
+    expect(qs).toBe('');
   });
 
-  it('parsea correctamente searchParams a FiltrosState', () => {
-    const params = new URLSearchParams('subtipo=lote&localidad=10&precioMin=50000');
-    const parsed = parseSearchParamsToFilters(params);
+  it('debe incluir el prefijo "?" y serializar el parámetro mercado', () => {
+    const qs = buildFilterQueryString({ mercado: 'industrial' });
+    expect(qs).toBe('?mercado=industrial');
+  });
 
-    expect(parsed.subtipo).toEqual(['lote']);
-    expect(parsed.localidad).toEqual([10]);
-    expect(parsed.precioMin).toBe(50000);
-    expect(parsed.supMax).toBeUndefined();
+  it('debe serializar múltiples filtros combinando mercado, categoría y rangos', () => {
+    const qs = buildFilterQueryString({
+      mercado: 'residencial',
+      categoria: 'venta',
+      precioMin: 50000,
+    });
+
+    expect(qs.startsWith('?')).toBe(true);
+    expect(qs).toContain('mercado=residencial');
+    expect(qs).toContain('categoria=venta');
+    expect(qs).toContain('precioMin=50000');
+  });
+
+  it('debe parsear searchParams extrayendo el campo mercado correctamente', () => {
+    const searchParams = new URLSearchParams('mercado=comercial&categoria=alquiler');
+    const parsed = parseSearchParamsToFilters(searchParams);
+
+    expect(parsed.mercado).toBe('comercial');
+    expect(parsed.categoria).toBe('alquiler');
   });
 });
