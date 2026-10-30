@@ -27,7 +27,6 @@ vi.mock('@/backend/db', () => ({
 
 describe('⚡ Actions: savePropertyAction', () => {
   it('debe persistir los campos esPreventa y fechaEstimadaEntrega al crear una propiedad', async () => {
-    console.log('  🔍 Evaluando: Guardado de atributos de Preventa desde el formulario de Admin...');
 
     const fechaSimulada = '2027-06-30';
     const mockFormData: any = {
@@ -59,7 +58,5 @@ describe('⚡ Actions: savePropertyAction', () => {
         }),
       })
     );
-
-    console.log('  ✅ Éxito: Server Action incluyó esPreventa y la fecha normalizada en el payload de Prisma.');
   });
 });

@@ -15,7 +15,6 @@ vi.mock('@/backend/db', () => ({
 
 describe('📦 Service: PropuestasService', () => {
   it('debe obtener una propuesta por Slug y ejecutar el sanitizer', async () => {
-    console.log('  🔍 Evaluando: Búsqueda de propuesta por Slug e inclusión de imágenes limitadas...');
 
     const mockDbData = {
       id: 'prop-1',
@@ -34,11 +33,10 @@ describe('📦 Service: PropuestasService', () => {
       expect.objectContaining({ where: { slug: 'test-slug' } })
     );
 
-    console.log('  ✅ Éxito: Consulta a la BBDD efectuada y respuesta saneada correctamente.');
   });
 
   it('debe crear una propuesta comercial con sus ítems mapeados', async () => {
-    console.log('  🔍 Evaluando: Creación de propuesta con mapeo de ítems y orden...');
+
 
     const mockBody = {
       tipo: 'INVERSION_DESARROLLO',
@@ -54,7 +52,6 @@ describe('📦 Service: PropuestasService', () => {
     expect(resultado.id).toBe('prop-2');
     expect(prisma.propuestaComercial.create).toHaveBeenCalled();
 
-    console.log('  ✅ Éxito: Persistencia de propuesta invocada con los valores por defecto requeridos.');
   });
 });
 
@@ -76,7 +73,7 @@ vi.mock('@/backend/db', () => ({
 
 describe('📦 Service: PropuestasService (Métodos Restantes)', () => {
   it('debe obtener una propuesta por ID', async () => {
-    console.log('  🔍 Evaluando: Búsqueda de propuesta por ID...');
+
     vi.spyOn(prisma.propuestaComercial, 'findUnique').mockResolvedValue({ id: 'prop-123', items: [] } as any);
 
     const res = await PropuestasService.obtenerPorId('prop-123');
@@ -84,7 +81,7 @@ describe('📦 Service: PropuestasService (Métodos Restantes)', () => {
   });
 
   it('debe obtener el listado para el panel de administración', async () => {
-    console.log('  🔍 Evaluando: Consulta de listado para el dashboard...');
+
     vi.spyOn(prisma.propuestaComercial, 'findMany').mockResolvedValue([{ id: '1' }] as any);
 
     const res = await PropuestasService.obtenerListadoAdmin();
@@ -92,7 +89,6 @@ describe('📦 Service: PropuestasService (Métodos Restantes)', () => {
   });
 
   it('debe actualizar una propuesta existente dentro de una transacción', async () => {
-    console.log('  🔍 Evaluando: Actualización transaccional de propuesta...');
     const body = { clienteNombre: 'Actualizado', items: [] };
 
     const res = await PropuestasService.actualizar('prop-1', body);
@@ -100,7 +96,7 @@ describe('📦 Service: PropuestasService (Métodos Restantes)', () => {
   });
 
   it('debe eliminar una propuesta por ID', async () => {
-    console.log('  🔍 Evaluando: Eliminación de propuesta...');
+
     vi.spyOn(prisma.propuestaComercial, 'delete').mockResolvedValue({ id: 'prop-1' } as any);
 
     const res = await PropuestasService.eliminarPorId('prop-1');

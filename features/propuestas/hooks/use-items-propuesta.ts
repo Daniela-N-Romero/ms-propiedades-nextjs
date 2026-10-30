@@ -55,8 +55,6 @@ export function useItemsPropuesta(
   useEffect(() => {
     if (propiedadesBD.length === 0) return;
 
-    console.log("🔍 [DEBUG BBDD] Propiedades cargadas desde API:", propiedadesBD);
-
     setItemsSeleccionados((itemsPrev) =>
       itemsPrev.map((item) => {
         const propReal = propiedadesBD.find((p) => p.id === item.propiedadId);
@@ -84,12 +82,6 @@ export function useItemsPropuesta(
           parqueAsociado?.direccionAcceso ||
           '';
 
-        console.log(`📌 [DEBUG ITEM] Propiedad id ${item.propiedadId} (${propReal.titulo}):`, {
-          propReal_esPreventa: propReal.esPreventa,
-          propReal_fechaEntrega: propReal.fechaEstimadaEntrega,
-          item_esPreventa_actual: item.esPreventa,
-        });
-
         // Forzamos el valor de la BBDD si el ítem de la propuesta no viene explícitamente en true
         const esPreventaCalculado = Boolean(propReal.esPreventa || item.esPreventa);
         const fechaEntregaCalculada = item.fechaEstimadaEntrega || propReal.fechaEstimadaEntrega || null;
@@ -116,7 +108,6 @@ export function useItemsPropuesta(
           .map((it, idx) => ({ ...it, orden: idx + 1 }))
       );
     } else {
-      console.log("➕ [DEBUG TOGGLE] Agregando propiedad:", prop);
 
       const supLote = Number(prop.superficieTotal || prop.superficieCubierta || 0);
       const precioTotal = Number(prop.precio || 0);

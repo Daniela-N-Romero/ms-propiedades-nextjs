@@ -5,7 +5,7 @@ describe('🛣️ Estrategia: LogisticaStrategy', () => {
   const strategy = new LogisticaStrategy();
 
   it('debe procesar los ítems y formatear precios, superficies y valores por m²', () => {
-    console.log('  🔍 Evaluando: Transformación de propiedades para la vista interactiva de logística y mapa...');
+
 
     const mockItems: any[] = [
       {
@@ -36,7 +36,5 @@ describe('🛣️ Estrategia: LogisticaStrategy', () => {
     expect(resultado[0].precioM2).toBe('USD 100 / m²');
     expect(resultado[0].tiempoRuta).toBe('25 min');
     expect(resultado[0].imagen).toBe('/img/hudson.jpg');
-
-    console.log('  ✅ Éxito: Formateo de precios por m², coordenadas de mapa y datos logísticos validados.');
   });
 });

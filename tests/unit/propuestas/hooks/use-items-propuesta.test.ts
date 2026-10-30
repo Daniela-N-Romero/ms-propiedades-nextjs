@@ -5,7 +5,6 @@ import { useItemsPropuesta } from '@/features/propuestas/hooks/use-items-propues
 
 describe('🎣 Hook: useItemsPropuesta', () => {
   it('debe inicializar la lista de ítems correctamente', () => {
-    console.log('  🔍 Evaluando: Carga inicial de ítems guardados desde la BBDD...');
     
     const initialItems = [
       { propiedadId: 1, esPrioritaria: true, nombre: 'Parque Industrial Hudson' }
@@ -18,11 +17,9 @@ describe('🎣 Hook: useItemsPropuesta', () => {
     expect(result.current.itemsSeleccionados).toHaveLength(1);
     expect(result.current.itemsSeleccionados[0].nombre).toBe('Parque Industrial Hudson');
     
-    console.log('  ✅ Éxito: Los ítems iniciales se mapean e inicializan correctamente.');
   });
 
   it('debe agregar y quitar propiedades mediante togglePropiedad', () => {
-    console.log('  🔍 Evaluando: Interacción del usuario al seleccionar y deseleccionar un lote del catálogo...');
 
     const mockPropiedad: any = {
       id: 10,
@@ -52,11 +49,9 @@ describe('🎣 Hook: useItemsPropuesta', () => {
 
     expect(result.current.itemsSeleccionados).toHaveLength(0);
 
-    console.log('  ✅ Éxito: togglePropiedad agrega con cálculos automáticos (FOS/Nave) y remueve de forma limpia.');
   });
 
   it('debe calcular correctamente las métricas individuales de un ítem', () => {
-    console.log('  🔍 Evaluando: Cálculo financiero dinámico de superficie de nave, inversión y ROI por ítem...');
 
     const { result } = renderHook(() =>
       useItemsPropuesta([], [], [], true, 350, 400)
@@ -79,11 +74,9 @@ describe('🎣 Hook: useItemsPropuesta', () => {
     expect(metricas.ingresoAnualUSD).toBe(60000);
     expect(metricas.roiAnual).toBe(13.33);
 
-    console.log('  ✅ Éxito: Las fórmulas matemáticas de proyección financiera responden con exactitud.');
   });
 
  it('debe re-sincronizar automáticamente el nombre del parque cuando se cargan las BBDD', () => {
-    console.log('  🔍 Evaluando: Re-sincronización asíncrona de nombres de Parque Industrial...');
 
     // Aseguramos que el ítem tenga tanto id como propiedadId por compatibilidad
     const initialItems: any[] = [
@@ -116,6 +109,5 @@ describe('🎣 Hook: useItemsPropuesta', () => {
     expect(result.current.itemsSeleccionados[0].nombre).toBe('Parque Industrial Pilar');
     expect(result.current.itemsSeleccionados[0].notaLogistica).toBe('Ruta 8');
 
-    console.log('  ✅ Éxito: Cruce asíncrono de ID de parque resolvió el nombre y accesos en las tarjetas.');
   });
 });
