@@ -2,7 +2,7 @@
  * useItemsPropuesta: Maneja el estado de los ítems seleccionados, autocompletados, toggle de selección y cálculo rápido de métricas.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { ItemForm, PropiedadSimple } from '../types/propuesta.types';
 
 function calcularMesesDesdeFecha(fechaRaw: any): number {
@@ -22,21 +22,28 @@ export function useItemsPropuesta(
   costoObraPreferencial: number,
   costoObraMercado: number
 ) {
-  // 1. Inicialización
+  // 1. Estado base de ítems seleccionados
   const [itemsSeleccionados, setItemsSeleccionados] = useState<ItemForm[]>(
     initialItems?.map((i: any, idx: number) => {
       const propBase = i.propiedad || {};
       const esPreventaFinal = i.esPreventa ?? propBase.esPreventa ?? false;
       const fechaEntregaFinal = i.fechaEstimadaEntrega || propBase.fechaEstimadaEntrega || null;
-      const mesesEntregaFinal = (i.mesesEntrega !== undefined && i.mesesEntrega !== null && i.mesesEntrega > 0)
-        ? i.mesesEntrega
-        : calcularMesesDesdeFecha(fechaEntregaFinal);
+      const mesesEntregaFinal =
+        i.mesesEntrega !== undefined && i.mesesEntrega !== null && i.mesesEntrega > 0
+          ? i.mesesEntrega
+          : calcularMesesDesdeFecha(fechaEntregaFinal);
 
       return {
         ...i,
         propiedadId: i.propiedadId,
         esPrioritaria: i.esPrioritaria || idx === 0,
-        nombre: i.nombre || i.parqueIndustrialNombre || i.parqueIndustrial?.nombre || i.propiedad?.parqueIndustrial?.nombre || i.propiedad?.zona?.nombre || '',
+        nombre:
+          i.nombre ||
+          i.parqueIndustrialNombre ||
+          i.parqueIndustrial?.nombre ||
+          i.propiedad?.parqueIndustrial?.nombre ||
+          i.propiedad?.zona?.nombre ||
+          '',
         costoObraM2: i.costoObraM2 || 350,
         fosAplicado: i.fosAplicado || 0.6,
         orden: i.orden || idx + 1,
@@ -51,53 +58,47 @@ export function useItemsPropuesta(
     }) || []
   );
 
-  // 2. Re-sincronización con Logs
-  useEffect(() => {
-    if (propiedadesBD.length === 0) return;
+  // 2. Sincronización derivada limpia (sin useEffect ni re-render cascada)
+  const itemsSincronizados = useMemo(() => {
+    if (!propiedadesBD || propiedadesBD.length === 0) {
+      return itemsSeleccionados;
+    }
 
-    setItemsSeleccionados((itemsPrev) =>
-      itemsPrev.map((item) => {
-        const propReal = propiedadesBD.find((p) => p.id === item.propiedadId);
-        if (!propReal) return item;
+    return itemsSeleccionados.map((item) => {
+      const propReal = propiedadesBD.find((p) => p.id === item.propiedadId);
+      if (!propReal) return item;
 
-        // 1. Cruce del parque por ID foráneo contra el catálogo de parquesBD o relación anidada
-        const parqueAsociado = (parquesBD || []).find(
-          (pq: any) => pq.id === (propReal as any).parqueIndustrialId
-        ) || (propReal as any).parqueIndustrial;
+      const parqueAsociado =
+        (parquesBD || []).find((pq: any) => pq.id === (propReal as any).parqueIndustrialId) ||
+        (propReal as any).parqueIndustrial;
 
-        // 2. Jerarquía canónica limpia compatible con ItemForm:
-        // Si item.nombre ya tiene un valor (no vacío), se preserva; 
-        // si no, se busca el nombre del Parque -> Zona -> Título -> ''
-        const nombreSincronizado =
-          item.nombre ||
-          parqueAsociado?.nombre ||
-          (propReal as any).zona?.nombre ||
-          propReal.titulo ||
-          '';
+      const nombreSincronizado =
+        item.nombre ||
+        parqueAsociado?.nombre ||
+        (propReal as any).zona?.nombre ||
+        propReal.titulo ||
+        '';
 
-        // 3. Jerarquía de nota logística:
-        const notaLogisticaSincronizada =
-          item.notaLogistica ||
-          parqueAsociado?.conectividad ||
-          parqueAsociado?.direccionAcceso ||
-          '';
+      const notaLogisticaSincronizada =
+        item.notaLogistica ||
+        parqueAsociado?.conectividad ||
+        parqueAsociado?.direccionAcceso ||
+        '';
 
-        // Forzamos el valor de la BBDD si el ítem de la propuesta no viene explícitamente en true
-        const esPreventaCalculado = Boolean(propReal.esPreventa || item.esPreventa);
-        const fechaEntregaCalculada = item.fechaEstimadaEntrega || propReal.fechaEstimadaEntrega || null;
-        const mesesEntregaCalculados = item.mesesEntrega || calcularMesesDesdeFecha(fechaEntregaCalculada);
+      const esPreventaCalculado = Boolean(propReal.esPreventa || item.esPreventa);
+      const fechaEntregaCalculada = item.fechaEstimadaEntrega || propReal.fechaEstimadaEntrega || null;
+      const mesesEntregaCalculados = item.mesesEntrega || calcularMesesDesdeFecha(fechaEntregaCalculada);
 
-        return {
-          ...item,
-          nombre: nombreSincronizado,
-          notaLogistica: notaLogisticaSincronizada,
-          esPreventa: esPreventaCalculado,
-          fechaEstimadaEntrega: fechaEntregaCalculada,
-          mesesEntrega: mesesEntregaCalculados,
-        };
-      })
-    );
-  }, [propiedadesBD, parquesBD]);
+      return {
+        ...item,
+        nombre: nombreSincronizado,
+        notaLogistica: notaLogisticaSincronizada,
+        esPreventa: esPreventaCalculado,
+        fechaEstimadaEntrega: fechaEntregaCalculada,
+        mesesEntrega: mesesEntregaCalculados,
+      };
+    });
+  }, [itemsSeleccionados, propiedadesBD, parquesBD]);
 
   const togglePropiedad = (prop: PropiedadSimple) => {
     const existe = itemsSeleccionados.some((i) => i.propiedadId === prop.id);
@@ -108,7 +109,6 @@ export function useItemsPropuesta(
           .map((it, idx) => ({ ...it, orden: idx + 1 }))
       );
     } else {
-
       const supLote = Number(prop.superficieTotal || prop.superficieCubierta || 0);
       const precioTotal = Number(prop.precio || 0);
       const fosBase = 0.6;
@@ -164,12 +164,12 @@ export function useItemsPropuesta(
   };
 
   const maxRoiCalculado =
-    itemsSeleccionados.length > 0
-      ? Math.max(...itemsSeleccionados.map((it) => calcularMetricasItem(it).roiAnual))
+    itemsSincronizados.length > 0
+      ? Math.max(...itemsSincronizados.map((it) => calcularMetricasItem(it).roiAnual))
       : 0;
 
   return {
-    itemsSeleccionados,
+    itemsSeleccionados: itemsSincronizados,
     setItemsSeleccionados,
     togglePropiedad,
     calcularMetricasItem,
