@@ -20,6 +20,8 @@ export default async function IndustrialPage({ searchParams }: PageProps) {
     currentPage,
     totalPages,
     localidades,
+    zonasPadre,
+    partidos,
     subtipos,
     esFallback
   } = await renderPageByPropertyType({
@@ -31,6 +33,8 @@ export default async function IndustrialPage({ searchParams }: PageProps) {
     propiedades={propiedades}
     localidades={localidades}
     subtipos={subtipos}
+    zonasPadre={zonasPadre}
+    partidos={partidos}
     esFallback={esFallback}
     totalPropiedades={totalPropiedades}
     currentPage={currentPage}

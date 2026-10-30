@@ -165,3 +165,66 @@ export async function getLocalidadesConPropiedadesAdmin() {
 
   return localidades.map(sanearZona);
 }
+
+export async function getZonasJerarquicasActivas(mercadoSlug?: string) {
+  const wherePropiedad: any = {
+    isPublished: true,
+    isUnlisted: false,
+  };
+
+  if (mercadoSlug && mercadoSlug !== 'todas') {
+    wherePropiedad.tipoInmueble = {
+      OR: [
+        { slug: { equals: mercadoSlug, mode: 'insensitive' } },
+        { padre: { slug: { equals: mercadoSlug, mode: 'insensitive' } } },
+      ],
+    };
+  }
+
+  // 1. Regiones Padre (GBA Sur, GBA Norte, CABA, etc.)
+  const zonasPadre = await prisma.zona.findMany({
+    where: { padreId: null },
+    select: { id: true, nombre: true },
+    orderBy: { nombre: 'asc' },
+  });
+
+  // 2. Partidos con sus localidades que tengan stock activo
+  const partidosRaw = await prisma.zona.findMany({
+    where: {
+      padreId: { not: null },
+      padre: { padreId: null }, // Partidos directos
+      OR: [
+        { propiedades: { some: wherePropiedad } },
+        { hijas: { some: { propiedades: { some: wherePropiedad } } } },
+      ],
+    },
+    select: {
+      id: true,
+      nombre: true,
+      padreId: true,
+      hijas: {
+        where: {
+          propiedades: { some: wherePropiedad },
+        },
+        select: {
+          id: true,
+          nombre: true,
+        },
+        orderBy: { nombre: 'asc' },
+      },
+    },
+    orderBy: { nombre: 'asc' },
+  });
+
+  const partidos = partidosRaw.map((p) => ({
+    id: p.id,
+    nombre: p.nombre,
+    padreId: p.padreId,
+    localidades: p.hijas,
+  }));
+
+  return {
+    zonasPadre: zonasPadre.map(sanearZona),
+    partidos,
+  };
+}

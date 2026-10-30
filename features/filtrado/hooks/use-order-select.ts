@@ -1,18 +1,35 @@
 'use client';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+'use client';
 
-export function orderValueSettings() {
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { useTransition } from 'react';
+
+export function useOrderSelect() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const currentOrder = searchParams.get('ordenar') || '';
+  const [isPending, startTransition] = useTransition();
 
-  const handleChange = (val: string) => {
+  const currentOrder = searchParams.get('ordenar') || searchParams.get('orden') || '';
+
+  const setOrder = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (val) params.set('ordenar', val);
-    else params.delete('ordenar');
-    router.push(`${pathname}?${params.toString()}`);
+    if (value) {
+      params.set('ordenar', value);
+    } else {
+      params.delete('ordenar');
+      params.delete('orden');
+    }
+    params.delete('page');
+
+    startTransition(() => {
+      router.push(`${pathname}?${params.toString()}`);
+    });
   };
 
-  return {currentOrder, handleChange};
+  return {
+    currentOrder,
+    setOrder,
+    isPending,
+  };
 }
