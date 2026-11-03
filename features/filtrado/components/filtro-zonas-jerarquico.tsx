@@ -3,23 +3,8 @@
 
 import { useState, useMemo } from 'react';
 import { ChevronDown, ChevronRight, MapPin } from 'lucide-react';
+import { PartidoConLocalidades, ZonaPadre } from '../types/filtrado.types';
 
-export interface LocalidadHija {
-  id: number;
-  nombre: string;
-}
-
-export interface PartidoConLocalidades {
-  id: number;
-  nombre: string;
-  padreId?: number | null; // ID de GBA Sur, Norte, etc.
-  localidades: LocalidadHija[];
-}
-
-export interface ZonaPadre {
-  id: number;
-  nombre: string; // "GBA Sur", "GBA Norte", "GBA Oeste", "CABA"
-}
 
 interface FiltroZonasJerarquicoProps {
   zonasPadre: ZonaPadre[];

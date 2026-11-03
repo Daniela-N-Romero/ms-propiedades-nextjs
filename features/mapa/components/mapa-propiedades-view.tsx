@@ -6,28 +6,9 @@ import { greenIcon, blueIcon } from '../utils/leaflet-icon';
 import { formatPrecio } from '@/lib/utils-formatting';
 import Link from 'next/link';
 import { useEffect } from 'react';
-import type { PropietarioMapaItem, ColegaMapaItem } from '@/app/(privado)/admin/mapa-privado/page.tsx'
+import type { PropietarioMapaItem, ColegaMapaItem, PropiedadMapaItem } from '@/features/mapa/types/mapa-types';
 
 
-export interface PropiedadMapaItem {
-  id: number;
-  codigo: string;
-  slug: string;
-  titulo: string;
-  precio: number;
-  financiacion?: string;
-  superficieTotal: number | null;
-  superficieCubierta: number | null;
-  moneda: string;
-  latitud: number;
-  longitud: number;
-  imagenPortada?: string;
-  zonaNombre: string;
-  // Campos opcionales para la vista del mapa privado
-  origen?: string;
-  propietarioId?: number | null;
-  colegaId?: number | null;
-}
 
 interface MapaPropiedadesViewProps {
   propiedades: PropiedadMapaItem[];

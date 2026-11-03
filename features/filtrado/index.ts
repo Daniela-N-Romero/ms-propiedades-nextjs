@@ -15,6 +15,11 @@ export { MobileFilterDrawer } from './components/mobile-filter-drawer';
 export { FiltroZonasJerarquico } from './components/filtro-zonas-jerarquico';
 export { OrdenarSelect } from './components/ordenar-select';
 
+// Hooks
+export { useFilterDraft } from './hooks/use-filter-draft';
+
+// Utils
+export { buildFilterQueryString, parseSearchParamsToFilters } from './utils/url-query-builder';
+
 // 4. Componentes de compatibilidad
-export { default as PanelFiltros } from './components/panel-filtros';
 export { default as ResultsView } from './components/results-view';

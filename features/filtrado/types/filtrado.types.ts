@@ -42,3 +42,24 @@ export interface PanelFiltrosProps {
   subtipos: SubtipoOption[];
   esMapa?: boolean;   /** Indica si el panel se está renderizando dentro de la vista de mapa */
 }
+
+
+/**
+ * Propiedades necesarias para renderizar el componente de filtro jerárquico de zonas geográficas
+ */
+export interface LocalidadHija {
+  id: number;
+  nombre: string;
+}
+
+export interface PartidoConLocalidades {
+  id: number;
+  nombre: string;
+  padreId?: number | null; // ID de GBA Sur, Norte, etc.
+  localidades: LocalidadHija[];
+}
+
+export interface ZonaPadre {
+  id: number;
+  nombre: string; // "GBA Sur", "GBA Norte", "GBA Oeste", "CABA"
+}

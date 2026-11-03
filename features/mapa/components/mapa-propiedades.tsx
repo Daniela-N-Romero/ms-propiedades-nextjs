@@ -1,8 +1,8 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import type { PropiedadMapaItem } from './mapa-propiedades-view';
-import type { PropietarioMapaItem, ColegaMapaItem } from '@/app/(privado)/admin/mapa-privado/page.tsx';
+import type { PropiedadMapaItem } from '@/features/mapa/types/mapa-types';
+import type { PropietarioMapaItem, ColegaMapaItem } from '@/features/mapa/types/mapa-types';
 
 interface MapaPropiedadesProps {
   propiedades: PropiedadMapaItem[];
