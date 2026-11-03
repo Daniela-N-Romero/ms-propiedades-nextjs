@@ -2,11 +2,8 @@
 "use client";
 
 import { useFilterDraft } from "../hooks/use-filter-draft";
-import {
-	FiltroZonasJerarquico,
-	PartidoConLocalidades,
-	ZonaPadre,
-} from "./filtro-zonas-jerarquico";
+import {FiltroZonasJerarquico} from "./filtro-zonas-jerarquico";
+import { PartidoConLocalidades, ZonaPadre } from '../types/filtrado.types';
 import { SubtipoOption } from "../types/filtrado.types";
 import { Filter, RotateCcw, Check } from "lucide-react";
 

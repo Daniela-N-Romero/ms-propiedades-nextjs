@@ -4,7 +4,7 @@ import { PropertyCard } from '@/features/propiedades';
 import { OrdenarSelect } from '../index';
 import { DesktopFilterSidebar } from './desktop-filter-sidebar';
 import { MobileFilterDrawer } from './mobile-filter-drawer';
-import { ZonaPadre, PartidoConLocalidades } from './filtro-zonas-jerarquico';
+import { PartidoConLocalidades, ZonaPadre } from '../types/filtrado.types';
 import { styles } from './resultados.styles';
 import type { TipoInmueble } from '@prisma-client';
 import { useState } from 'react';
