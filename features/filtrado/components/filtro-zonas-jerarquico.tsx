@@ -42,6 +42,23 @@ export function FiltroZonasJerarquico({
     }));
   };
 
+  /**
+   * Al cambiar de macro-región (ej: de GBA Norte a GBA Sur) reemplaza las localidades seleccionadas por todas las de la nueva región.
+   */
+  const handleCambioRegion = (nuevaRegionId: number) => {
+    setRegionActivaId(nuevaRegionId);
+
+    // Obtenemos todos los IDs de localidades de la región elegida
+    const partidosDeNuevaRegion = partidos.filter((p) => p.padreId === nuevaRegionId);
+    const todasLasLocalidadesRegion = partidosDeNuevaRegion.flatMap((p) =>
+      p.localidades.map((loc) => loc.id)
+    );
+
+    // Limpiamos las anteriores de otras regiones y seteamos las de la nueva región
+    onSelectMultipleLocalidades(localidadesSeleccionadas, false); // Quita las actuales
+    onSelectMultipleLocalidades(todasLasLocalidadesRegion, true);  // Agrega todas las de la región
+  };
+
   return (
     <div className="space-y-3">
       {/* CABECERA DE SECCIÓN */}
@@ -60,7 +77,7 @@ export function FiltroZonasJerarquico({
           </label>
           <select
             value={regionActivaId ?? ''}
-            onChange={(e) => setRegionActivaId(Number(e.target.value))}
+            onChange={(e) => handleCambioRegion(Number(e.target.value))}
             className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg p-2 outline-none focus:ring-2 focus:ring-blue-500"
           >
             {zonasPadre.map((zona) => (

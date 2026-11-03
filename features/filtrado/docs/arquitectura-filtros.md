@@ -1,73 +1,100 @@
-# Arquitectura y Ciclo de Vida del Módulo de Filtros
+# Arquitectura Técnica del Módulo de Filtrado
 
-**MS Propiedades Industriales**  
-*Módulo: `features/filtrado` (Modo Lista y Modo Mapa)*
+## 1. Visión General y Objetivos
+El módulo `features/filtrado` centraliza y estandariza la lógica de filtrado de inventario tanto para la vista de listado (`/propiedades`) como para las vistas geoespaciales (`/propiedades/mapa` y `/admin/mapa-privado`).
 
----
-
-## 1. Problema Previo vs. Nueva Solución
-
-### El Problema (Enfoque Reactivo Inmediato)
-Anteriormente, cada interacción del usuario (marcar un checkbox de localidad, seleccionar un subtipo de inmueble o escribir un dígito en el rango de precios) disparaba inmediatamente una navegación en el router de Next.js (`router.push`).
-* **En el Servidor:** Cada navegación forzaba al Server Component a re-ejecutar en paralelo consultas pesadas a la base de datos (`searchPropiedades`, `getLocalidadesActivasPorTipo`, `getSubtiposPorTipoMercado`).
-* **En Mobile:** El hilo de ejecución del navegador se bloqueaba, generando la sensación de que los checkboxes no respondían al tacto o requerían múltiples toques.
-* **En Desktop:** La grilla de resultados o el mapa parpadeaban continuamente (Layout Shift) antes de que el usuario terminara de configurar sus criterios.
-
-### La Solución (Patrón Draft State + Batching Unificado)
-Se desacopla la **interacción del usuario** de la **ejecución de la consulta**:
-1. Al cargar la pantalla, los parámetros de la URL se leen una sola vez y se clonan en un estado provisional en memoria (`draftFilters`).
-2. Cualquier interacción (tildar, destildar, escribir números) muta únicamente ese estado local a velocidad nativa (< 10ms), sin llamadas de red ni recargas.
-3. El usuario presiona el botón **"Aplicar Filtros (X)"** (tanto en Mobile como en Desktop).
-4. El helper `buildFilterQueryString` limpia, valida y consolida todos los parámetros en una sola URL sin duplicados.
-5. Se dispara **1 sola petición de red** protegida por `useTransition` para evitar bloqueos visuales.
+### Principios Fundamentales
+1. **Decoupled Draft State (Patrón Borrador Desacoplado):** Ninguna interacción unitaria en la interfaz (tildar una localidad, mover un slider, alternar una moneda) dispara navegación directa o consultas a la base de datos de manera inmediata. Todo se acumula en un estado local en memoria (`draftFilters`).
+2. **Navegación por Lotes (Batch Application):** La sincronización hacia la URL se consolida en una única transición no bloqueante (`useTransition`) al hacer clic en el botón primario de confirmación (`"Aplicar Filtros"`).
+3. **Sincronización Reactiva sin Efectos Secundarios:** La sincronización entre parámetros de URL externos y el estado borrador ocurre durante el ciclo de renderizado de React (comparación de primitivas `searchParamsString`), eliminando bucles infinitos, parpadeos del DOM y advertencias de linter (`react-hooks/set-state-in-effect`).
+4. **Preservación Contextual del Mercado:** El parámetro `mercado` (`industrial`, `residencial`, `comercial`) define la partición del catálogo activo. Al limpiar los criterios de búsqueda transitorios (precios, localidades, subtipos), el mercado se mantiene fijado para no romper el contexto de navegación del usuario.
 
 ---
 
 ## 2. Diagrama de Flujo de Datos
 
 ```
-[ URL Actual de Next.js ]
-          │
-          ▼ (Al montar: parseSearchParamsToFilters)
-[ Estado Borrador: draftFilters (useFilterDraft) ] ◄── (Checkboxes / Inputs reactivos locales)
-          │
-          ▼ (Usuario presiona "Aplicar Filtros")
-[ Serializador: buildFilterQueryString ]
-          │  - Elimina duplicados (?localidad=1&localidad=1)
-          │  - Descarta valores inválidos o NaN
-          │  - Preserva claves estructurales (?mercado=industrial)
-          ▼
-[ router.push / Next.js Server Component ]
-          │
-          ▼
-[ Prisma ORM: searchPropiedades (1 sola query) ]
-          │
-          ▼
-[ Actualización Fluida de Resultados / Mapa ]
+[ Usuario interactúa con la UI ]
+       │
+       ├─► Checkbox / Input / Select ──► updateDraft() / toggleArrayDraft()
+       │                                        │
+       │                                        ▼
+       │                               [ draftFilters (Memoria) ]
+       │                                        │
+       └─► Clic en "Aplicar Filtros" ───────────┘
+                       │
+                       ▼
+            buildFilterQueryString() (Helper Puro)
+                       │
+                       ▼
+          startTransition(() => router.push(url))
+                       │
+                       ▼
+             [ Next.js URL / SearchParams ]
+                       │
+      ┌────────────────┴────────────────┐
+      ▼                                 ▼
+[ Server Component: page.tsx ]     [ useFilterDraft() ]
+      │                                 │
+      ▼                                 ▼
+searchPropiedades(searchParams)    Rastreo en Render:
+      │                            prevParamsString !== currentParamsString
+      ▼                                 │
+[ Prisma / PostgreSQL ]                 ▼
+      │                            Sincroniza draftFilters
+      ▼
+Renderiza resultados actualizados
 ```
 
 ---
 
-## 3. Estructura de Archivos del Módulo
+## 3. Estructura de Directorios
 
-* **`types/filtrado.types.ts`:** Define el contrato de datos TypeScript para filtros, catálogos y componentes.
-* **`utils/url-query-builder.ts`:** Funciones puras (sin dependencias de React) encargadas de parsear y serializar los parámetros de búsqueda de forma higiénica.
-* **`hooks/use-filter-draft.ts`:** Hook central que orquesta el estado en borrador, la alternancia de opciones y la ejecución de la consulta.
-* **`components/panel-filtros.tsx`:** Contenedor visual que aloja los controles tanto para el sidebar de escritorio como para el drawer móvil.
-* **`tests/filtrado/url-query-builder.test.ts`:** Batería de pruebas unitarias que blindan el formato de las URLs contra regresiones.
+```text
+features/filtrado/
+├── components/
+│   ├── desktop-filter-sidebar.tsx   # Panel lateral para pantallas medianas/grandes
+│   ├── mobile-filter-drawer.tsx     # Drawer táctil modal con Vaul/Radix para mobile
+│   └── filtro-zonas-jerarquico.tsx  # Selector geográfico en 3 niveles (Región -> Partidos -> Localidades)
+├── docs/
+│   ├── arquitectura-filtros.md      # Este documento
+│   └── guia-mantenimiento.md        # Procedimientos para extender y mantener filtros
+├── hooks/
+│   └── use-filter-draft.ts          # Hook central de estado borrador y navegación
+├── types/
+│   └── filtrado.types.ts            # Interfaces de estado, contratos y parámetros
+├── utils/
+│   └── url-query-builder.ts         # Serializador y parser puro de searchParams
+└── index.ts                         # Fachada pública del módulo
+```
 
 ---
 
-## 4. Guía para Agregar un Nuevo Filtro
+## 4. Componentes Clave y Responsabilidades
 
-Si en el futuro se necesita añadir un nuevo criterio de búsqueda (por ejemplo, `fuerzaMotriz: boolean` o `alturaMin: number`):
+### `useFilterDraft` (`hooks/use-filter-draft.ts`)
+Orquesta el ciclo de vida del borrador de filtros:
+- Almacena `draftFilters` en un `useState` local.
+- Detecta cambios en la URL comparando `currentParamsString` con `prevParamsString` directamente en fase de render, descartando renders intermedios de forma instantánea.
+- Provee mutadores atómicos (`updateDraft`, `toggleArrayDraft`, `setMultipleInArrayDraft`).
+- Ejecuta `applyFilters` envolviendo el `router.push` en `startTransition`.
+- Calcula `activeCount` con memoización (`useMemo`), computando todos los criterios activos incluyendo rangos numéricos y colecciones.
 
-1. **Declarar en Tipos (`types/filtrado.types.ts`):**
-   Agregar la propiedad opcional a la interfaz `FiltrosState`.
-2. **Sanitizar en Serializador (`utils/url-query-builder.ts`):**
-   * En `buildFilterQueryString`, agregar la condición para escribir el parámetro en `params.set(...)` si tiene un valor válido.
-   * En `parseSearchParamsToFilters`, extraerlo de `searchParams` y convertirlo a su tipo de dato correspondiente (booleano, número o string).
-3. **Actualizar Contador (`use-filter-draft.ts`):**
-   Sumar el nuevo criterio dentro del cálculo del `useMemo` de `activeCount`.
-4. **Agregar Test (`tests/filtrado/url-query-builder.test.ts`):**
-   Comprobar que el nuevo parámetro se serialice y parsee adecuadamente.
+### `url-query-builder.ts` (`utils/url-query-builder.ts`)
+Módulo puro sin dependencias de React:
+- **`buildFilterQueryString(filters)`:** Serializa arrays ordenados, sanitiza valores vacíos (`null`, `undefined`, `NaN`, `""`) y antepone el prefijo `?` únicamente si existen parámetros activos.
+- **`parseSearchParamsToFilters(searchParams)`:** Decodifica los parámetros desde un `URLSearchParams`, tipando arrays numéricos (`localidad`), arrays de texto (`subtipo`) y valores escalares.
+
+### `FiltroZonasJerarquico` (`components/filtro-zonas-jerarquico.tsx`)
+Administra la navegación geográfica en 3 niveles:
+1. **Región Principal (`ZonaPadre`):** Selector de nivel macro (ej. GBA Sur, GBA Norte, CABA).
+2. **Partido (`PartidoConLocalidades`):** Agrupación intermedia con checkbox maestro para seleccionar o deseleccionar todas las localidades pertenecientes en un solo paso.
+3. **Localidades Hijas (`LocalidadHija`):** Checkboxes individuales indentados dentro de un acordeón desplegable por partido.
+
+---
+
+## 5. Pruebas y Validación de Calidad
+El módulo cuenta con cobertura automatizada en `tests/unit/filtrado/`:
+- **`url-query-builder.test.ts`:** Validación de serialización vacía, acumulación de arrays, saneamiento de nulos y preservación de mercado.
+- **`use-filter-draft.test.ts`:** Validación de `activeCount`, reseteo preservando mercado y sincronización ante mutaciones externas de URL.
+- **`mobile-filter-drawer.test.tsx`:** Prueba de integración validando que no ocurran navegaciones ni re-renders de red hasta que se presione el botón de confirmación.

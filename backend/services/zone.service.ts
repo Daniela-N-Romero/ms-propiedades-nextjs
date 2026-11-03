@@ -183,7 +183,17 @@ export async function getZonasJerarquicasActivas(mercadoSlug?: string) {
 
   // 1. Regiones Padre (GBA Sur, GBA Norte, CABA, etc.)
   const zonasPadre = await prisma.zona.findMany({
-    where: { padreId: null },
+    where: {
+      padreId: null,
+      OR: [
+        // Si la propiedad está asignada directo a la región
+        { propiedades: { some: wherePropiedad } },
+        // Si está en un partido hijo
+        { hijas: { some: { propiedades: { some: wherePropiedad } } } },
+        // Si está en una localidad nieta (Región -> Partido -> Localidad)
+        { hijas: { some: { hijas: { some: { propiedades: { some: wherePropiedad } } } } } },
+      ],
+    },
     select: { id: true, nombre: true },
     orderBy: { nombre: 'asc' },
   });
