@@ -23,8 +23,6 @@ export default async function RootLayout({
   const session = token ? await verifySession(token) : null
   const isAdmin = !!session // Será true si el token es válido
 
-  // const gaId = process.env.NEXT_PUBLIC_GA_ID;
-
   return (
    <>
       {!isAdmin && <GoogleTagManager gtmId="GTM-WMWNMF5F" />}

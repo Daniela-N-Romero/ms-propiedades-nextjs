@@ -35,4 +35,8 @@ export interface PropiedadMapaItem {
   colegaId?: number | null;
   colegaInmobiliaria?: string | null;
   colegaTel?: string | null;
+  agente?: {
+    nombre: string;
+    telefono?: string;
+  } | null;
 }

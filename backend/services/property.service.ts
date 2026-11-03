@@ -324,6 +324,7 @@ export async function searchPropiedades(
         longitud: true,
         origen: true,
         propietarioId: true,
+        agente: { select: { nombre: true, telefono: true } },
         colegaId: true,
         direccionPersonalizada: true,
         status: true,

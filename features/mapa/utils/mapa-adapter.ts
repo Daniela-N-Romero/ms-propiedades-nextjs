@@ -35,6 +35,12 @@ export function toPropiedadesMapa(propiedadesRaw: any[], esAdmin = false): Propi
         zonaNombre: esAdmin
           ? p.direccionPersonalizada || p.zona?.nombre || 'Zona no especificada'
           : p.zona?.nombre || 'Zona no especificada',
+        agente: p.agente
+          ? {
+              nombre: p.agente.nombre,
+              telefono: p.agente.telefono,
+            }
+          : undefined,
       };
 
       if (esAdmin) {

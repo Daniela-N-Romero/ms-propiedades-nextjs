@@ -101,10 +101,7 @@ export default function MapaAdminResultsView({
 
       {/* GRID PRINCIPAL */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
-        <aside className="hidden md:block bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4 max-h-[calc(100vh-160px)] overflow-y-auto scrollbar-thin">
-          <h3 className="font-spartan font-bold text-sm text-slate-900 uppercase tracking-wider border-b border-slate-100 pb-2">
-            Filtros del Mapa
-          </h3>
+        <aside className="hidden md:block rounded-2xl border border-slate-200 shadow-sm space-y-4 max-h-[calc(100vh-160px)] overflow-y-auto scrollbar-thin">
           <DesktopFilterSidebar
             zonasPadre={zonasPadre}
             partidos={partidos}

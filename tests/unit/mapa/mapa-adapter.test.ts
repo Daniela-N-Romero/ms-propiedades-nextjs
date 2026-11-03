@@ -1,3 +1,4 @@
+// tests/unit/mapa/mapa-adapter.test.ts
 import { describe, it, expect } from 'vitest';
 import { toPropiedadesMapa, esCoordenadaValida } from '@/features/mapa/utils/mapa-adapter';
 
@@ -22,8 +23,13 @@ describe('mapa-adapter', () => {
         moneda: 'USD',
         latitud: -34.88,
         longitud: -58.38,
-        propietarioId: 99, // Sensible
+        propietarioId: 99,
         zona: { nombre: 'Berazategui' },
+        agente: {
+          id: 5,
+          nombre: 'Carlos Agente',
+          telefono: '1199887766',
+        },
       },
       {
         id: 2,
@@ -41,6 +47,28 @@ describe('mapa-adapter', () => {
     expect(adaptadas[0].precio).toBe(150000);
     expect(adaptadas[0].zonaNombre).toBe('Berazategui');
     expect(adaptadas[0].propietarioId).toBeUndefined(); // Se omite en público
+    expect(adaptadas[0].agente).toEqual({
+      nombre: 'Carlos Agente',
+      telefono: '1199887766',
+    });
+  });
+
+  it('toPropiedadesMapa maneja correctamente propiedades sin agente asignado', () => {
+    const raw = [
+      {
+        id: 4,
+        codigo: 'IND-4',
+        slug: 'lote-sin-agente',
+        titulo: 'Lote Sin Agente',
+        precio: 80000,
+        latitud: -34.88,
+        longitud: -58.38,
+        agente: null,
+      },
+    ];
+
+    const adaptadas = toPropiedadesMapa(raw, false);
+    expect(adaptadas[0].agente).toBeUndefined();
   });
 
   it('toPropiedadesMapa debe incluir campos de CRM cuando esAdmin es true', () => {
