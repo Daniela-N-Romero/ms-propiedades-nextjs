@@ -1,4 +1,4 @@
-import type { PropiedadMapaItem } from '../types/mapa-types';
+import type { PropiedadMapaItem, PropiedadRawItem } from '../types/mapa-types';
 
 /**
  * Valida si un valor numérico es una coordenada válida y distinta de 0
@@ -13,7 +13,7 @@ export function esCoordenadaValida(valor: unknown): boolean {
  * Transforma y sanitiza un array de propiedades crudas provenientes de Prisma
  * a la estructura requerida por el mapa, descartando registros sin geolocalización.
  */
-export function toPropiedadesMapa(propiedadesRaw: any[], esAdmin = false): PropiedadMapaItem[] {
+export function toPropiedadesMapa(propiedadesRaw: PropiedadRawItem[], esAdmin = false): PropiedadMapaItem[] {
   if (!Array.isArray(propiedadesRaw)) return [];
 
   return propiedadesRaw
@@ -26,6 +26,7 @@ export function toPropiedadesMapa(propiedadesRaw: any[], esAdmin = false): Propi
         titulo: p.titulo,
         precio: Number(p.precio) || 0,
         moneda: p.moneda || 'USD',
+        status: p.status || p.estado || 'disponible',
         financiacion: p.financiacion || undefined,
         superficieTotal: p.superficieTotal ? Number(p.superficieTotal) : null,
         superficieCubierta: p.superficieCubierta ? Number(p.superficieCubierta) : null,

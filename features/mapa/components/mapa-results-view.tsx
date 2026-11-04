@@ -1,4 +1,3 @@
-// features/mapa/components/mapa-results-view.tsx
 'use client';
 
 import { useState } from 'react';

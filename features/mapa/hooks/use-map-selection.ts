@@ -1,21 +1,26 @@
-// features/mapa/hooks/use-map-selection.ts
 'use client';
 
 import { useState, useCallback } from 'react';
 import type { ClusterMapaItem } from '../utils/geo-clustering';
-import type { PropiedadMapaItem } from '../types/mapa-types';
 
-export function useMapSelection() {
-  const [clusterActivo, setClusterActivo] = useState<ClusterMapaItem | null>(null);
+export function useMapSelection(clusterInicial: ClusterMapaItem | null = null) {
+  const [clusterManual, setClusterManual] = useState<ClusterMapaItem | null>(null);
+  const [prevClusterInicial, setPrevClusterInicial] = useState<ClusterMapaItem | null>(clusterInicial);
 
-  // Selecciona un cluster o pin individual al hacer click
+  // Patrón oficial de React: ajustar estado durante el render cuando cambian las props
+  if (clusterInicial !== prevClusterInicial) {
+    setPrevClusterInicial(clusterInicial);
+    setClusterManual(clusterInicial);
+  }
+
+  const clusterActivo = clusterManual ?? clusterInicial;
+
   const handleSelectCluster = useCallback((cluster: ClusterMapaItem | null) => {
-    setClusterActivo(cluster);
+    setClusterManual(cluster);
   }, []);
 
-  // Cierra el carrusel (al presionar X o hacer click en el fondo del mapa)
   const handleCloseCarousel = useCallback(() => {
-    setClusterActivo(null);
+    setClusterManual(null);
   }, []);
 
   return {

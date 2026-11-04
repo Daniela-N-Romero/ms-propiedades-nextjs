@@ -48,9 +48,9 @@ export default function MapaDetallePropiedad({ propiedad }: MapaDetallePropiedad
                 {/* BOTONES DE ACCIÓN */}
                 {/* Botón para explorar el mapa completo con todas las propiedades */}
                 <Link
-                    href={`/propiedades/mapa?lat=${propiedad.latitud}&lng=${propiedad.longitud}&zoom=15&mercado=${propiedad.tipoInmueble}`}
+                    href={`/propiedades/mapa?lat=${propiedad.latitud}&lng=${propiedad.longitud}&zoom=15&mercado=${propiedad.tipoInmueble}&propiedadId=${propiedad.id}`}
                     className="px-3.5 py-2 bg-brand-dark hover:bg-slate-800 text-white text-xs font-spartan font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center gap-1.5"
-                >
+                    >
                     <span>🗺️ Ver Mapa General</span>
                 </Link>
 

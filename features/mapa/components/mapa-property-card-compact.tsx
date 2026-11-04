@@ -1,10 +1,10 @@
-// features/mapa/components/mapa-property-card-compact.tsx
 'use client';
 
 import Link from 'next/link';
 import Image from 'next/image';
 import { formatPrecio } from '@/lib/utils-formatting';
 import { useWhatsAppButtons } from '@/features/propiedades/hooks/use-whatsapp-buttons';
+import { EstadoBadge } from '@/components/ui/estado-badge';
 import type { PropiedadMapaItem } from '../types/mapa-types';
 
 interface MapaPropertyCardCompactProps {
@@ -17,6 +17,7 @@ export function MapaPropertyCardCompact({
   isPrivateAdmin = false,
 }: MapaPropertyCardCompactProps) {
   const isOwn = propiedad.origen !== 'fromColleague';
+  const noDisponible = propiedad.status && propiedad.status.toLowerCase() !== 'disponible';
 
   const { whatsAppUrl, handleWhatsAppClick } = useWhatsAppButtons({
     codigo: propiedad.codigo,
@@ -30,16 +31,28 @@ export function MapaPropertyCardCompact({
   return (
     <div className="w-[76vw] max-w-85 bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden flex flex-col select-none">
       <div className="flex h-28">
-        {/* Imagen de Portada */}
-        <div className="relative w-28 sm:w-32 bg-slate-100 shrink-0">
-          <img
+        {/* Contenedor Imagen con Banners */}
+        <div className="relative w-28 sm:w-32 bg-slate-100 shrink-0 overflow-hidden">
+          <Image
             src={propiedad.imagenPortada || '/images/placeholder.png'}
             alt={propiedad.titulo}
-            className="w-full h-full object-cover"
+            fill
+            sizes="(max-width: 640px) 112px, 128px"
+            className="object-cover"
           />
+
+          {/* Overlay oscuro si no está disponible */}
+          {noDisponible && (
+            <div className="absolute inset-0 bg-slate-900/30 pointer-events-none z-10" />
+          )}
+
+          {/* Banner diagonal ALQUILADA / RESERVADA */}
+          <EstadoBadge status={propiedad.status} />
+
+          {/* Etiqueta Admin Propia / Colega */}
           {isPrivateAdmin && (
             <span
-              className={`absolute top-1.5 left-1.5 px-2 py-0.5 text-[9px] font-bold text-white uppercase rounded shadow-sm ${
+              className={`absolute bottom-1.5 left-1.5 px-2 py-0.5 text-[9px] font-bold text-white uppercase rounded shadow-sm z-20 ${
                 isOwn ? 'bg-emerald-600' : 'bg-blue-600'
               }`}
             >

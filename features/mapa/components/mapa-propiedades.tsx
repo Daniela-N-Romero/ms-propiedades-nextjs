@@ -1,8 +1,10 @@
-// features/mapa/components/mapa-propiedades.tsx
 'use client';
 
+import { useMemo } from 'react';
 import dynamic from 'next/dynamic';
+import { useSearchParams } from 'next/navigation';
 import type { PropiedadMapaItem, PropietarioMapaItem, ColegaMapaItem } from '../types/mapa-types';
+import { agruparPropiedadesPorProximidad } from '../utils/geo-clustering';
 import { useMapSelection } from '../hooks/use-map-selection';
 import { MapaBottomCarousel } from './mapa-bottom-carousel';
 
@@ -14,6 +16,7 @@ interface MapaPropiedadesProps {
   isPrivateAdmin?: boolean;
   propietarios?: PropietarioMapaItem[];
   colegas?: ColegaMapaItem[];
+  propiedadIdInicial?: number;
 }
 
 const MapaPropiedadesView = dynamic(
@@ -29,13 +32,28 @@ const MapaPropiedadesView = dynamic(
 );
 
 export default function MapaPropiedades(props: MapaPropiedadesProps) {
+  const searchParams = useSearchParams();
+  const idFromParam = searchParams?.get('propiedadId');
+  const targetId = props.propiedadIdInicial || (idFromParam ? Number(idFromParam) : null);
+
+  // Calculamos los clusters
+  const clusters = useMemo(() => {
+    return agruparPropiedadesPorProximidad(props.propiedades, 30);
+  }, [props.propiedades]);
+
+  // Si viene un ID objetivo, buscamos el cluster que lo contiene
+  const clusterInicial = useMemo(() => {
+    if (!targetId) return null;
+    return clusters.find((c) => c.propiedades.some((p) => p.id === targetId)) ?? null;
+  }, [clusters, targetId]);
+
   const {
     isOpen,
     selectedClusterId,
     propiedadesEnCarrusel,
     handleSelectCluster,
     handleCloseCarousel,
-  } = useMapSelection();
+  } = useMapSelection(clusterInicial);
 
   return (
     <div className="relative w-full h-full">
