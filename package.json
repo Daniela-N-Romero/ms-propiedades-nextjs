@@ -7,8 +7,14 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest",
-    "test:run": "vitest run"
+    "test": "npx vitest --coverage",
+    "test:run": "vitest run",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix"
+    ]
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1145.0",
@@ -26,6 +32,7 @@
     "googleapis": "^174.0.1",
     "jose": "^6.2.4",
     "leaflet": "^1.9.4",
+    "lucide-react": "^1.65.0",
     "next": "16.2.10",
     "nextjs-toploader": "^3.9.17",
     "pg": "^8.22.0",
@@ -52,9 +59,11 @@
     "@vitest/coverage-v8": "^5.0.4",
     "babel-plugin-react-compiler": "1.0.0",
     "dotenv": "^17.4.2",
-    "eslint": "^9",
+    "eslint": "^9.39.5",
     "eslint-config-next": "16.2.10",
+    "husky": "^9.1.7",
     "jsdom": "^28.1.0",
+    "lint-staged": "^16.4.0",
     "prisma": "^7.8.0",
     "tailwind-scrollbar": "^4.0.2",
     "tailwindcss": "4",

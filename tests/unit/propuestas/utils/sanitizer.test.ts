@@ -3,7 +3,6 @@ import { serializarPrisma } from '@/lib/sanitizers';
 
 describe('🧼 Lib: serializarPrisma', () => {
   it('debe convertir recursivamente Decimals y Dates a primitivos de JS', () => {
-    console.log('  🔍 Evaluando: Sanitización profunda de Decimals de Prisma y Dates...');
 
     // Simulamos un objeto retornado por Prisma con método Decimal.toNumber()
     const rawPrismaData = {
@@ -24,7 +23,5 @@ describe('🧼 Lib: serializarPrisma', () => {
     expect(resultado.createdAt).toBe('2026-01-01T00:00:00.000Z');
     expect(resultado.relacionAnidada.superficie).toBe(450.75);
     expect(resultado.arrayItems[0].costo).toBe(350);
-
-    console.log('  ✅ Éxito: Decimals convertidos a numbers y Dates a ISO strings sin romper estructuras anidadas.');
   });
 });

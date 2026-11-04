@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { Header, Footer } from "@/features/navigation";
 
 const RUTAS_SIN_HEADER = ["/propuestas/"];
+const RUTAS_SIN_FOOTER = ["/propuestas/", "/propiedades/mapa"];
 
 interface NavigationWrapperProps {
   isAdmin: boolean;
@@ -13,13 +14,14 @@ interface NavigationWrapperProps {
 
 export default function NavigationWrapper({ isAdmin, children }: NavigationWrapperProps) {
   const pathname = usePathname();
-  const ocultarHeaderFooter = RUTAS_SIN_HEADER.some((ruta) => pathname.startsWith(ruta));
+  const ocultarHeader = RUTAS_SIN_HEADER.some((ruta) => pathname.startsWith(ruta));
+  const ocultarFooter = RUTAS_SIN_FOOTER.some((ruta) => pathname.startsWith(ruta));
 
   return (
     <>
-      {!ocultarHeaderFooter && <Header isAdmin={isAdmin} />}
+      {!ocultarHeader && <Header isAdmin={isAdmin} />}
       <main className="grow bg-slate-50">{children}</main>
-      {!ocultarHeaderFooter && <Footer />}
+      {!ocultarFooter && <Footer />}
     </>
   );
 }

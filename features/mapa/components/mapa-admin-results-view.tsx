@@ -1,36 +1,47 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
-import { PanelFiltros, usePropertyFilters } from '@/features/filtrado';
+import { 
+  useFilterDraft, 
+  DesktopFilterSidebar, 
+  MobileFilterDrawer 
+} from '@/features/filtrado';
+import type { 
+  ZonaPadre, 
+  PartidoConLocalidades, 
+  SubtipoOption 
+} from '@/features/filtrado';
 import MapaPropiedades from './mapa-propiedades';
-import type { TipoInmueble } from '@prisma-client';
-import type { PropiedadMapaItem } from './mapa-propiedades-view';
-import type { PropietarioMapaItem, ColegaMapaItem } from '@/app/(privado)/admin/mapa-privado/page.tsx'
-
-import { ZonaServer } from '@/types/server-data';
+import type { PropiedadMapaItem } from '@/features/mapa/types/mapa-types';
+import type { PropietarioMapaItem, ColegaMapaItem } from '@/features/mapa/types/mapa-types';
 
 interface MapaAdminResultsViewProps {
   propiedades: PropiedadMapaItem[];
-  localidades: ZonaServer[];
-  subtipos: TipoInmueble[];
+  zonasPadre: ZonaPadre[];
+  partidos: PartidoConLocalidades[];
+  subtipos: SubtipoOption[];
   propietarios?: PropietarioMapaItem[];
   colegas?: ColegaMapaItem[];
+  centroInicial?: [number, number];
+  zoomInicial?: number;
 }
 
 export default function MapaAdminResultsView({
   propiedades,
-  localidades,
+  zonasPadre,
+  partidos,
   subtipos,
   propietarios,
-  colegas
+  colegas,
+  centroInicial,
+  zoomInicial,
 }: MapaAdminResultsViewProps) {
-  const { filters, isPending } = usePropertyFilters();
+  const { activeCount, isPending } = useFilterDraft();
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
   return (
     <div className="space-y-4">
-      {/* LEYENDA Y HEADER INTERNO */}
+      {/* HEADER Y LEYENDA */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div>
@@ -42,7 +53,6 @@ export default function MapaAdminResultsView({
             </p>
           </div>
 
-          {/* INDICADOR EN TIEMPO REAL MIENTRAS FILTRA */}
           {isPending && (
             <span className="text-xs font-spartan font-bold text-amber-700 animate-pulse bg-amber-50 px-3 py-1 rounded-full border border-amber-300 flex items-center gap-1.5 shadow-xs">
               <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
@@ -51,7 +61,7 @@ export default function MapaAdminResultsView({
           )}
         </div>
 
-        {/* LEYENDA DE COLORES DE CARTERA */}
+        {/* LEYENDA DE CARTERA */}
         <div className="hidden sm:flex items-center gap-3 text-xs font-bold">
           <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-xl border border-emerald-200">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
@@ -64,7 +74,7 @@ export default function MapaAdminResultsView({
         </div>
       </div>
 
-      {/* BOTÓN MOBILE PARA FILTROS */}
+      {/* BOTÓN MOBILE */}
       <div className="flex md:hidden">
         <button
           type="button"
@@ -72,67 +82,38 @@ export default function MapaAdminResultsView({
           className="w-full py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-spartan font-bold uppercase text-slate-700 flex items-center justify-center gap-2 shadow-sm"
         >
           <span>Filtros del Mapa</span>
-          {filters.totalActivos > 0 && (
-            <span className="bg-brand-orange text-slate-950 px-1.5 py-0.5 rounded-full text-[10px]">
-              {filters.totalActivos}
+          {activeCount > 0 && (
+            <span className="bg-brand-orange text-slate-950 font-bold px-2 py-0.5 rounded-full text-[10px]">
+              {activeCount}
             </span>
           )}
         </button>
       </div>
 
-      {/* MODAL FLOTANTE DE FILTROS EN MOBILE */}
-      {isMobileFiltersOpen && (
-        <div className="fixed inset-0 z-50 flex md:hidden">
-          <div
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
-            onClick={() => setIsMobileFiltersOpen(false)}
-          />
+      {/* DRAWER MÓVIL OPTIMIZADO */}
+      <MobileFilterDrawer
+        isOpen={isMobileFiltersOpen}
+        onClose={() => setIsMobileFiltersOpen(false)}
+        zonasPadre={zonasPadre}
+        partidos={partidos}
+        subtipos={subtipos}
+      />
 
-          <div className="relative mt-16 ml-auto w-full max-w-xs bg-white shadow-2xl flex flex-col z-10 overflow-hidden rounded-l-2xl">
-            <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-              <h3 className="font-spartan font-bold text-sm text-slate-900 uppercase tracking-wider">
-                Filtrar Mapa Privado
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsMobileFiltersOpen(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 text-slate-600 font-bold"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="p-5 overflow-y-auto flex-1">
-              <PanelFiltros localidades={localidades} subtipos={subtipos} />
-            </div>
-
-            <div className="p-4 border-t border-slate-200 bg-white">
-              <button
-                type="button"
-                onClick={() => setIsMobileFiltersOpen(false)}
-                className="w-full bg-slate-900 text-white font-spartan font-bold uppercase tracking-wider py-3 rounded-xl text-xs"
-              >
-                Ver {propiedades.length} Propiedades en Mapa
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* CUERPO PRINCIPAL (GRID: 1 COLUMNA FILTROS - 3 COLUMNAS MAPA) */}
+      {/* GRID PRINCIPAL */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
-        {/* PANEL LATERAL DE FILTROS DESKTOP */}
-        <aside className="hidden md:block bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4 max-h-[calc(100vh-160px)] overflow-y-auto scrollbar-thin">
-          <h3 className="font-spartan font-bold text-sm text-slate-900 uppercase tracking-wider border-b border-slate-100 pb-2">
-            Filtros del Mapa
-          </h3>
-          <PanelFiltros localidades={localidades} subtipos={subtipos} />
+        <aside className="hidden md:block rounded-2xl border border-slate-200 shadow-sm space-y-4 max-h-[calc(100vh-160px)] overflow-y-auto scrollbar-thin">
+          <DesktopFilterSidebar
+            zonasPadre={zonasPadre}
+            partidos={partidos}
+            subtipos={subtipos}
+          />
         </aside>
 
-        {/* MAPA PRINCIPAL */}
         <section className="md:col-span-3">
           <MapaPropiedades
             propiedades={propiedades}
+            centroInicial={centroInicial}
+            zoomInicial={zoomInicial}
             alturaClass="h-[calc(100vh-160px)] min-h-[500px]"
             isPrivateAdmin={true} 
             propietarios={propietarios}

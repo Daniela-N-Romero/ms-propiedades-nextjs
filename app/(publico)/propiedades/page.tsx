@@ -4,7 +4,7 @@ interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function IndustrialPage({ searchParams }: PageProps) {
+export default async function PropiedadesPage({ searchParams }: PageProps) {
 
   const params = await searchParams;
 
@@ -12,14 +12,14 @@ export default async function IndustrialPage({ searchParams }: PageProps) {
     ? params.mercado[0]
     : params.mercado;
 
-  const mercadoSlug = mercadoParam;
-
   const {
     propiedades,
     totalPropiedades,
     currentPage,
     totalPages,
     localidades,
+    zonasPadre,
+    partidos,
     subtipos,
     esFallback
   } = await renderPageByPropertyType({
@@ -31,6 +31,8 @@ export default async function IndustrialPage({ searchParams }: PageProps) {
     propiedades={propiedades}
     localidades={localidades}
     subtipos={subtipos}
+    zonasPadre={zonasPadre}
+    partidos={partidos}
     esFallback={esFallback}
     totalPropiedades={totalPropiedades}
     currentPage={currentPage}

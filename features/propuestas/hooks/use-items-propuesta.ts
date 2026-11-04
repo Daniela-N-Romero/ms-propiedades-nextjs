@@ -2,7 +2,7 @@
  * useItemsPropuesta: Maneja el estado de los ítems seleccionados, autocompletados, toggle de selección y cálculo rápido de métricas.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { ItemForm, PropiedadSimple } from '../types/propuesta.types';
 
 function calcularMesesDesdeFecha(fechaRaw: any): number {
@@ -22,21 +22,28 @@ export function useItemsPropuesta(
   costoObraPreferencial: number,
   costoObraMercado: number
 ) {
-  // 1. Inicialización
+  // 1. Estado base de ítems seleccionados
   const [itemsSeleccionados, setItemsSeleccionados] = useState<ItemForm[]>(
     initialItems?.map((i: any, idx: number) => {
       const propBase = i.propiedad || {};
       const esPreventaFinal = i.esPreventa ?? propBase.esPreventa ?? false;
       const fechaEntregaFinal = i.fechaEstimadaEntrega || propBase.fechaEstimadaEntrega || null;
-      const mesesEntregaFinal = (i.mesesEntrega !== undefined && i.mesesEntrega !== null && i.mesesEntrega > 0)
-        ? i.mesesEntrega
-        : calcularMesesDesdeFecha(fechaEntregaFinal);
+      const mesesEntregaFinal =
+        i.mesesEntrega !== undefined && i.mesesEntrega !== null && i.mesesEntrega > 0
+          ? i.mesesEntrega
+          : calcularMesesDesdeFecha(fechaEntregaFinal);
 
       return {
         ...i,
         propiedadId: i.propiedadId,
         esPrioritaria: i.esPrioritaria || idx === 0,
-        nombre: i.nombre || i.parqueIndustrialNombre || i.parqueIndustrial?.nombre || i.propiedad?.parqueIndustrial?.nombre || i.propiedad?.zona?.nombre || '',
+        nombre:
+          i.nombre ||
+          i.parqueIndustrialNombre ||
+          i.parqueIndustrial?.nombre ||
+          i.propiedad?.parqueIndustrial?.nombre ||
+          i.propiedad?.zona?.nombre ||
+          '',
         costoObraM2: i.costoObraM2 || 350,
         fosAplicado: i.fosAplicado || 0.6,
         orden: i.orden || idx + 1,
@@ -51,37 +58,47 @@ export function useItemsPropuesta(
     }) || []
   );
 
-  // 2. Re-sincronización con Logs
-  useEffect(() => {
-    if (propiedadesBD.length === 0) return;
+  // 2. Sincronización derivada limpia (sin useEffect ni re-render cascada)
+  const itemsSincronizados = useMemo(() => {
+    if (!propiedadesBD || propiedadesBD.length === 0) {
+      return itemsSeleccionados;
+    }
 
-    console.log("🔍 [DEBUG BBDD] Propiedades cargadas desde API:", propiedadesBD);
+    return itemsSeleccionados.map((item) => {
+      const propReal = propiedadesBD.find((p) => p.id === item.propiedadId);
+      if (!propReal) return item;
 
-    setItemsSeleccionados((itemsPrev) =>
-      itemsPrev.map((item) => {
-        const propReal = propiedadesBD.find((p) => p.id === item.propiedadId);
-        if (!propReal) return item;
+      const parqueAsociado =
+        (parquesBD || []).find((pq: any) => pq.id === (propReal as any).parqueIndustrialId) ||
+        (propReal as any).parqueIndustrial;
 
-        console.log(`📌 [DEBUG ITEM] Propiedad id ${item.propiedadId} (${propReal.titulo}):`, {
-          propReal_esPreventa: propReal.esPreventa,
-          propReal_fechaEntrega: propReal.fechaEstimadaEntrega,
-          item_esPreventa_actual: item.esPreventa,
-        });
+      const nombreSincronizado =
+        item.nombre ||
+        parqueAsociado?.nombre ||
+        (propReal as any).zona?.nombre ||
+        propReal.titulo ||
+        '';
 
-        // Forzamos el valor de la BBDD si el ítem de la propuesta no viene explícitamente en true
-        const esPreventaCalculado = Boolean(propReal.esPreventa || item.esPreventa);
-        const fechaEntregaCalculada = item.fechaEstimadaEntrega || propReal.fechaEstimadaEntrega || null;
-        const mesesEntregaCalculados = item.mesesEntrega || calcularMesesDesdeFecha(fechaEntregaCalculada);
+      const notaLogisticaSincronizada =
+        item.notaLogistica ||
+        parqueAsociado?.conectividad ||
+        parqueAsociado?.direccionAcceso ||
+        '';
 
-        return {
-          ...item,
-          esPreventa: esPreventaCalculado,
-          fechaEstimadaEntrega: fechaEntregaCalculada,
-          mesesEntrega: mesesEntregaCalculados,
-        };
-      })
-    );
-  }, [propiedadesBD, parquesBD]);
+      const esPreventaCalculado = Boolean(propReal.esPreventa || item.esPreventa);
+      const fechaEntregaCalculada = item.fechaEstimadaEntrega || propReal.fechaEstimadaEntrega || null;
+      const mesesEntregaCalculados = item.mesesEntrega || calcularMesesDesdeFecha(fechaEntregaCalculada);
+
+      return {
+        ...item,
+        nombre: nombreSincronizado,
+        notaLogistica: notaLogisticaSincronizada,
+        esPreventa: esPreventaCalculado,
+        fechaEstimadaEntrega: fechaEntregaCalculada,
+        mesesEntrega: mesesEntregaCalculados,
+      };
+    });
+  }, [itemsSeleccionados, propiedadesBD, parquesBD]);
 
   const togglePropiedad = (prop: PropiedadSimple) => {
     const existe = itemsSeleccionados.some((i) => i.propiedadId === prop.id);
@@ -92,8 +109,6 @@ export function useItemsPropuesta(
           .map((it, idx) => ({ ...it, orden: idx + 1 }))
       );
     } else {
-      console.log("➕ [DEBUG TOGGLE] Agregando propiedad:", prop);
-
       const supLote = Number(prop.superficieTotal || prop.superficieCubierta || 0);
       const precioTotal = Number(prop.precio || 0);
       const fosBase = 0.6;
@@ -149,12 +164,12 @@ export function useItemsPropuesta(
   };
 
   const maxRoiCalculado =
-    itemsSeleccionados.length > 0
-      ? Math.max(...itemsSeleccionados.map((it) => calcularMetricasItem(it).roiAnual))
+    itemsSincronizados.length > 0
+      ? Math.max(...itemsSincronizados.map((it) => calcularMetricasItem(it).roiAnual))
       : 0;
 
   return {
-    itemsSeleccionados,
+    itemsSeleccionados: itemsSincronizados,
     setItemsSeleccionados,
     togglePropiedad,
     calcularMetricasItem,

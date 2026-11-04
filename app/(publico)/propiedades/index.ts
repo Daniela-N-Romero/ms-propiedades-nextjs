@@ -1,6 +1,6 @@
 import { prisma } from "@/backend/db";
 import { getSubtiposPorTipoMercado, searchPropiedades } from "@/backend/services/property.service";
-import { getLocalidadesActivasPorTipo } from "@/backend/services/zone.service";
+import { getLocalidadesActivasPorTipo, getZonasJerarquicasActivas } from "@/backend/services/zone.service";
 
 interface RenderProps {
   searchParams: { [key: string]: string | string[] | undefined };
@@ -50,7 +50,7 @@ if (params.localidad) {
 
 
   // 2. Ejecutamos los servicios en paralelo
-  const [searchResult, localidades, subtipos] = await Promise.all([
+ const [searchResult, localidades, subtipos, datosZonas] = await Promise.all([
     searchPropiedades({
       categoria: categoriaParam,
       mercadoSlug: mercadoSlug,
@@ -63,11 +63,13 @@ if (params.localidad) {
       localidades: localidadesIds,
       ordenar: typeof params.ordenar === 'string' ? params.ordenar : undefined,
       page: page,      
-      pageSize: 12,    // Cantidad de cards por página
+      pageSize: 12,
     }, true, true, 'list'),
     getLocalidadesActivasPorTipo(mercadoSlug, categoriaParam),
-    getSubtiposPorTipoMercado(mercadoSlug)
+    getSubtiposPorTipoMercado(mercadoSlug),
+    getZonasJerarquicasActivas(mercadoSlug), // 👈 Nueva consulta jerárquica
   ]);
+
   // 3. Declaramos las variables mutables con let
   let propiedades = searchResult.propiedades;
   let totalPropiedades = searchResult.totalPropiedades;
@@ -97,6 +99,8 @@ if (params.localidad) {
     totalPages,
     localidades,
     subtipos,
+    zonasPadre: datosZonas.zonasPadre,
+    partidos: datosZonas.partidos,
     esFallback
   };
 }

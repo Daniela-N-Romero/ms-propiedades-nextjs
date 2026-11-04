@@ -48,7 +48,7 @@ describe('InversionStrategy - Cálculos Financieros', () => {
   });
 
   it('debe calcular y redondear hacia arriba los meses de entrega de preventa', () => {
-    console.log('  🔍 Evaluando: Redondeo hacia arriba (Math.ceil) para fechas de entrega en preventa...');
+
 
     // Simulamos una fecha a ~375 días de distancia (~12.3 meses -> debe redondear a 13)
     const fechaFutura = new Date();
@@ -68,7 +68,5 @@ describe('InversionStrategy - Cálculos Financieros', () => {
 
     expect(resultado.comparativa[0].esPreventa).toBe(true);
     expect(resultado.comparativa[0].mesesEntrega).toBe(13);
-
-    console.log('  ✅ Éxito: El plazo de entrega en meses se redondeó hacia arriba correctamente.');
   });
 });

@@ -25,7 +25,6 @@ export async function uploadImagenAction(formData: FormData) {
       folderPath,
       watermarkType
     );
-    console.log('Resultado de procesarYGuardarImagen:', resultado);
 
     return { success: true, data: resultado }; // Retorna { url, urlWatermark }
   } catch (error) {

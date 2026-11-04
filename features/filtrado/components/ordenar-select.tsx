@@ -1,15 +1,16 @@
-import { orderValueSettings } from '@/features/filtrado/index';
+'use client';
 
-export default function OrdenarSelect() {
+import { useOrderSelect } from '../hooks/use-order-select';
 
- const { currentOrder, handleChange} = orderValueSettings();  
+export function OrdenarSelect() {
+  const { currentOrder, setOrder } = useOrderSelect();
 
   return (
     <div className="flex items-center gap-2 text-sm">
       <span className="text-slate-500 font-medium">Ordenar por:</span>
       <select 
         value={currentOrder}
-        onChange={(e) => handleChange(e.target.value)}
+        onChange={(e) => setOrder(e.target.value)}
         className="bg-white border border-slate-300 rounded-lg p-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:border-brand-dark"
       >
         <option value="">Relevancia</option>
