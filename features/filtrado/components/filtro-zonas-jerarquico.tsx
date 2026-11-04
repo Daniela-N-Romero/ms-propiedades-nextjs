@@ -1,10 +1,9 @@
 // features/filtrado/components/filtro-zonas-jerarquico.tsx
-"use client";
+'use client';
 
-import { useState, useMemo } from 'react';
 import { ChevronDown, ChevronRight, MapPin } from 'lucide-react';
-import { PartidoConLocalidades, ZonaPadre } from '../types/filtrado.types';
-
+import type { PartidoConLocalidades, ZonaPadre } from '../types/filtrado.types';
+import { useFiltroZonasJerarquico } from '../hooks/use-filtro-zonas-jerarquico';
 
 interface FiltroZonasJerarquicoProps {
   zonasPadre: ZonaPadre[];
@@ -21,43 +20,18 @@ export function FiltroZonasJerarquico({
   onToggleLocalidad,
   onSelectMultipleLocalidades,
 }: FiltroZonasJerarquicoProps) {
-  // 1. Región seleccionada (Nivel 1 exclusivo: GBA Sur por defecto o el primero)
-  const [regionActivaId, setRegionActivaId] = useState<number | undefined>(
-    zonasPadre[0]?.id
-  );
-
-  // 2. Control de qué partidos tienen el acordeón de localidades abierto
-  const [partidosExpandidos, setPartidosExpandidos] = useState<Record<number, boolean>>({});
-
-  // 3. Filtrar los partidos que pertenecen a la región activa
-  const partidosVisibles = useMemo(() => {
-    if (!regionActivaId) return partidos;
-    return partidos.filter((p) => p.padreId === regionActivaId);
-  }, [partidos, regionActivaId]);
-
-  const toggleExpandir = (partidoId: number) => {
-    setPartidosExpandidos((prev) => ({
-      ...prev,
-      [partidoId]: !prev[partidoId],
-    }));
-  };
-
-  /**
-   * Al cambiar de macro-región (ej: de GBA Norte a GBA Sur) reemplaza las localidades seleccionadas por todas las de la nueva región.
-   */
-  const handleCambioRegion = (nuevaRegionId: number) => {
-    setRegionActivaId(nuevaRegionId);
-
-    // Obtenemos todos los IDs de localidades de la región elegida
-    const partidosDeNuevaRegion = partidos.filter((p) => p.padreId === nuevaRegionId);
-    const todasLasLocalidadesRegion = partidosDeNuevaRegion.flatMap((p) =>
-      p.localidades.map((loc) => loc.id)
-    );
-
-    // Limpiamos las anteriores de otras regiones y seteamos las de la nueva región
-    onSelectMultipleLocalidades(localidadesSeleccionadas, false); // Quita las actuales
-    onSelectMultipleLocalidades(todasLasLocalidadesRegion, true);  // Agrega todas las de la región
-  };
+  const {
+    regionActivaId,
+    partidosVisibles,
+    partidosExpandidos,
+    toggleExpandir,
+    handleCambioRegion,
+  } = useFiltroZonasJerarquico({
+    zonasPadre,
+    partidos,
+    localidadesSeleccionadas,
+    onSelectMultipleLocalidades,
+  });
 
   return (
     <div className="space-y-3">
@@ -69,7 +43,7 @@ export function FiltroZonasJerarquico({
         </label>
       </div>
 
-      {/* NIVEL 1: SELECTOR EXCLUSIVO DE REGIÓN (GBA SUR, NORTE, ETC.) */}
+      {/* NIVEL 1: SELECTOR EXCLUSIVO DE REGIÓN */}
       {zonasPadre.length > 0 && (
         <div>
           <label className="block text-[11px] font-semibold text-slate-500 mb-1">
@@ -93,8 +67,7 @@ export function FiltroZonasJerarquico({
       <div className="max-h-56 overflow-y-auto pr-1 space-y-1.5 divide-y divide-slate-100">
         {partidosVisibles.map((partido) => {
           const idsHijas = partido.localidades.map((loc) => loc.id);
-          
-          // Verificar si todas o algunas localidades del partido están seleccionadas
+
           const hijasSeleccionadas = idsHijas.filter((id) =>
             localidadesSeleccionadas.includes(id)
           );
@@ -111,7 +84,6 @@ export function FiltroZonasJerarquico({
                     type="checkbox"
                     checked={todoElPartidoSeleccionado}
                     onChange={(e) => {
-                      // Si tildás el partido, tildás o destildás todas sus localidades juntas
                       onSelectMultipleLocalidades(idsHijas, e.target.checked);
                     }}
                     className="w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
@@ -127,7 +99,7 @@ export function FiltroZonasJerarquico({
                     type="button"
                     onClick={() => toggleExpandir(partido.id)}
                     className="p-1 text-slate-400 hover:text-slate-700 transition"
-                    title={estaExpandido ? "Ocultar localidades" : "Ver localidades"}
+                    title={estaExpandido ? 'Ocultar localidades' : 'Ver localidades'}
                   >
                     {hijasSeleccionadas.length > 0 && !todoElPartidoSeleccionado && (
                       <span className="text-[10px] text-blue-600 font-bold mr-1">
@@ -143,7 +115,7 @@ export function FiltroZonasJerarquico({
                 )}
               </div>
 
-              {/* NIVEL 3: LOCALIDADES HIJAS INDENTADAS (SOLO SI ESTÁ EXPANDIDO) */}
+              {/* NIVEL 3: LOCALIDADES HIJAS INDENTADAS */}
               {estaExpandido && partido.localidades.length > 0 && (
                 <div className="ml-5 pl-2 border-l-2 border-slate-100 py-1 space-y-1">
                   {partido.localidades.map((loc) => {
