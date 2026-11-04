@@ -35,7 +35,7 @@ export default function MapaResultsView({
   const listaUrl = buildListUrlFromMapParams(searchParams);
 
   return (
-    <main className="max-w-[1500px] mx-auto px-3 sm:px-4 py-2 space-y-2 h-[calc(100dvh-4rem)] md:h-[calc(100dvh-10rem)] flex flex-col overflow-hidden">
+    <main className="max-w-[1500px] mx-auto px-3 sm:px-4 py-2 space-y-2 h-[calc(100dvh-4rem)] md:h-[calc(100dvh-7rem)] flex flex-col overflow-hidden">
       {/* HEADER SUPERIOR COMPACTO */}
       <div className="flex items-center justify-between shrink-0 ">
         <div className="flex items-center gap-3">

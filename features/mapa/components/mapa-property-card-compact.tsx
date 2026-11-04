@@ -28,7 +28,7 @@ export function MapaPropertyCardCompact({
   });
 
   return (
-    <div className="shrink-0 w-72 sm:w-80 bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden flex flex-col select-none">
+    <div className="w-[82vw] max-w-85 bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden flex flex-col select-none">
       <div className="flex h-28">
         {/* Imagen de Portada */}
         <div className="relative w-28 sm:w-32 bg-slate-100 shrink-0">
@@ -73,7 +73,7 @@ export function MapaPropertyCardCompact({
       </div>
 
       {/* Botonera Inferior */}
-      <div className="border-t border-slate-100 bg-slate-50 p-2 flex gap-2">
+      <div className="border-t border-slate-100 bg-slate-50 p-2 flex gap-2 items-center">
         {isPrivateAdmin ? (
           <Link
             href={`/admin/${propiedad.id}/editar/`}
@@ -87,7 +87,7 @@ export function MapaPropertyCardCompact({
               href={`/propiedades/${propiedad.slug}`}
               className="flex-1 py-1.5 text-center bg-brand-dark hover:bg-slate-800 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition"
             >
-              Ver Ficha
+              Ver Propiedad
             </Link>
             <a
               href={whatsAppUrl}
