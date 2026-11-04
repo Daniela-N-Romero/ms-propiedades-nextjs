@@ -28,7 +28,7 @@ export function MapaPropertyCardCompact({
   });
 
   return (
-    <div className="w-[82vw] max-w-85 bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden flex flex-col select-none">
+    <div className="w-[76vw] max-w-85 bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden flex flex-col select-none">
       <div className="flex h-28">
         {/* Imagen de Portada */}
         <div className="relative w-28 sm:w-32 bg-slate-100 shrink-0">

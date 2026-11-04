@@ -39,12 +39,16 @@ export function MapaBottomCarousel({
   };
 
   // Detecta qué tarjeta está visible para actualizar el badge "1 de 4"
+ // Cálculo preciso: suma el ancho de la tarjeta + el espacio (gap de 14px)
   const handleScroll = () => {
     if (scrollRef.current) {
       const scrollLeft = scrollRef.current.scrollLeft;
-      const cardWidth = scrollRef.current.firstElementChild?.clientWidth || 300;
-      const index = Math.round(scrollLeft / cardWidth);
-      setIndiceActual(Math.min(index, propiedades.length - 1));
+      const primerElemento = scrollRef.current.querySelector<HTMLElement>('[data-card-item]');
+      if (primerElemento) {
+        const anchoConEspacio = primerElemento.offsetWidth + 14; // offsetWidth + gap
+        const index = Math.round(scrollLeft / anchoConEspacio);
+        setIndiceActual(Math.max(0, Math.min(index, propiedades.length - 1)));
+      }
     }
   };
 
@@ -85,25 +89,21 @@ export function MapaBottomCarousel({
             </button>
           )}
 
-          {/* 
-            Contenedor de Scroll:
-            - px-12 asegura que la primera y última card nunca queden debajo de las flechas.
-            - w-full + overflow-x-auto permite el scroll natural.
-          */}
+          {/* Contenedor de scroll táctil */}
           <div
             ref={scrollRef}
             onWheel={handleWheel}
             onScroll={handleScroll}
-            className="pointer-events-auto w-full overflow-x-auto pb-2 scrollbar-none snap-x snap-mandatory scroll-smooth px-2 md:px-12"
+            className="pointer-events-auto w-full overflow-x-auto pb-2 scrollbar-none snap-x snap-mandatory scroll-smooth px-3 md:px-12"
           >
-            {/* 
-              Contenedor Interior Centrador:
-              - w-max y min-w-full con mx-auto centra 1 o 2 cards automáticamente.
-              - Si hay muchas cards, no produce el recorte de justify-center.
+            {/*
+              - En mobile (pantalla pequeña): 'justify-start' para que la primera card empiece pegada
+                al margen izquierdo y la siguiente asome a la derecha.
+              - En desktop ('md:'): 'justify-center' para que si son pocas cards queden centradas.
             */}
-            <div className="w-max min-w-full flex items-center justify-center gap-4 mx-auto">
+            <div className="w-max min-w-full flex items-center justify-start md:justify-center gap-3.5 mx-auto">
               {propiedades.map((prop) => (
-                <div key={prop.id} className="snap-center shrink-0">
+                <div key={prop.id} data-card-item className="snap-start shrink-0">
                   <MapaPropertyCardCompact
                     propiedad={prop}
                     isPrivateAdmin={isPrivateAdmin}
